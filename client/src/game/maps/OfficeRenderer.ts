@@ -65,10 +65,9 @@ export class OfficeRenderer {
       this.glows.push(this.scene.add.image(x, y, key).setDepth(DEPTH.glow).setBlendMode(Phaser.BlendModes.ADD));
     const x = p.tx * TILE;
     switch (p.type) {
-      case 'desk':
-        glow(GLOW_KEYS.small, x + 6, top + 7);
-        if (p.dir === 'up') glow(GLOW_KEYS.screen, x + 24, top + 6);
-        break;
+      case 'desk': glow(GLOW_KEYS.screen, x + 24, top + (p.dir === 'up' ? 6 : 2)); break; // screen light
+      case 'neonSign': glow(GLOW_KEYS.screen, x + 16, p.ty * TILE + 8); break;
+      case 'dashboard': glow(GLOW_KEYS.screen, x + 24, p.ty * TILE + 8); break;
       case 'stage': glow(GLOW_KEYS.lamp, x + (footprint(p).w * TILE) / 2, p.ty * TILE + 20); break;
       case 'treadmill': glow(GLOW_KEYS.screen, x + 8, top + 3); break;
       case 'mirrorLong': glow(GLOW_KEYS.lamp, x + (footprint(p).w * TILE) / 2, p.ty * TILE + 12); break;
@@ -121,7 +120,7 @@ export class OfficeRenderer {
   private styleLabels() {
     const pal = PALETTES[this.theme];
     const style = (t: Phaser.GameObjects.Text) =>
-      t.setColor(this.theme === 'light' ? '#fbf3e2' : '#f3d9a8').setBackgroundColor(this.theme === 'light' ? pal.wallTop : '#2b2f40');
+      t.setColor(this.theme === 'light' ? '#ffffff' : '#cfe0ff').setBackgroundColor(this.theme === 'light' ? pal.wallTop : '#1f2633');
     this.plaques.forEach(style);
     this.deskTags.forEach(style);
   }
