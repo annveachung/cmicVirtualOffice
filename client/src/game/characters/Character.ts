@@ -42,8 +42,8 @@ export class Character {
       .text(0, 0, name, {
         fontFamily: '"Pixelify Sans", monospace',
         fontSize: `${LABEL_PX.name}px`,
-        color: opts.isLocal ? '#fff3cf' : '#f6efe2',
-        backgroundColor: opts.isLocal ? 'rgba(122, 82, 56, 0.9)' : 'rgba(46, 36, 34, 0.78)',
+        color: '#ffffff',
+        backgroundColor: opts.isLocal ? 'rgba(52, 102, 196, 0.92)' : 'rgba(31, 41, 51, 0.78)', // you = blue tag
         padding: { x: 2, y: 1 },
       })
       .setOrigin(0.5, 1)
