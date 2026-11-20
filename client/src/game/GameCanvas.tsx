@@ -28,9 +28,11 @@ export function GameCanvas({ name, appearance, theme, deskId, onReady }: Props) 
     let cancelled = false;
     const off = bus.on('office:ready', () => onReady?.());
     // Wait for the pixel font so canvas text doesn't render in a fallback font.
-    document.fonts.load('16px "Pixelify Sans"').finally(() => {
-      if (!cancelled) game = createGame(host, { name, appearance, deskId, theme: themeRef.current });
-    });
+    // If the font can't load, start anyway (with a fallback font) — never leave the user stuck.
+    const start = () => {
+      if (!cancelled && !game) game = createGame(host, { name, appearance, deskId, theme: themeRef.current });
+    };
+    document.fonts.load('16px "Pixelify Sans"').then(start, start);
     return () => {
       cancelled = true;
       off();
