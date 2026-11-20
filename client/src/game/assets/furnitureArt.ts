@@ -1,6 +1,6 @@
 import { FURNITURE, TILE, footprint, type Direction, type FurnitureDef, type Placement } from '@little-office/shared';
 import type { EnvPalette } from './palette';
-import { box, ellipse, hline, makeCanvas, mix, px, rect, roundBox, shade, vline, type Ctx } from './pixel';
+import { box, drawTemplate, ellipse, hline, makeCanvas, mix, px, rect, roundBox, shade, vline, type Ctx } from './pixel';
 
 /**
  * One draw function per furniture type. Each receives a canvas sized to the
@@ -836,8 +836,22 @@ const P: Partial<Record<Placement['type'], Painter>> = {
   },
 
   clubSign(ctx, { pal, W }) {
-    box(ctx, 0, 1, W, 14, '#1a1024', pal.outline);
-    drawPixelText(ctx, 'POTATO CLUB', W / 2, 6, pal.neonPink, pal.neonAmber);
+    box(ctx, 0, 1, W, 14, '#140b1d', pal.outline);
+    hline(ctx, 2, 2, W - 4, pal.neonPurple); // neon tube frame
+    hline(ctx, 2, 13, W - 4, pal.neonPurple);
+    drawPixelText(ctx, 'POTATO CLUB', W / 2, 4, '#ffd1ec', pal.neonPink);
+  },
+
+  /** Open washroom doorway: frame, the door swung flat against the wall, and a ♀/♂ sign. */
+  washroomDoor(ctx, { pal, H, v }) {
+    const plate = v === 0 ? '#e0708f' : '#4f8fc9'; // pink for women, blue for men
+    rect(ctx, 0, 0, 2, H, pal.trim); // door frame posts
+    rect(ctx, 14, 0, 2, H, pal.trim);
+    vline(ctx, 0, 0, H, pal.outline);
+    vline(ctx, 15, 0, H, pal.outline);
+    box(ctx, 2, 10, 2, H - 10, shade(plate, 0.25), pal.outline); // door leaf, swung open
+    box(ctx, 3, 0, 10, 9, plate, pal.outline); // sign plate above the doorway
+    drawTemplate(ctx, v === 0 ? PICTO.women : PICTO.men, 5, 1, { '#': '#ffffff' });
   },
 
   potatoPoster(ctx, { pal, v }) {
@@ -875,28 +889,37 @@ function karaokeStage(ctx: Ctx, pal: EnvPalette, W: number, H: number) {
   vline(ctx, W - 1, 0, H, pal.outline);
 }
 
-/** 3x5 pixel font — just the letters the club sign needs. */
+/** 5x7 pixel font — just the letters the club sign needs. Big enough to read at a glance. */
 const GLYPHS: Record<string, string[]> = {
-  P: ['###', '#.#', '###', '#..', '#..'],
-  O: ['###', '#.#', '#.#', '#.#', '###'],
-  T: ['###', '.#.', '.#.', '.#.', '.#.'],
-  A: ['.#.', '#.#', '###', '#.#', '#.#'],
-  C: ['###', '#..', '#..', '#..', '###'],
-  L: ['#..', '#..', '#..', '#..', '###'],
-  U: ['#.#', '#.#', '#.#', '#.#', '###'],
-  B: ['##.', '#.#', '##.', '#.#', '##.'],
-  ' ': ['...', '...', '...', '...', '...'],
+  P: ['####.', '#...#', '#...#', '####.', '#....', '#....', '#....'],
+  O: ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
+  T: ['#####', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..'],
+  A: ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
+  C: ['.###.', '#...#', '#....', '#....', '#....', '#...#', '.###.'],
+  L: ['#....', '#....', '#....', '#....', '#....', '#....', '#####'],
+  U: ['#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
+  B: ['####.', '#...#', '#...#', '####.', '#...#', '#...#', '####.'],
+  ' ': ['.....', '.....', '.....', '.....', '.....', '.....', '.....'],
 };
 
-function drawPixelText(ctx: Ctx, text: string, cx: number, y: number, color: string, glow: string) {
-  const w = text.length * 4 - 1;
+/** Neon text: a soft drop-shadow underneath, bright letters on top. */
+function drawPixelText(ctx: Ctx, text: string, cx: number, y: number, color: string, shadow: string) {
+  const pitch = 6;
+  const w = text.length * pitch - 1;
   let x = Math.round(cx - w / 2);
   for (const ch of text) {
     const g = GLYPHS[ch] ?? GLYPHS[' '];
-    g.forEach((row, gy) => [...row].forEach((c, gx) => { if (c === '#') { px(ctx, x + gx, y + gy + 1, glow); px(ctx, x + gx, y + gy, color); } }));
-    x += 4;
+    g.forEach((row, gy) => [...row].forEach((c, gx) => { if (c === '#') px(ctx, x + gx + 1, y + gy + 1, shadow); }));
+    g.forEach((row, gy) => [...row].forEach((c, gx) => { if (c === '#') px(ctx, x + gx, y + gy, color); }));
+    x += pitch;
   }
 }
+
+/** Washroom door pictograms (5x7). */
+const PICTO = {
+  women: ['..#..', '.###.', '..#..', '.###.', '#####', '.#.#.', '.#.#.'],
+  men: ['..#..', '.###.', '#####', '.###.', '.###.', '.#.#.', '.#.#.'],
+};
 
 /** Render one placement to its own canvas. */
 export function paintFurniture(p: Placement, pal: EnvPalette): HTMLCanvasElement {

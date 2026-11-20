@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FURNITURE, footprint } from './furniture.js';
-import { DESKS, MAP_H, MAP_W, PLACEMENTS, SPAWN, TILES } from './office.js';
+import { AREA_LABELS, DESKS, MAP_H, MAP_W, PLACEMENTS, SPAWN, TILES } from './office.js';
 import { buildCollisionGrid, canStandAt, moveWithCollision, tileCenter } from './collision.js';
 import { findPath, nearestWalkable, smoothPath } from './pathfinding.js';
 
@@ -25,6 +25,19 @@ describe('office map data', () => {
   it('has consistent dimensions', () => {
     expect(TILES).toHaveLength(MAP_H);
     for (const row of TILES) expect(row).toHaveLength(MAP_W);
+  });
+
+  it('keeps plants tidy: few of them, and always against a wall', () => {
+    const plants = PLACEMENTS.filter((p) => p.type === 'plant' || p.type === 'plantSmall');
+    expect(plants.length).toBeLessThanOrEqual(16);
+    for (const p of plants) {
+      const touchesWall = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => TILES[p.ty + dy]?.[p.tx + dx] === '#');
+      expect(touchesWall, `${p.id} at ${p.tx},${p.ty} is floating in the open`).toBe(true);
+    }
+  });
+
+  it('puts every area tag on a wall, where nobody can walk behind it', () => {
+    for (const l of AREA_LABELS) expect(TILES[l.ty][l.tx], l.text).toBe('#');
   });
 
   it('is enclosed by walls', () => {

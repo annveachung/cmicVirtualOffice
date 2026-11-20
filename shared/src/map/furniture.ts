@@ -76,6 +76,7 @@ export const FURNITURE = {
   mirrorLong: { w: 7, h: 1, blocks: false, layer: 'wall' },
   toilet: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 14 },
   urinal: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 10 },
+  washroomDoor: { w: 1, h: 1, blocks: false, layer: 'object', overhang: 8 }, // open doorway you walk through
   // The Potato Club
   speaker: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 12 },
   micStand: { w: 1, h: 1, blocks: false, layer: 'object', overhang: 8 },

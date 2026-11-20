@@ -2,10 +2,10 @@
 export const DEPTH = {
   background: 0,
   sunbeams: 1,
+  wallTags: 1.8, // room/desk tags: painted on walls, so characters always pass in front
   marker: 2,
   world: 10, // + y in pixels (max map height 512)
   glow: 2000,
-  labels: 2500,
   nameplates: 3000,
 } as const;
 
