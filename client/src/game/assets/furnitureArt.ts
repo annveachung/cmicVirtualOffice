@@ -705,20 +705,23 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     }
   },
 
-  /** Cubicle: laminate partitions, door left ajar, wall-hung toilet against the back wall. */
+  /**
+   * Cubicle seen from the front: cistern on the back panel, bowl in the middle
+   * (where a seated colleague's character appears), door swung flat open.
+   */
   toilet(ctx, { pal, H, v }) {
     const lam = v === 0 ? pal.accents[0] : pal.accents[1];
     const lamD = shade(lam, -0.2);
     rect(ctx, 2, 3, 12, H - 5, shade(pal.bath, -0.06)); // cubicle floor shade
-    roundBox(ctx, 4, H - 15, 8, 10, pal.paper, pal.outline); // bowl
-    ellipse(ctx, 8, H - 10, 2, 3, pal.glassLight);
-    rect(ctx, 6, H - 4, 4, 2, pal.metalLight); // flush plate
+    box(ctx, 4, 5, 8, 7, pal.paper, pal.outline); // cistern
+    rect(ctx, 7, 7, 2, 2, pal.metalLight); // flush button
+    roundBox(ctx, 4, 12, 8, 12, pal.paper, pal.outline); // bowl
+    ellipse(ctx, 8, 18, 2, 3, pal.glassLight);
     box(ctx, 0, 2, 2, H - 3, lamD, pal.outline); // partitions
     box(ctx, 14, 2, 2, H - 3, lamD, pal.outline);
     box(ctx, 0, 0, 16, 3, pal.metal, pal.outline); // top rail
-    box(ctx, 2, 3, 4, H - 13, lam, pal.outline); // door, swung open
-    px(ctx, 4, 9, pal.metalDark); // handle
-    px(ctx, 3, 5, '#7fae6e'); // "vacant" indicator
+    box(ctx, 1, 3, 2, H - 10, lam, pal.outline); // door, swung flat open
+    px(ctx, 1, 4, '#7fae6e'); // "vacant" indicator
   },
 
   urinal(ctx, { pal, H }) {

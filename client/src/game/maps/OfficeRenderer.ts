@@ -134,7 +134,7 @@ export class OfficeRenderer {
  * facing away sort normally, so their backrest hides the sitter's back.
  * Items on a counter sort just above it.
  */
-const TOP_SORTED = new Set<Placement['type']>(['deskChair', 'chair', 'armchair', 'sofa', 'beanBag', 'treadmill', 'weightBench']);
+const TOP_SORTED = new Set<Placement['type']>(['deskChair', 'chair', 'armchair', 'sofa', 'beanBag', 'treadmill', 'weightBench', 'toilet']);
 
 function furnitureDepth(p: Placement, def: FurnitureDef, bottom: number): number {
   if (TOP_SORTED.has(p.type) && (p.dir ?? 'down') === 'down') return p.ty * TILE + 1;

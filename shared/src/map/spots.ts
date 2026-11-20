@@ -108,8 +108,8 @@ function spotsFor(p: Placement): Spot[] {
         spot(`${p.id}:east`, 'punch', t(w, 1), 'left', { clickTiles: [...right, t(w, 1)], onFloor: true }),
       ];
     }
-    case 'toilet': // sit with your back to the cistern, facing the cubicle door
-      return [spot(p.id, 'sit', t(0, 0), 'up')];
+    case 'toilet': // sit facing out of the cubicle — you can see who's "busy" 🚽
+      return [spot(p.id, 'sit', t(0, 0), 'down', { dy: 2 })];
     case 'vanity': // one basin every two tiles; stand in front of it
       return Array.from({ length: Math.ceil(footprint(p).w / 2) }, (_, i) =>
         spot(`${p.id}:${i}`, 'wash', t(i * 2, 1), 'up', { clickTiles: [t(i * 2, 0), t(i * 2, 1)], onFloor: true }),
