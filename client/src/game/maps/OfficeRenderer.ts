@@ -54,9 +54,9 @@ export class OfficeRenderer {
       this.furniture.push({ p, img });
     }
 
-    // Room tags pinned just inside each room's top-left corner
+    // Room tags live on walls (see AREA_LABELS) and sit under characters, like a painted sign
     for (const l of AREA_LABELS) {
-      this.areaTags.push(new MapTag(scene, l.tx * TILE + 2, l.ty * TILE + 2, l.text, 'corner', LABEL_PX.plaque, DEPTH.labels));
+      this.areaTags.push(new MapTag(scene, l.tx * TILE + 2, l.ty * TILE + 2, l.text, 'corner', LABEL_PX.plaque, DEPTH.wallTags));
     }
     this.applyTheme(theme);
   }
@@ -146,7 +146,7 @@ export class OfficeRenderer {
     this.deskTags.delete(deskId);
     const desk = DESKS.find((d) => d.id === deskId);
     if (!desk || !name) return;
-    const tag = new MapTag(this.scene, (desk.desk.tx + 1.5) * TILE, (desk.desk.ty + 2) * TILE + 5, name, 'center', LABEL_PX.desk, DEPTH.labels);
+    const tag = new MapTag(this.scene, (desk.desk.tx + 1.5) * TILE, (desk.desk.ty + 2) * TILE + 5, name, 'center', LABEL_PX.desk, DEPTH.wallTags);
     tag.setTheme(this.theme);
     tag.setScale(this.labelScale);
     this.deskTags.set(deskId, tag);
