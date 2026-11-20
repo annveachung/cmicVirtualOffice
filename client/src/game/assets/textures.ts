@@ -39,7 +39,7 @@ export function registerEnvironmentTextures(scene: Phaser.Scene): void {
  */
 export const ANIMS = {
   idle: { frames: ['idle', 'breathe'], fps: 1.6 },
-  walk: { frames: ['walkA', 'idle', 'walkB', 'idle'], fps: 8 },
+  walk: { frames: ['walkA', 'idle', 'walkB', 'idle'], fps: 9.5 }, // matched to WALK_SPEED so feet don't slide
   sit: { frames: ['sit'], fps: 1 },
   run: { frames: ['walkA', 'breathe', 'walkB', 'breathe'], fps: 14 },
   pedal: { frames: ['pedalA', 'pedalB'], fps: 6 },
@@ -48,6 +48,7 @@ export const ANIMS = {
   stretch: { frames: ['armsUp', 'armsUp', 'idle'], fps: 1.4 },
   punch: { frames: ['idle', 'punch'], fps: 5 },
   play: { frames: ['idle', 'breathe'], fps: 7 },
+  wash: { frames: ['idle', 'breathe'], fps: 5 },
 } satisfies Record<string, { frames: Pose[]; fps: number }>;
 
 export type AnimName = keyof typeof ANIMS;

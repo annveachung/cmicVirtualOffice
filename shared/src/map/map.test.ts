@@ -151,6 +151,13 @@ describe('activity spots', () => {
     for (const s of SPOTS) expect(grid.isBlocked(s.tile.tx, s.tile.ty), s.id).toBe(!s.onFloor);
   });
 
+  it('lets you sit on every toilet and wash at every basin', async () => {
+    const { SPOTS } = await import('./spots.js');
+    expect(SPOTS.filter((s) => s.id.startsWith('toilet')).every((s) => s.action === 'sit')).toBe(true);
+    expect(SPOTS.filter((s) => s.id.startsWith('toilet')).length).toBe(5);
+    expect(SPOTS.filter((s) => s.action === 'wash').length).toBe(4);
+  });
+
   it('clicking a desk or a treadmill resolves to the right spot', async () => {
     const { spotForTile } = await import('./spots.js');
     const d = DESKS[4];
