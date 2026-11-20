@@ -121,12 +121,12 @@ export const DESKS: DeskDef[] = [
   // Cluster of three: two side by side, a third facing them
   desk(10, 'Cluster · left', 'open', 'down', 28, 13),
   desk(11, 'Cluster · right', 'open', 'down', 31, 13),
-  desk(12, 'Cluster · front', 'open', 'up', 29, 15),
+  desk(12, 'Cluster · front', 'open', 'up', 28, 15), // lined up under the left desk
   // Side-by-side pair near the sofa corner
   desk(13, 'Sofa-side pair · left', 'open', 'up', 11, 26),
   desk(14, 'Sofa-side pair · right', 'open', 'up', 14, 26),
   // Two single desks, near each other in the middle of the hall
-  desk(15, 'Solo spot · west', 'open', 'down', 24, 21),
+  desk(15, 'Solo spot · west', 'open', 'down', 17, 21), // near the sofa corner, clear of the entrance
   desk(16, 'Solo spot · east', 'open', 'down', 29, 21),
 ];
 
