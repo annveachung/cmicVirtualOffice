@@ -5,6 +5,12 @@ import { DEFAULT_ZOOM_BOOST, MAX_ZOOM, TOP_BAR_PX } from '../constants';
 
 const WORLD_W = MAP_W * TILE;
 const WORLD_H = MAP_H * TILE;
+/**
+ * The part of the map the whole-office view frames: everything except the thick
+ * outer walls on the left, right and the dark cap above the skyline. Every room,
+ * the windows and the entrance stay visible; the office just gets a bit bigger.
+ */
+const VIEW = { x0: TILE, x1: WORLD_W - TILE, y0: TILE, y1: WORLD_H };
 /** How far (screen px) the pointer must move before a press counts as a drag, not a click. */
 const DRAG_THRESHOLD = 6;
 
@@ -106,15 +112,15 @@ export class CameraRig {
 
   // ---------------------------------------------------------------- internals
 
-  /** Zoom at which the ENTIRE office fits under the top bar (= 100%). */
+  /** Zoom at which the whole office (VIEW) fits under the top bar (= 100%). */
   private fitZoom() {
     const { width, height } = this.scene.scale;
-    return Math.min(width / WORLD_W, (height - TOP_BAR_PX) / WORLD_H);
+    return Math.min(width / (VIEW.x1 - VIEW.x0), (height - TOP_BAR_PX) / (VIEW.y1 - VIEW.y0));
   }
 
   /** Where to centre the camera so the office sits in the middle of the space under the top bar. */
   private fitCentre(zoom: number) {
-    return { x: WORLD_W / 2, y: WORLD_H / 2 - TOP_BAR_PX / 2 / zoom };
+    return { x: (VIEW.x0 + VIEW.x1) / 2, y: (VIEW.y0 + VIEW.y1) / 2 - TOP_BAR_PX / 2 / zoom };
   }
 
   private atFit() {
