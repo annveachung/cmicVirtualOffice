@@ -37,10 +37,8 @@ const WORLD_H = MAP_H * TILE;
  * The one and only game scene: the shared office.
  * Lifecycle: init(data) -> create() once -> update() every frame.
  *
- * Camera has two modes:
- *  - "overview" (default): the whole office fits the window, nothing moves —
- *    you can see where everyone is at a glance.
- *  - "follow": after zooming in with the wheel, the camera tracks you.
+ * Camera: the office covers the whole window (see applyZoom). Scrolling zooms
+ * in further, and the camera follows you.
  */
 export class OfficeScene extends Phaser.Scene {
   private grid!: CollisionGrid;
@@ -51,7 +49,7 @@ export class OfficeScene extends Phaser.Scene {
   private spotHint!: Phaser.GameObjects.Text;
   private nearbySpot: Spot | null = null;
   private data0!: OfficeSceneData;
-  /** Multiplier on top of the "fit" zoom. 1 = whole office visible. */
+  /** Multiplier on top of the "cover" zoom. 1 = office fills the window. */
   private zoomFactor = 1;
   private unsubscribers: (() => void)[] = [];
 
@@ -135,28 +133,22 @@ export class OfficeScene extends Phaser.Scene {
     bus.emit('office:ready');
   }
 
-  /** Zoom at which the entire office fits below the top bar. */
-  private fitZoom(): number {
-    const { width, height } = this.scale;
-    return Math.min(width / WORLD_W, (height - TOP_BAR_PX) / WORLD_H);
-  }
-
+  /**
+   * "Cover" zoom: the office fills the whole window under the top bar with no
+   * empty bars. The map's shape (~1.9:1) matches typical desktop windows, so
+   * usually nothing is cut off; on unusual shapes a sliver of the edge is
+   * hidden and the camera gently follows you to reveal it.
+   */
   private applyZoom() {
     const cam = this.cameras.main;
-    const fit = this.fitZoom();
-    this.zoomFactor = Phaser.Math.Clamp(this.zoomFactor, 1, Math.max(1, MAX_ZOOM / fit));
-    const zoom = fit * this.zoomFactor;
+    const { width, height } = this.scale;
+    const cover = Math.max(width / WORLD_W, (height - TOP_BAR_PX) / WORLD_H);
+    this.zoomFactor = Phaser.Math.Clamp(this.zoomFactor, 1, Math.max(1, MAX_ZOOM / cover));
+    const zoom = cover * this.zoomFactor;
     cam.setZoom(zoom);
-
-    if (this.zoomFactor <= 1.001) {
-      // Overview: centre the office in the space under the top bar.
-      cam.stopFollow();
-      cam.removeBounds();
-      cam.centerOn(WORLD_W / 2, WORLD_H / 2 - TOP_BAR_PX / 2 / zoom);
-    } else {
-      cam.setBounds(0, -TOP_BAR_PX / zoom, WORLD_W, WORLD_H + TOP_BAR_PX / zoom);
-      cam.startFollow(this.player.sprite, true, 0.15, 0.15);
-    }
+    // Bounds include a strip above the map for the top bar, so the bar never covers the office.
+    cam.setBounds(0, -TOP_BAR_PX / zoom, WORLD_W, WORLD_H + TOP_BAR_PX / zoom);
+    cam.startFollow(this.player.sprite, true, 0.12, 0.12);
 
     // Labels stay the same size on screen at every zoom level.
     const s = 1 / zoom;
