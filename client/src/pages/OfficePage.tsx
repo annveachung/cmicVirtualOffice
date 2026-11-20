@@ -21,11 +21,16 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
   const [showHelp, setShowHelp] = useState(true);
   const [zone, setZone] = useState<string | null>(null);
   useEffect(() => bus.on('zone:changed', setZone), []);
+  // party music inside The Potato Club, the cozy office tune everywhere else
+  useEffect(() => sound.setTrack(zone === 'potato-club' ? 'club' : 'office'), [zone]);
 
   // Cozy background music while you're in the office (if not switched off).
   useEffect(() => {
     sound.startMusic();
-    return () => sound.stopMusic();
+    return () => {
+      sound.stopMusic();
+      sound.setTrack('office'); // next visit starts with the office tune
+    };
   }, []);
 
   // The controls card shows on arrival, then gets out of the way.
