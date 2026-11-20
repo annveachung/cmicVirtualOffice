@@ -181,6 +181,9 @@ p {
 
 .pixel-input {
   font: inherit;
+  /* wide, crisp pixel font — the same one used for name tags in the office */
+  font-family: 'Silkscreen', ui-monospace, monospace;
+  font-size: 15px;
   color: var(--ink);
   background: var(--field);
   border: 2px solid var(--border);
@@ -370,11 +373,17 @@ kbd {
   display: flex;
   align-items: baseline;
   gap: 8px;
+  font-family: 'Silkscreen', ui-monospace, monospace;
+}
+
+.clock strong {
+  font-size: 15px;
+  font-weight: 400;
 }
 
 .clock span {
   color: var(--ink-soft);
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .topbar-actions {
