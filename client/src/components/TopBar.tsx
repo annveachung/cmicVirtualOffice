@@ -7,10 +7,11 @@ interface Props {
   theme: Theme;
   onlineCount: number;
   onToggleTheme: () => void;
+  onToggleHelp: () => void;
   onLeave: () => void;
 }
 
-export function TopBar({ theme, onlineCount, onToggleTheme, onLeave }: Props) {
+export function TopBar({ theme, onlineCount, onToggleTheme, onToggleHelp, onLeave }: Props) {
   return (
     <header className="topbar pixel-panel">
       <div className="brand">
@@ -23,6 +24,9 @@ export function TopBar({ theme, onlineCount, onToggleTheme, onLeave }: Props) {
           <span className="dot" /> {onlineCount} online
         </span>
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+        <button className="pixel-btn icon-btn" onClick={onToggleHelp} title="Controls (?)" aria-label="Show controls">
+          ?
+        </button>
         <button className="pixel-btn icon-btn" onClick={onLeave} title="Leave the office">
           <PixelIcon name="door" size={16} />
           <span className="btn-label">Leave</span>

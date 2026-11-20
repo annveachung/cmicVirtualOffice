@@ -15,12 +15,19 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
   const [ready, setReady] = useState(false);
   const [showHelp, setShowHelp] = useState(true);
 
-  // "T" toggles day/night (ignored while typing in a text field).
+  // The controls card shows on arrival, then gets out of the way.
+  useEffect(() => {
+    const id = window.setTimeout(() => setShowHelp(false), 9000);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  // "T" toggles day/night, "?" toggles the controls card (ignored while typing).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement;
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || e.metaKey || e.ctrlKey) return;
       if (e.key === 't' || e.key === 'T') onToggleTheme();
+      if (e.key === '?') setShowHelp((v) => !v);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -35,15 +42,22 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
         theme={theme}
         onReady={() => setReady(true)}
       />
-      <TopBar theme={theme} onlineCount={1} onToggleTheme={onToggleTheme} onLeave={onLeave} />
+      <TopBar
+        theme={theme}
+        onlineCount={1}
+        onToggleTheme={onToggleTheme}
+        onToggleHelp={() => setShowHelp((v) => !v)}
+        onLeave={onLeave}
+      />
       {!ready && <div className="loading pixel-panel">Opening the office…</div>}
       {showHelp && (
         <aside className="help pixel-panel">
           <button className="help-close" onClick={() => setShowHelp(false)} aria-label="Hide controls">×</button>
           <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows to walk</p>
-          <p>Click the floor to walk, click a seat to sit</p>
-          <p><kbd>E</kbd> sit / stand · <kbd>T</kbd> day/night</p>
-          <p>Scroll to zoom in and follow yourself</p>
+          <p>Click the floor to walk there</p>
+          <p>Click a chair, treadmill, bike, mat… to use it</p>
+          <p><kbd>E</kbd> use / stop · <kbd>T</kbd> day/night · <kbd>?</kbd> help</p>
+          <p>Scroll to zoom (optional)</p>
         </aside>
       )}
     </div>
