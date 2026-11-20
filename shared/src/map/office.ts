@@ -154,18 +154,15 @@ const deskPlacements: Placement[] = DESKS.flatMap((d) => [
 ]);
 
 const officeDecor: Placement[] = OFFICE_ROOMS.flatMap((r, i) => [
-  P('painting', 3, r.y0 - 1, { variant: i }),
   P('floorLamp', 1, r.y0 + 1), // fills the spot beside the chair that would otherwise be boxed in
-  P('bookshelf', 5, r.y0, { variant: i }),
   P('armchair', 6, r.y1, { dir: 'left' }),
-  // a room-sized carpet under the furniture, a different (non-green) colour per office
-  P('rug', 1, r.y0 + 1, { w: 6, h: r.y1 - r.y0, variant: 3 + i }),
+  // a carpet covering the whole office, a different (non-green) colour per office
+  P('rug', 1, r.y0, { w: 6, h: r.y1 - r.y0 + 1, variant: 3 + i }),
 ]);
 
 export const PLACEMENTS: Placement[] = [
   // ---- Lounge (top-left, sunny) ----
-  // shelf and arcades stand flat against the side walls, keeping the window clear
-  P('bookshelf', 1, 4, { w: 1, h: 3, dir: 'right', variant: 1 }),
+  // nothing tall against the window wall, so the skyline view stays clear
   // main seating group: two sofas facing each other across a coffee table
   P('rug', 4, 4, { w: 6, h: 5, variant: 0 }),
   P('sofa', 5, 4, { dir: 'down' }),
