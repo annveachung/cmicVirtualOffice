@@ -50,6 +50,7 @@ export const ANIMS = {
   play: { frames: ['idle', 'breathe'], fps: 7 },
   wash: { frames: ['idle', 'breathe'], fps: 5 },
   pee: { frames: ['idle', 'breathe'], fps: 1.2 },
+  present: { frames: ['idle', 'breathe'], fps: 3 }, // a lively talking bob
 } satisfies Record<string, { frames: Pose[]; fps: number }>;
 
 export type AnimName = keyof typeof ANIMS;
