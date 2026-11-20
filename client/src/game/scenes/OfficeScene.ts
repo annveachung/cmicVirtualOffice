@@ -16,7 +16,7 @@ import {
 import { registerEnvironmentTextures } from '../assets/textures';
 import { bus } from '../bus';
 import { Character } from '../characters/Character';
-import { DEPTH, LABEL_PX } from '../constants';
+import { DEPTH, GAME_FONT, LABEL_PX, TEXT_RESOLUTION } from '../constants';
 import { OfficeRenderer } from '../maps/OfficeRenderer';
 import { PlayerController } from '../movement/PlayerController';
 import { PotatoClub } from '../club/PotatoClub';
@@ -82,13 +82,14 @@ export class OfficeScene extends Phaser.Scene {
     // "E · sit" / "E · run" hint shown above a spot you're standing next to
     this.spotHint = this.add
       .text(0, 0, 'E · sit', {
-        fontFamily: '"Pixelify Sans", monospace',
+        fontFamily: GAME_FONT,
         fontSize: `${LABEL_PX.hint}px`,
         color: '#2e2422',
         backgroundColor: 'rgba(255, 243, 207, 0.95)',
         padding: { x: 4, y: 2 },
       })
       .setOrigin(0.5, 1)
+      .setResolution(TEXT_RESOLUTION)
       .setDepth(DEPTH.nameplates)
       .setVisible(false);
     this.spotHint.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);

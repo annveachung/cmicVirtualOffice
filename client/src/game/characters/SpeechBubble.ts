@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DEPTH } from '../constants';
+import { DEPTH, GAME_FONT, TEXT_RESOLUTION } from '../constants';
 
 /**
  * A small pixel-style speech bubble that floats above a character.
@@ -18,13 +18,14 @@ export class SpeechBubble {
     this.box = scene.add.graphics();
     this.label = scene.add
       .text(0, 0, '', {
-        fontFamily: '"Pixelify Sans", monospace',
-        fontSize: '13px',
+        fontFamily: GAME_FONT,
+        fontSize: '11px',
         color: '#2e2422',
         align: 'center',
         wordWrap: { width: 180 },
       })
-      .setOrigin(0.5, 1);
+      .setOrigin(0.5, 1)
+      .setResolution(TEXT_RESOLUTION);
     this.container = scene.add.container(0, 0, [this.box, this.label]).setDepth(DEPTH.nameplates + 1).setVisible(false);
   }
 
