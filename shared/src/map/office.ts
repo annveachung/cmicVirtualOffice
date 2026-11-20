@@ -22,9 +22,9 @@ import type { Placement } from './furniture.js';
  *   ├─────┤                                  │    stage    │
  *   │ Off2│   Open-plan hall: 12 desks       ├─────────────┤
  *   ├─────┤   in pairs, pods and solo         │             │
- *   │ Off3│                         ┌───┬───┐│     Gym     │
- *   ├─────┤                         │ W │ M ││             │
- *   │ Off4│                         │   │   ││             │
+ *   │ Off3│                     ┌─[vanity]──┐│     Gym     │
+ *   ├─────┤                     │ W   │  M  ││             │
+ *   │ Off4│                     │ ▢▢▢ │ ▢▢⊓⊓││             │
  *   └─────┴─────────[ entrance ]────┴───┴───┴┴─────────────┘
  */
 export type TileKind = '#' | 'c' | 'w' | 'k' | 'g' | 'b';
@@ -55,10 +55,12 @@ function buildTiles(): TileKind[][] {
   rect(48, 11, 57, 18, 'w'); // meeting room
   rect(48, 20, 57, 29, 'g'); // gym
 
-  // Washrooms carved out of the hall's bottom-right corner
-  rect(39, 23, 46, 29, '#');
-  rect(40, 24, 42, 29, 'b'); // women
-  rect(44, 24, 46, 29, 'b'); // men
+  // Washrooms (bottom-right of the hall): a shared hand-wash lobby, then
+  // separate women's and men's rooms with cubicles.
+  rect(37, 23, 46, 29, '#');
+  rect(38, 24, 46, 25, 'b'); // shared vanity lobby
+  rect(38, 27, 41, 29, 'b'); // women
+  rect(43, 27, 46, 29, 'b'); // men
 
   // Doorways
   rect(13, 10, 15, 10, 'c'); // flex room
@@ -67,8 +69,9 @@ function buildTiles(): TileKind[][] {
   for (const r of OFFICE_ROOMS) rect(7, r.y0 + 1, 7, r.y0 + 2, 'w'); // office doors
   rect(47, 14, 47, 15, 'w'); // meeting room
   rect(47, 21, 47, 22, 'g'); // gym
-  rect(41, 23, 41, 23, 'b'); // women's washroom
-  rect(45, 23, 45, 23, 'b'); // men's washroom
+  rect(37, 24, 37, 25, 'b'); // washroom lobby (from the hall)
+  rect(40, 26, 40, 26, 'b'); // women's room
+  rect(44, 26, 44, 26, 'b'); // men's room
   return g;
 }
 
@@ -241,7 +244,7 @@ export const PLACEMENTS: Placement[] = [
   P('plantSmall', 18, 14),
   P('bin', 35, 15),
   P('plant', 8, 29, { variant: 0 }),
-  P('plant', 38, 29, { variant: 2 }),
+  P('plant', 36, 29, { variant: 2 }),
   P('plantSmall', 30, 20),
   P('plant', 46, 19, { variant: 1 }),
   // chill corner
@@ -259,16 +262,20 @@ export const PLACEMENTS: Placement[] = [
   P('doormat', 24, 28),
 
   // ---- Washrooms ----
-  P('washBasin', 40, 24, { variant: 0 }),
-  P('washBasin', 42, 24, { variant: 0 }),
-  P('toilet', 40, 29),
-  P('toilet', 42, 29),
-  P('plantSmall', 40, 27),
-  P('washBasin', 44, 24, { variant: 1 }),
-  P('washBasin', 46, 24, { variant: 1 }),
-  P('toilet', 44, 29),
-  P('toilet', 46, 29),
-  P('plantSmall', 46, 27),
+  // shared lobby: one long vanity under a wide mirror
+  P('mirrorLong', 39, 23, { w: 7 }),
+  P('vanity', 39, 24, { w: 7 }),
+  P('plantSmall', 46, 24),
+  // women: a row of cubicles
+  P('toilet', 39, 29, { variant: 0 }),
+  P('toilet', 40, 29, { variant: 0 }),
+  P('toilet', 41, 29, { variant: 0 }),
+  P('plantSmall', 38, 29),
+  // men: cubicles + urinals
+  P('toilet', 43, 29, { variant: 1 }),
+  P('toilet', 44, 29, { variant: 1 }),
+  P('urinal', 45, 29),
+  P('urinal', 46, 29),
 
   // ---- Meeting room (with a small stage for presentations) ----
   P('noticeBoard', 48, 10),
@@ -277,10 +284,10 @@ export const PLACEMENTS: Placement[] = [
   P('projectorScreen', 51, 11, { w: 4 }),
   P('podium', 55, 12),
   P('meetingTable', 50, 14, { w: 6 }),
-  ...[51, 52, 53, 54].map((x) => P('chair', x, 13, { dir: 'down' })),
-  ...[51, 52, 53, 54].map((x) => P('chair', x, 17, { dir: 'up' })),
-  P('chair', 49, 15, { dir: 'right' }),
-  P('chair', 56, 15, { dir: 'left' }),
+  ...[51, 52, 53, 54].map((x) => P('deskChair', x, 13, { dir: 'down', variant: 3 })),
+  ...[51, 52, 53, 54].map((x) => P('deskChair', x, 17, { dir: 'up', variant: 3 })),
+  P('deskChair', 49, 15, { dir: 'right', variant: 3 }),
+  P('deskChair', 56, 15, { dir: 'left', variant: 3 }),
   P('plant', 48, 11, { variant: 0 }),
   P('plant', 57, 11, { variant: 1 }),
   P('plantSmall', 48, 18),
@@ -322,8 +329,8 @@ export const AREA_LABELS: AreaLabel[] = [
   { text: 'Pantry', tx: 32.5, ty: 10.5 },
   { text: 'Meeting Room', tx: 53, ty: 10.5 },
   { text: 'Gym', tx: 56, ty: 19.5 },
-  { text: 'Women', tx: 41.5, ty: 23.5 },
-  { text: 'Men', tx: 45.5, ty: 23.5 },
+  { text: 'Women', tx: 40.5, ty: 26.5 },
+  { text: 'Men', tx: 44.5, ty: 26.5 },
 ];
 
 /** Everyone arrives just inside the main entrance (bottom of the open-plan hall). */
