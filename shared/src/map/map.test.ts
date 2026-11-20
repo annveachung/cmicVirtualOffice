@@ -105,7 +105,7 @@ describe('pathfinding', () => {
   });
 
   it('never cuts diagonally around a blocked corner', () => {
-    const path = findPath(grid, SPAWN, { tx: 44, ty: 24 })!;
+    const path = findPath(grid, SPAWN, { tx: 52, ty: 26 })!;
     for (let i = 1; i < path.length; i++) {
       const a = path[i - 1], b = path[i];
       if (a.tx !== b.tx && a.ty !== b.ty) {
@@ -155,7 +155,7 @@ describe('activity spots', () => {
     const { spotForTile } = await import('./spots.js');
     const d = DESKS[4];
     expect(spotForTile({ tx: d.desk.tx + 2, ty: d.desk.ty + 1 })?.tile).toEqual(d.chair);
-    expect(spotForTile({ tx: 44, ty: 20 })?.action).toBe('run');
+    expect(spotForTile({ tx: 49, ty: 20 })?.action).toBe('run');
   });
 
   it('spawns on a walkable tile', () => {

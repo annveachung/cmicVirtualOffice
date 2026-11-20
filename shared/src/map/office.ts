@@ -10,26 +10,26 @@ import type { Placement } from './furniture.js';
  *
  * Tile kinds:
  *   '#' wall      'c' carpet (open-plan hall)   'w' wooden floor
- *   'k' pantry tiles                            'g' gym rubber floor
+ *   'k' pantry tiles   'g' gym rubber floor     'b' washroom tiles
  *
- * Kept compact (54 x 31) so the whole office fits a typical monitor at a
- * comfortable size — you can see where everyone is without zooming.
+ * 59 x 31 tiles ≈ the shape of a typical desktop browser window (~1.9:1),
+ * so the office fills the screen edge to edge without zooming.
  *
- *   ┌──────────────┬────────────┬─────────────────────┐
- *   │ Presentation │   Lounge   │       Pantry        │
- *   ├─────┬────────┴────────────┴───────┬─────────────┤
- *   │ Off1│                             │   Meeting   │
- *   ├─────┤                             ├─────────────┤
- *   │ Off2│   Open-plan hall: 12 desks  │             │
- *   ├─────┤   in pairs, pods and solo   │     Gym     │
- *   │ Off3│                             │             │
- *   ├─────┤                             │             │
- *   │ Off4│                             │             │
- *   └─────┴─────────[ entrance ]────────┴─────────────┘
+ *   ┌──────────────┬────────────┬──────────────────────────┐
+ *   │  Flex room   │   Lounge   │          Pantry          │
+ *   ├─────┬────────┴────────────┴────────────┬─────────────┤
+ *   │ Off1│                                  │  Meeting +  │
+ *   ├─────┤                                  │    stage    │
+ *   │ Off2│   Open-plan hall: 12 desks       ├─────────────┤
+ *   ├─────┤   in pairs, pods and solo         │             │
+ *   │ Off3│                         ┌───┬───┐│     Gym     │
+ *   ├─────┤                         │ W │ M ││             │
+ *   │ Off4│                         │   │   ││             │
+ *   └─────┴─────────[ entrance ]────┴───┴───┴┴─────────────┘
  */
-export type TileKind = '#' | 'c' | 'w' | 'k' | 'g';
+export type TileKind = '#' | 'c' | 'w' | 'k' | 'g' | 'b';
 
-export const MAP_W = 54;
+export const MAP_W = 59;
 export const MAP_H = 31;
 
 // ---------------------------------------------------------------------------
@@ -46,22 +46,29 @@ function buildTiles(): TileKind[][] {
   };
 
   // Top row of rooms (rows 0-2 are the tall back wall), divider wall at row 10
-  rect(1, 3, 16, 9, 'w'); // presentation room
+  rect(1, 3, 16, 9, 'w'); // flex room
   rect(18, 3, 30, 9, 'w'); // lounge
-  rect(32, 3, 52, 9, 'k'); // pantry
+  rect(32, 3, 57, 9, 'k'); // pantry
 
-  rect(8, 11, 41, 29, 'c'); // open-plan hall
+  rect(8, 11, 46, 29, 'c'); // open-plan hall
   for (const r of OFFICE_ROOMS) rect(1, r.y0, 6, r.y1, 'w'); // private offices
-  rect(43, 11, 52, 18, 'w'); // meeting room
-  rect(43, 20, 52, 29, 'g'); // gym
+  rect(48, 11, 57, 18, 'w'); // meeting room
+  rect(48, 20, 57, 29, 'g'); // gym
+
+  // Washrooms carved out of the hall's bottom-right corner
+  rect(39, 23, 46, 29, '#');
+  rect(40, 24, 42, 29, 'b'); // women
+  rect(44, 24, 46, 29, 'b'); // men
 
   // Doorways
-  rect(13, 10, 15, 10, 'c'); // presentation room
+  rect(13, 10, 15, 10, 'c'); // flex room
   rect(21, 10, 27, 10, 'c'); // lounge (wide opening)
   rect(34, 10, 37, 10, 'c'); // pantry
   for (const r of OFFICE_ROOMS) rect(7, r.y0 + 1, 7, r.y0 + 2, 'w'); // office doors
-  rect(42, 14, 42, 15, 'w'); // meeting room
-  rect(42, 23, 42, 25, 'g'); // gym
+  rect(47, 14, 47, 15, 'w'); // meeting room
+  rect(47, 21, 47, 22, 'g'); // gym
+  rect(41, 23, 41, 23, 'b'); // women's washroom
+  rect(45, 23, 45, 23, 'b'); // men's washroom
   return g;
 }
 
@@ -108,7 +115,7 @@ export const DESKS: DeskDef[] = [
   desk(10, 'Trio · middle', 'open', 'down', 29, 14),
   desk(11, 'Trio · right', 'open', 'down', 32, 14),
   // Quiet solo spot by the meeting room wall
-  desk(12, 'Quiet corner', 'open', 'down', 37, 20),
+  desk(12, 'Quiet corner', 'open', 'down', 42, 17),
   // Pod of four (two facing two)
   desk(13, 'Pod of four · NW', 'open', 'down', 22, 21),
   desk(14, 'Pod of four · NE', 'open', 'down', 25, 21),
@@ -142,18 +149,17 @@ const officeDecor: Placement[] = OFFICE_ROOMS.flatMap((r, i) => [
   P('plantSmall', 1, r.y1),
 ]);
 
-/** Two rows of audience chairs with a centre aisle, all facing the stage. */
-const audience: Placement[] = [6, 8].flatMap((y) => [3, 4, 5, 10, 11, 12].map((x) => P('chair', x, y, { dir: 'up' })));
-
 export const PLACEMENTS: Placement[] = [
-  // ---- Presentation room ----
+  // ---- Flex room (kept open for a future use) ----
   P('whiteboard', 1, 1),
-  P('screen', 6, 1, { w: 4 }),
-  P('window', 11, 1),
+  P('window', 6, 1),
+  P('window', 10, 1),
   P('clock', 14, 1),
-  P('stage', 3, 3, { w: 10, h: 2 }),
-  P('podium', 11, 3),
-  ...audience,
+  P('rug', 4, 4, { w: 9, h: 4, variant: 2 }),
+  P('beanBag', 5, 5, { variant: 0 }),
+  P('beanBag', 8, 6, { variant: 1 }),
+  P('beanBag', 11, 5, { variant: 2 }),
+  P('plant', 1, 3, { variant: 0 }),
   P('plant', 16, 3, { variant: 1 }),
   P('plant', 1, 9, { variant: 2 }),
   P('plantSmall', 16, 9),
@@ -184,6 +190,7 @@ export const PLACEMENTS: Placement[] = [
   P('window', 38, 1),
   P('window', 48, 1),
   P('painting', 51, 1, { variant: 2 }),
+  P('window', 54, 1),
   P('counter', 33, 3, { w: 9 }),
   P('microwave', 33, 3),
   P('coffeeMachine', 35, 3, { id: 'coffee-machine' }),
@@ -192,7 +199,7 @@ export const PLACEMENTS: Placement[] = [
   P('bin', 42, 3),
   P('fridge', 43, 3),
   P('waterCooler', 45, 3),
-  P('plant', 52, 3, { variant: 2 }),
+  P('plant', 57, 3, { variant: 2 }),
   // the big communal table
   P('diningTable', 36, 6, { w: 6, h: 2 }),
   ...[37, 38, 39, 40].map((x) => P('chair', x, 5, { dir: 'down', variant: 1 })),
@@ -200,20 +207,26 @@ export const PLACEMENTS: Placement[] = [
   P('chair', 35, 6, { dir: 'right', variant: 1 }),
   P('chair', 42, 6, { dir: 'left', variant: 1 }),
   // little café tables
+  P('roundTable', 32, 6),
+  P('chair', 32, 5, { dir: 'down', variant: 1 }),
+  P('chair', 34, 7, { dir: 'left', variant: 1 }),
   P('roundTable', 45, 5),
   P('chair', 44, 5, { dir: 'right', variant: 1 }),
   P('chair', 47, 5, { dir: 'left', variant: 1 }),
   P('roundTable', 50, 5),
   P('chair', 49, 5, { dir: 'right', variant: 1 }),
   P('chair', 52, 5, { dir: 'left', variant: 1 }),
+  P('roundTable', 55, 5),
+  P('chair', 54, 5, { dir: 'right', variant: 1 }),
+  P('chair', 57, 5, { dir: 'left', variant: 1 }),
   P('roundTable', 47, 8),
   P('chair', 46, 8, { dir: 'right', variant: 1 }),
   P('chair', 49, 8, { dir: 'left', variant: 1 }),
-  P('roundTable', 32, 6),
-  P('chair', 32, 5, { dir: 'down', variant: 1 }),
-  P('chair', 34, 7, { dir: 'left', variant: 1 }),
-  P('plantSmall', 52, 9),
+  P('roundTable', 53, 8),
+  P('chair', 52, 8, { dir: 'right', variant: 1 }),
+  P('chair', 55, 8, { dir: 'left', variant: 1 }),
   P('plant', 32, 9, { variant: 0 }),
+  P('plantSmall', 57, 9),
 
   // ---- Private offices ----
   ...officeDecor,
@@ -223,13 +236,14 @@ export const PLACEMENTS: Placement[] = [
   P('noticeBoard', 9, 10),
   P('waterCooler', 8, 11),
   P('printer', 39, 11),
-  P('plant', 41, 11, { variant: 0 }),
+  P('plant', 46, 11, { variant: 0 }),
   P('bin', 16, 15),
   P('plantSmall', 18, 14),
   P('bin', 35, 15),
   P('plant', 8, 29, { variant: 0 }),
-  P('plant', 41, 29, { variant: 2 }),
+  P('plant', 38, 29, { variant: 2 }),
   P('plantSmall', 30, 20),
+  P('plant', 46, 19, { variant: 1 }),
   // chill corner
   P('rug', 9, 20, { w: 6, h: 4, variant: 1 }),
   P('sofa', 10, 20, { dir: 'down' }),
@@ -244,35 +258,51 @@ export const PLACEMENTS: Placement[] = [
   P('entrance', 24, 30),
   P('doormat', 24, 28),
 
-  // ---- Meeting room ----
-  P('noticeBoard', 44, 10),
-  P('painting', 51, 10, { variant: 1 }),
-  P('meetingTable', 45, 13),
-  ...[46, 48, 50].map((x) => P('chair', x, 12, { dir: 'down' })),
-  ...[46, 48, 50].map((x) => P('chair', x, 16, { dir: 'up' })),
-  P('chair', 44, 14, { dir: 'right' }),
-  P('chair', 52, 14, { dir: 'left' }),
-  P('plant', 43, 11, { variant: 0 }),
-  P('plant', 52, 11, { variant: 1 }),
-  P('plantSmall', 52, 18),
+  // ---- Washrooms ----
+  P('washBasin', 40, 24, { variant: 0 }),
+  P('washBasin', 42, 24, { variant: 0 }),
+  P('toilet', 40, 29),
+  P('toilet', 42, 29),
+  P('plantSmall', 40, 27),
+  P('washBasin', 44, 24, { variant: 1 }),
+  P('washBasin', 46, 24, { variant: 1 }),
+  P('toilet', 44, 29),
+  P('toilet', 46, 29),
+  P('plantSmall', 46, 27),
+
+  // ---- Meeting room (with a small stage for presentations) ----
+  P('noticeBoard', 48, 10),
+  P('painting', 57, 10, { variant: 1 }),
+  P('stage', 49, 11, { w: 8, h: 2 }),
+  P('projectorScreen', 51, 11, { w: 4 }),
+  P('podium', 55, 12),
+  P('meetingTable', 50, 14, { w: 6 }),
+  ...[51, 52, 53, 54].map((x) => P('chair', x, 13, { dir: 'down' })),
+  ...[51, 52, 53, 54].map((x) => P('chair', x, 17, { dir: 'up' })),
+  P('chair', 49, 15, { dir: 'right' }),
+  P('chair', 56, 15, { dir: 'left' }),
+  P('plant', 48, 11, { variant: 0 }),
+  P('plant', 57, 11, { variant: 1 }),
+  P('plantSmall', 48, 18),
+  P('plantSmall', 57, 18),
 
   // ---- Gym ----
-  P('mirror', 44, 19),
-  P('mirror', 47, 19),
-  P('treadmill', 44, 20, { id: 'treadmill-1' }),
-  P('treadmill', 46, 20, { id: 'treadmill-2' }),
-  P('exerciseBike', 48, 20, { id: 'bike-1' }),
-  P('exerciseBike', 49, 20, { id: 'bike-2' }),
-  P('weightRack', 50, 20, { id: 'weight-rack' }),
-  P('yogaMat', 44, 24, { id: 'yoga-1', variant: 0 }),
-  P('yogaMat', 45, 24, { id: 'yoga-2', variant: 1 }),
-  P('yogaMat', 46, 24, { id: 'yoga-3', variant: 2 }),
-  P('weightBench', 49, 24, { id: 'bench' }),
-  P('waterCooler', 52, 24),
-  P('pingPong', 45, 27, { id: 'ping-pong' }),
-  P('punchingBag', 52, 27, { id: 'punching-bag' }),
-  P('plant', 43, 29, { variant: 1 }),
-  P('plant', 52, 29, { variant: 2 }),
+  P('mirror', 49, 19),
+  P('mirror', 52, 19),
+  P('treadmill', 49, 20, { id: 'treadmill-1' }),
+  P('treadmill', 51, 20, { id: 'treadmill-2' }),
+  P('exerciseBike', 53, 20, { id: 'bike-1' }),
+  P('exerciseBike', 54, 20, { id: 'bike-2' }),
+  P('weightRack', 55, 20, { id: 'weight-rack' }),
+  P('yogaMat', 49, 24, { id: 'yoga-1', variant: 0 }),
+  P('yogaMat', 50, 24, { id: 'yoga-2', variant: 1 }),
+  P('yogaMat', 51, 24, { id: 'yoga-3', variant: 2 }),
+  P('weightBench', 54, 24, { id: 'bench' }),
+  P('waterCooler', 57, 24),
+  P('pingPong', 50, 27, { id: 'ping-pong' }),
+  P('punchingBag', 57, 27, { id: 'punching-bag' }),
+  P('plant', 48, 29, { variant: 1 }),
+  P('plant', 57, 29, { variant: 2 }),
 ];
 
 // ---------------------------------------------------------------------------
@@ -287,11 +317,13 @@ export interface AreaLabel {
 }
 
 export const AREA_LABELS: AreaLabel[] = [
-  { text: 'Presentation', tx: 18.5, ty: 10.5 },
+  { text: 'Flex Room', tx: 18.5, ty: 10.5 },
   { text: 'Lounge', tx: 29.5, ty: 10.5 },
   { text: 'Pantry', tx: 32.5, ty: 10.5 },
-  { text: 'Meeting Room', tx: 48, ty: 10.5 },
-  { text: 'Gym', tx: 51, ty: 19.5 },
+  { text: 'Meeting Room', tx: 53, ty: 10.5 },
+  { text: 'Gym', tx: 56, ty: 19.5 },
+  { text: 'Women', tx: 41.5, ty: 23.5 },
+  { text: 'Men', tx: 45.5, ty: 23.5 },
 ];
 
 /** Everyone arrives just inside the main entrance (bottom of the open-plan hall). */
