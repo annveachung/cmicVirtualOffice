@@ -1,7 +1,7 @@
 import { FEET_HITBOX, TILE } from '../config.js';
 import type { TilePos, Vec2 } from '../types.js';
 import { FURNITURE, footprint, type Placement } from './furniture.js';
-import { MAP_H, MAP_W, PLACEMENTS, TILES, isSolidTile } from './office.js';
+import { MAP_H, MAP_W, PLACEMENTS, TILES } from './office.js';
 
 /**
  * A grid of booleans (1 = blocked) the size of the map.
@@ -33,7 +33,7 @@ export class CollisionGrid {
 
 export function buildCollisionGrid(placements: Placement[] = PLACEMENTS): CollisionGrid {
   const grid = new CollisionGrid(MAP_W, MAP_H);
-  for (let y = 0; y < MAP_H; y++) for (let x = 0; x < MAP_W; x++) if (isSolidTile(TILES[y][x])) grid.setBlocked(x, y);
+  for (let y = 0; y < MAP_H; y++) for (let x = 0; x < MAP_W; x++) if (TILES[y][x] === '#') grid.setBlocked(x, y);
   for (const p of placements) {
     if (!FURNITURE[p.type].blocks) continue;
     const { w, h } = footprint(p);

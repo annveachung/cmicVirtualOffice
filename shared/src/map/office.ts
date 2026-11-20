@@ -9,8 +9,7 @@ import type { Placement } from './furniture.js';
  * where walls and furniture are.
  *
  * Tile kinds:
- *   '#' wall      'G' glass wall (blocks like a wall, drawn see-through)
- *   'c' polished concrete (open-plan hall)      'w' wooden floor
+ *   '#' wall      'c' carpet (open-plan hall)   'w' wooden floor
  *   'k' pantry tiles   'g' gym rubber floor     'b' washroom tiles
  *
  * 59 x 31 tiles ≈ the shape of a typical desktop browser window (~1.9:1),
@@ -28,10 +27,7 @@ import type { Placement } from './furniture.js';
  *   │ Off4│                     │ ▢▢▢ │ ▢▢⊓⊓││             │
  *   └─────┴─────────[ entrance ]────┴───┴───┴┴─────────────┘
  */
-export type TileKind = '#' | 'G' | 'c' | 'w' | 'k' | 'g' | 'b';
-
-/** Walls and glass walls both block movement. */
-export const isSolidTile = (k: TileKind) => k === '#' || k === 'G';
+export type TileKind = '#' | 'c' | 'w' | 'k' | 'g' | 'b';
 
 export const MAP_W = 59;
 export const MAP_H = 31;
@@ -76,15 +72,6 @@ function buildTiles(): TileKind[][] {
   rect(37, 24, 37, 25, 'b'); // washroom lobby (from the hall)
   rect(40, 26, 40, 26, 'b'); // women's room
   rect(44, 26, 44, 26, 'b'); // men's room
-
-  // Modern glass partitions (only where there's already a wall; doors stay open)
-  const glass = (x0: number, y0: number, x1: number, y1: number) => {
-    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (g[y][x] === '#') g[y][x] = 'G';
-  };
-  glass(7, 11, 7, 29); // private office fronts — "fishbowl" offices
-  for (const y of [15, 20, 25]) glass(1, y, 6, y); // between offices
-  glass(18, 10, 30, 10); // meeting room front
-  glass(47, 11, 47, 22); // flex room + upper gym wall (washroom side stays solid)
   return g;
 }
 
@@ -158,8 +145,7 @@ const deskPlacements: Placement[] = DESKS.flatMap((d) => [
 ]);
 
 const officeDecor: Placement[] = OFFICE_ROOMS.flatMap((r, i) => [
-  // only the top office has a solid back wall to hang art on; the rest are glass
-  ...(i === 0 ? [P('painting', 3, r.y0 - 1, { variant: i })] : []),
+  P('painting', 3, r.y0 - 1, { variant: i }),
   P('plant', 1, r.y0, { variant: i % 3 }),
   P('bookshelf', 5, r.y0, { variant: i }),
   P('armchair', 6, r.y1, { dir: 'left' }),
@@ -169,7 +155,8 @@ const officeDecor: Placement[] = OFFICE_ROOMS.flatMap((r, i) => [
 export const PLACEMENTS: Placement[] = [
   // ---- Lounge (top-left, sunny) ----
   P('window', 3, 1),
-  P('neonSign', 6, 1), // glowing </> sign
+  P('painting', 6, 1, { variant: 0 }),
+  P('painting', 7, 1, { variant: 1 }),
   P('window', 8, 1),
   P('clock', 11, 1),
   P('plant', 1, 3, { variant: 2 }),
@@ -209,7 +196,7 @@ export const PLACEMENTS: Placement[] = [
   P('upperCabinet', 33, 1),
   P('window', 38, 1),
   P('window', 48, 1),
-  P('snackWall', 51, 1), // micro-kitchen snack shelves
+  P('painting', 51, 1, { variant: 2 }),
   P('window', 54, 1),
   P('counter', 33, 3, { w: 9 }),
   P('microwave', 33, 3),
@@ -253,7 +240,6 @@ export const PLACEMENTS: Placement[] = [
 
   // ---- Open-plan hall ----
   ...deskPlacements,
-  P('dashboard', 8, 10, { w: 3 }), // live stats TV over the hall
   P('waterCooler', 8, 11),
   P('printer', 39, 11),
   P('plant', 46, 11, { variant: 0 }),
@@ -337,7 +323,7 @@ export interface AreaLabel {
 }
 
 export const AREA_LABELS: AreaLabel[] = [
-  { text: 'Lounge', tx: 11.9, ty: 10.5 },
+  { text: 'Lounge', tx: 11, ty: 10.5 },
   { text: 'Meeting Room', tx: 20.5, ty: 10.5 },
   { text: 'Pantry', tx: 32.5, ty: 10.5 },
   { text: 'Flex Room', tx: 53, ty: 10.5 },

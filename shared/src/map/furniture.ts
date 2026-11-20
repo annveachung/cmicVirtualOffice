@@ -75,10 +75,6 @@ export const FURNITURE = {
   mirrorLong: { w: 7, h: 1, blocks: false, layer: 'wall' },
   toilet: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 14 },
   urinal: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 10 },
-  // modern tech touches
-  neonSign: { w: 2, h: 1, blocks: false, layer: 'wall' },
-  dashboard: { w: 3, h: 1, blocks: false, layer: 'wall' },
-  snackWall: { w: 2, h: 2, blocks: false, layer: 'wall' },
   // entrance
   entrance: { w: 3, h: 1, blocks: false, layer: 'wall' },
   doormat: { w: 3, h: 2, blocks: false, layer: 'floor' },
