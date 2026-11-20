@@ -350,6 +350,7 @@ export const FRAMES = {
   benchDown: { arms: 'side', legs: 'sit', sitDy: 2, headDy: 1, dumbbells: true },
   armsUp: { arms: 'up', legs: 'stand' },
   punch: { arms: 'punch', legs: 'stand' },
+  hop: { arms: 'up', legs: 'stand', sitDy: -2 }, // airborne, arms up — for the hop dance
 } satisfies Record<string, FrameSpec>;
 
 export type Pose = keyof typeof FRAMES;
@@ -433,3 +434,29 @@ export const frameName = (dir: Direction, pose: Pose) => `${dir}-${pose}`;
 
 /** Exposed for tests / sanity checks. */
 export const TEMPLATES_FOR_VALIDATION = { HEAD, HAIR, BODY_FRONT_TOP, BODY_SIDE_TOP, LEGS_FRONT, LEGS_SIDE };
+
+/**
+ * The potato costume, drawn over the character's body (the head stays visible
+ * above it, like wearing a mascot suit). Same 16x24 frame as the character.
+ */
+export function drawPotatoSuit(ctx: Ctx, ox: number, oy: number, palette: { potato: string; potatoDark: string; potatoLight: string; outline: string }) {
+  const { potato, potatoDark, potatoLight, outline } = palette;
+  const cx = ox + 8;
+  const cy = oy + 17;
+  // outline + body
+  for (let dy = -7; dy <= 6; dy++) {
+    const half = Math.round(7 * Math.sqrt(Math.max(0, 1 - (dy * dy) / 49)));
+    ctx.fillStyle = outline;
+    ctx.fillRect(cx - half - 1, cy + dy, half * 2 + 2, 1);
+    ctx.fillStyle = potato;
+    ctx.fillRect(cx - half, cy + dy, half * 2, 1);
+  }
+  ctx.fillStyle = potatoLight;
+  ctx.fillRect(cx - 4, cy - 4, 3, 3);
+  ctx.fillStyle = potatoDark;
+  [[-3, 3], [3, -2], [4, 3], [-1, 0]].forEach(([dx, dy]) => ctx.fillRect(cx + dx, cy + dy, 1, 1));
+  // stubby feet
+  ctx.fillStyle = outline;
+  ctx.fillRect(cx - 4, cy + 6, 3, 1);
+  ctx.fillRect(cx + 1, cy + 6, 3, 1);
+}
