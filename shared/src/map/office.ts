@@ -304,24 +304,24 @@ export const PLACEMENTS: Placement[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Labels painted on the walls (like door plaques)
+// Area tags — small labels pinned in the top-left corner inside each room
 // ---------------------------------------------------------------------------
 
 export interface AreaLabel {
   text: string;
-  /** Tile-space centre of the plaque (fractional allowed). */
+  /** Top-left floor tile of the room; the tag is pinned just inside that corner. */
   tx: number;
   ty: number;
 }
 
 export const AREA_LABELS: AreaLabel[] = [
-  { text: 'Lounge', tx: 11, ty: 10.5 },
-  { text: 'Meeting Room', tx: 20.5, ty: 10.5 },
-  { text: 'Pantry', tx: 32.5, ty: 10.5 },
-  { text: 'Flex Room', tx: 53, ty: 10.5 },
-  { text: 'Gym', tx: 56, ty: 19.5 },
-  { text: 'Women', tx: 40.5, ty: 26.5 },
-  { text: 'Men', tx: 44.5, ty: 26.5 },
+  { text: 'Lounge', tx: 1, ty: 3 },
+  { text: 'Meeting Room', tx: 18, ty: 3 },
+  { text: 'Pantry', tx: 32, ty: 3 },
+  { text: 'Flex Room', tx: 48, ty: 11 },
+  { text: 'Gym', tx: 48, ty: 20 },
+  { text: 'Women', tx: 38, ty: 27 },
+  { text: 'Men', tx: 43, ty: 27 },
 ];
 
 /** Everyone arrives just inside the main entrance (bottom of the open-plan hall). */
