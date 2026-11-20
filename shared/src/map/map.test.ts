@@ -27,6 +27,15 @@ describe('office map data', () => {
     for (const row of TILES) expect(row).toHaveLength(MAP_W);
   });
 
+  it('keeps plants tidy: few of them, and always against a wall', () => {
+    const plants = PLACEMENTS.filter((p) => p.type === 'plant' || p.type === 'plantSmall');
+    expect(plants.length).toBeLessThanOrEqual(16);
+    for (const p of plants) {
+      const touchesWall = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => TILES[p.ty + dy]?.[p.tx + dx] === '#');
+      expect(touchesWall, `${p.id} at ${p.tx},${p.ty} is floating in the open`).toBe(true);
+    }
+  });
+
   it('is enclosed by walls', () => {
     for (let x = 0; x < MAP_W; x++) { expect(TILES[0][x]).toBe('#'); expect(TILES[MAP_H - 1][x]).toBe('#'); }
     for (let y = 0; y < MAP_H; y++) { expect(TILES[y][0]).toBe('#'); expect(TILES[y][MAP_W - 1]).toBe('#'); }

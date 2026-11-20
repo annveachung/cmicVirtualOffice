@@ -150,15 +150,13 @@ const deskPlacements: Placement[] = DESKS.flatMap((d) => [
 
 const officeDecor: Placement[] = OFFICE_ROOMS.flatMap((r, i) => [
   P('painting', 3, r.y0 - 1, { variant: i }),
-  P('plant', 1, r.y0, { variant: i % 3 }),
+  P('floorLamp', 1, r.y0), // fills the corner the chair would otherwise box in
   P('bookshelf', 5, r.y0, { variant: i }),
   P('armchair', 6, r.y1, { dir: 'left' }),
-  P('plantSmall', 1, r.y1),
 ]);
 
 export const PLACEMENTS: Placement[] = [
   // ---- Lounge (top-left, sunny) ----
-  P('plant', 1, 3, { variant: 2 }),
   P('bookshelf', 2, 3, { variant: 1 }),
   P('rug', 4, 4, { w: 6, h: 5, variant: 0 }),
   P('sofa', 5, 4, { dir: 'down' }),
@@ -171,9 +169,6 @@ export const PLACEMENTS: Placement[] = [
   P('arcade', 15, 3, { id: 'arcade-3', variant: 2 }),
   P('beanBag', 13, 6, { variant: 0 }),
   P('beanBag', 15, 6, { variant: 2 }),
-  P('plant', 16, 3, { variant: 1 }),
-  P('plant', 1, 9, { variant: 1 }),
-  P('plantSmall', 16, 9),
 
   // ---- Meeting room with a small stage (top-middle, sunny) ----
   P('stage', 19, 3, { w: 11, h: 2 }),
@@ -184,10 +179,6 @@ export const PLACEMENTS: Placement[] = [
   ...[22, 23, 24, 25, 26].map((x) => P('deskChair', x, 8, { dir: 'up', variant: 3 })),
   P('deskChair', 20, 6, { dir: 'right', variant: 3 }),
   P('deskChair', 28, 6, { dir: 'left', variant: 3 }),
-  P('plant', 18, 3, { variant: 0 }),
-  P('plant', 30, 3, { variant: 2 }),
-  P('plantSmall', 18, 9),
-  P('plantSmall', 30, 9),
 
   // ---- Pantry ----
   P('upperCabinet', 33, 1),
@@ -199,7 +190,6 @@ export const PLACEMENTS: Placement[] = [
   P('bin', 42, 3),
   P('fridge', 43, 3),
   P('waterCooler', 45, 3),
-  P('plant', 57, 3, { variant: 2 }),
   // the big communal table
   P('diningTable', 36, 6, { w: 6, h: 2 }),
   ...[37, 38, 39, 40].map((x) => P('chair', x, 5, { dir: 'down', variant: 1 })),
@@ -225,8 +215,6 @@ export const PLACEMENTS: Placement[] = [
   P('roundTable', 53, 8),
   P('chair', 52, 8, { dir: 'right', variant: 1 }),
   P('chair', 55, 8, { dir: 'left', variant: 1 }),
-  P('plant', 32, 9, { variant: 0 }),
-  P('plantSmall', 57, 9),
 
   // ---- Private offices ----
   ...officeDecor,
@@ -235,19 +223,12 @@ export const PLACEMENTS: Placement[] = [
   ...deskPlacements,
   P('waterCooler', 8, 11),
   P('printer', 39, 11),
-  P('plant', 46, 11, { variant: 0 }),
   P('bin', 19, 15),
-  P('plantSmall', 20, 13),
   P('bin', 35, 15),
-  P('plant', 8, 29, { variant: 0 }),
-  P('plant', 36, 29, { variant: 2 }),
-  P('plantSmall', 33, 21),
-  P('plant', 46, 19, { variant: 1 }),
   // chill corner
   P('rug', 9, 20, { w: 6, h: 4, variant: 1 }),
   P('sofa', 10, 20, { dir: 'down' }),
   P('coffeeTable', 11, 22),
-  P('plant', 15, 20, { variant: 2 }),
   // reading nook
   P('rug', 28, 24, { w: 5, h: 3, variant: 2 }),
   P('beanBag', 29, 25, { variant: 0 }),
@@ -261,12 +242,10 @@ export const PLACEMENTS: Placement[] = [
   // shared lobby: one long vanity under a wide mirror
   P('mirrorLong', 39, 23, { w: 7 }),
   P('vanity', 39, 24, { w: 7 }),
-  P('plantSmall', 46, 24),
   // women: a row of cubicles
   P('toilet', 39, 29, { variant: 0 }),
   P('toilet', 40, 29, { variant: 0 }),
   P('toilet', 41, 29, { variant: 0 }),
-  P('plantSmall', 38, 29),
   // men: cubicles + urinals
   P('toilet', 43, 29, { variant: 1 }),
   P('toilet', 44, 29, { variant: 1 }),
@@ -310,29 +289,30 @@ export const PLACEMENTS: Placement[] = [
   P('waterCooler', 57, 24),
   P('pingPong', 50, 27, { id: 'ping-pong' }),
   P('punchingBag', 57, 27, { id: 'punching-bag' }),
-  P('plant', 48, 29, { variant: 1 }),
-  P('plant', 57, 29, { variant: 2 }),
 ];
 
 // ---------------------------------------------------------------------------
-// Area tags — small labels pinned in the top-left corner inside each room
+// Area tags — the designated place for each room's name tag is ON A WALL
+// (the window wall for the top rooms, the wall above the door otherwise).
+// Nobody can stand on a wall, and tags are drawn like a painted sign, so
+// characters always walk in front of them instead of being covered.
 // ---------------------------------------------------------------------------
 
 export interface AreaLabel {
   text: string;
-  /** Top-left floor tile of the room; the tag is pinned just inside that corner. */
+  /** Wall tile where the tag's top-left corner sits. */
   tx: number;
   ty: number;
 }
 
 export const AREA_LABELS: AreaLabel[] = [
-  { text: 'Lounge', tx: 1, ty: 3 },
-  { text: 'Meeting Room', tx: 18, ty: 3 },
-  { text: 'Pantry', tx: 32, ty: 3 },
-  { text: 'The Potato Club', tx: 49, ty: 13 },
-  { text: 'Gym', tx: 48, ty: 20 },
-  { text: 'Women', tx: 38, ty: 27 },
-  { text: 'Men', tx: 43, ty: 27 },
+  { text: 'Lounge', tx: 5, ty: 2 },
+  { text: 'Meeting Room', tx: 26, ty: 2 },
+  { text: 'Pantry', tx: 38, ty: 2 },
+  // The Potato Club already has its neon "POTATO CLUB" sign on the wall.
+  { text: 'Gym', tx: 55, ty: 19 },
+  { text: 'Women', tx: 38, ty: 26 },
+  { text: 'Men', tx: 45, ty: 26 },
 ];
 
 /** The Potato Club's floor area (inclusive tile bounds) — the client shows the club controls inside it. */
