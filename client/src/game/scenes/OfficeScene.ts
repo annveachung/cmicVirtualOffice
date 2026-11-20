@@ -52,6 +52,8 @@ export class OfficeScene extends Phaser.Scene {
   /** Multiplier on top of the "cover" zoom. 1 = office fills the window. */
   private zoomFactor: number = DEFAULT_ZOOM_BOOST;
   private unsubscribers: (() => void)[] = [];
+  /** False during the arrival camera move (skyline → you); the camera follows you afterwards. */
+  private introDone = false;
 
   constructor() {
     super('office');
@@ -114,6 +116,7 @@ export class OfficeScene extends Phaser.Scene {
     cam.setRoundPixels(true);
     this.applyZoom();
     this.scale.on(Phaser.Scale.Events.RESIZE, this.applyZoom, this);
+    this.playArrivalIntro();
     this.input.on('wheel', (_p: unknown, _o: unknown, _dx: number, dy: number) => {
       this.zoomFactor = dy > 0 ? this.zoomFactor / 1.15 : this.zoomFactor * 1.15;
       this.applyZoom();
@@ -148,13 +151,40 @@ export class OfficeScene extends Phaser.Scene {
     cam.setZoom(zoom);
     // Bounds include a strip above the map for the top bar, so the bar never covers the office.
     cam.setBounds(0, -TOP_BAR_PX / zoom, WORLD_W, WORLD_H + TOP_BAR_PX / zoom);
-    cam.startFollow(this.player.sprite, true, 0.12, 0.12);
+    if (this.introDone) cam.startFollow(this.player.sprite, true, 0.12, 0.12);
 
     // Labels stay the same size on screen at every zoom level.
     const s = 1 / zoom;
     this.player.setLabelScale(s);
     this.office.setLabelScale(s);
     this.spotHint.setScale(s);
+  }
+
+  /**
+   * Arrival shot: start on the skyline at the top of the office, hold a beat,
+   * then glide down to the player at the entrance and start following.
+   * Any key or click skips straight to following.
+   */
+  private playArrivalIntro() {
+    const cam = this.cameras.main;
+    cam.centerOn(WORLD_W / 2, 0); // bounds clamp this to the very top: skyline in view
+    const finish = () => {
+      if (this.introDone) return;
+      this.introDone = true;
+      cam.panEffect.reset();
+      cam.startFollow(this.player.sprite, true, 0.12, 0.12);
+    };
+    const pan = this.time.delayedCall(1100, () => {
+      cam.pan(this.player.x, this.player.y, 1700, 'Sine.easeInOut', false, (_c: unknown, progress: number) => {
+        if (progress >= 1) finish();
+      });
+    });
+    const skip = () => {
+      pan.remove();
+      finish();
+    };
+    this.input.keyboard!.once('keydown', skip);
+    this.input.once('pointerdown', skip);
   }
 
   update(_time: number, delta: number) {

@@ -159,3 +159,22 @@ number and you always get the same answer, so the skyline is random-looking but 
 time and for every player**, which matters once everyone shares one office. Two layers of buildings
 (far and near), stepped sky gradient bands, a grid of windows where ~40% are lit, and a few stars. At
 night the same code runs with the dark palette: navy sky, warm lit windows.
+
+## 26. Sound with zero audio files (Web Audio API)
+Both the click blip and the background music are **synthesised** in `audio/sound.ts`:
+an `OscillatorNode` makes a raw wave (square = classic 8-bit lead, triangle = soft bass), a
+`GainNode` shapes its volume (quick attack, soft release), and a low-pass `BiquadFilterNode`
+rounds off the harsh edges so it sounds "comfy". The tune itself is just data (`song.ts`): MIDI
+note numbers per eighth-note, converted with `hz = 440 · 2^((note − 69)/12)`.
+Two browser rules shaped the design:
+- **Autoplay policy:** audio can only start after a user gesture, so the `AudioContext` is created
+  lazily on the first click ("Enter the office" counts).
+- **Timing:** JavaScript timers are jittery, so a *look-ahead scheduler* wakes every 25ms and books
+  notes ~120ms ahead on the audio clock, which is sample-accurate. That's the standard Web Audio
+  pattern for steady rhythm.
+The music is an original composition: real game music (e.g. Nintendo's) is copyrighted.
+
+## 27. Custom cursors from code
+The pixel cursors are ASCII templates drawn onto a `<canvas>`, turned into a PNG with
+`canvas.toDataURL()`, and handed to CSS (`cursor: url(data:...) x y, auto`). The `x y` numbers are
+the **hotspot**, the exact pixel that "clicks" (the arrow's tip, the hand's fingertip).

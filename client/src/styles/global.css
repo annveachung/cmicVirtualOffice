@@ -437,3 +437,28 @@ kbd {
     transform: translateY(-4px);
   }
 }
+
+/* ------------------------------------------------------------ pixel cursors */
+html,
+body,
+.game-host canvas {
+  cursor: var(--cursor, auto) !important;
+}
+
+button,
+a,
+select,
+label,
+.swatch {
+  cursor: var(--cursor-hand, pointer) !important;
+}
+
+input[type='text'],
+input:not([type]) {
+  cursor: text !important;
+}
+
+.pixel-btn.is-off {
+  color: var(--ink-soft);
+  background: var(--panel-lo);
+}
