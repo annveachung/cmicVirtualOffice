@@ -24,8 +24,8 @@ import type { Placement } from './furniture.js';
  *   ├─────┬────────┴────────────┴────────────┬─────────────┤
  *   │ Off1│                                  │ The Potato  │
  *   ├─────┤                                  │    Club     │
- *   │ Off2│   Open-plan hall: 12 desks       ├─────────────┤
- *   ├─────┤   in pairs, pods and solo         │             │
+ *   │ Off2│   Open-plan hall: 12 desks in a  ├─────────────┤
+ *   ├─────┤   trio, cluster, 2 pairs, 2 solos │             │
  *   │ Off3│                     ┌─[vanity]──┐│     Gym     │
  *   ├─────┤                     │ W   │  M  ││             │
  *   │ Off4│                     │ ▢▢▢ │ ▢▢⊓⊓││             │
@@ -111,23 +111,23 @@ const desk = (id: number, label: string, zone: DeskDef['zone'], facing: DeskFaci
 
 export const DESKS: DeskDef[] = [
   ...OFFICE_ROOMS.map((r, i) => desk(i + 1, `Private office ${i + 1}`, 'office', 'down', 1, r.y0 + 1)),
-  // Buddy pair, side by side
-  desk(5, 'Buddy pair · left', 'open', 'down', 10, 14),
-  desk(6, 'Buddy pair · right', 'open', 'down', 13, 14),
+  // Trio row: three desks side by side, facing the room
+  desk(5, 'Trio row · left', 'open', 'down', 10, 14),
+  desk(6, 'Trio row · middle', 'open', 'down', 13, 14),
+  desk(7, 'Trio row · right', 'open', 'down', 16, 14),
   // Face-to-face pair (monitors back to back)
-  desk(7, 'Face-to-face · north', 'open', 'down', 19, 13),
-  desk(8, 'Face-to-face · south', 'open', 'up', 19, 15),
-  // Trio row near the pantry
-  desk(9, 'Trio · left', 'open', 'down', 26, 14),
-  desk(10, 'Trio · middle', 'open', 'down', 29, 14),
-  desk(11, 'Trio · right', 'open', 'down', 32, 14),
-  // Quiet solo spot by the meeting room wall
-  desk(12, 'Quiet corner', 'open', 'down', 42, 17),
-  // Pod of four (two facing two)
-  desk(13, 'Pod of four · NW', 'open', 'down', 22, 21),
-  desk(14, 'Pod of four · NE', 'open', 'down', 25, 21),
-  desk(15, 'Pod of four · SW', 'open', 'up', 22, 23),
-  desk(16, 'Pod of four · SE', 'open', 'up', 25, 23),
+  desk(8, 'Face-to-face · north', 'open', 'down', 22, 13),
+  desk(9, 'Face-to-face · south', 'open', 'up', 22, 15),
+  // Cluster of three: two side by side, a third facing them
+  desk(10, 'Cluster · left', 'open', 'down', 28, 13),
+  desk(11, 'Cluster · right', 'open', 'down', 31, 13),
+  desk(12, 'Cluster · front', 'open', 'up', 29, 15),
+  // Side-by-side pair near the sofa corner
+  desk(13, 'Sofa-side pair · left', 'open', 'up', 11, 24),
+  desk(14, 'Sofa-side pair · right', 'open', 'up', 14, 24),
+  // Two single desks
+  desk(15, 'Quiet corner', 'open', 'down', 42, 17),
+  desk(16, 'Solo spot', 'open', 'down', 28, 21),
 ];
 
 // ---------------------------------------------------------------------------
@@ -236,12 +236,12 @@ export const PLACEMENTS: Placement[] = [
   P('waterCooler', 8, 11),
   P('printer', 39, 11),
   P('plant', 46, 11, { variant: 0 }),
-  P('bin', 16, 15),
-  P('plantSmall', 18, 14),
+  P('bin', 19, 15),
+  P('plantSmall', 20, 13),
   P('bin', 35, 15),
   P('plant', 8, 29, { variant: 0 }),
   P('plant', 36, 29, { variant: 2 }),
-  P('plantSmall', 30, 20),
+  P('plantSmall', 33, 21),
   P('plant', 46, 19, { variant: 1 }),
   // chill corner
   P('rug', 9, 20, { w: 6, h: 4, variant: 1 }),
