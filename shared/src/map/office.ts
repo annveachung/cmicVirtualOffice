@@ -16,10 +16,10 @@ import type { Placement } from './furniture.js';
  * so the office fills the screen edge to edge without zooming.
  *
  *   ┌──────────────┬────────────┬──────────────────────────┐
- *   │  Flex room   │   Lounge   │          Pantry          │
+ *   │    Lounge    │  Meeting   │          Pantry          │
  *   ├─────┬────────┴────────────┴────────────┬─────────────┤
- *   │ Off1│                                  │  Meeting +  │
- *   ├─────┤                                  │    stage    │
+ *   │ Off1│                                  │    Flex     │
+ *   ├─────┤                                  │    room     │
  *   │ Off2│   Open-plan hall: 12 desks       ├─────────────┤
  *   ├─────┤   in pairs, pods and solo         │             │
  *   │ Off3│                     ┌─[vanity]──┐│     Gym     │
@@ -46,13 +46,13 @@ function buildTiles(): TileKind[][] {
   };
 
   // Top row of rooms (rows 0-2 are the tall back wall), divider wall at row 10
-  rect(1, 3, 16, 9, 'w'); // flex room
-  rect(18, 3, 30, 9, 'w'); // lounge
+  rect(1, 3, 16, 9, 'w'); // lounge (sunny: windows on the back wall)
+  rect(18, 3, 30, 9, 'w'); // meeting room with stage (sunny too)
   rect(32, 3, 57, 9, 'k'); // pantry
 
   rect(8, 11, 46, 29, 'c'); // open-plan hall
   for (const r of OFFICE_ROOMS) rect(1, r.y0, 6, r.y1, 'w'); // private offices
-  rect(48, 11, 57, 18, 'w'); // meeting room
+  rect(48, 11, 57, 18, 'w'); // flex room (kept open for a future use)
   rect(48, 20, 57, 29, 'g'); // gym
 
   // Washrooms (bottom-right of the hall): a shared hand-wash lobby, then
@@ -63,11 +63,11 @@ function buildTiles(): TileKind[][] {
   rect(43, 27, 46, 29, 'b'); // men
 
   // Doorways
-  rect(13, 10, 15, 10, 'c'); // flex room
-  rect(21, 10, 27, 10, 'c'); // lounge (wide opening)
+  rect(13, 10, 15, 10, 'c'); // lounge
+  rect(23, 10, 25, 10, 'c'); // meeting room
   rect(34, 10, 37, 10, 'c'); // pantry
   for (const r of OFFICE_ROOMS) rect(7, r.y0 + 1, 7, r.y0 + 2, 'w'); // office doors
-  rect(47, 14, 47, 15, 'w'); // meeting room
+  rect(47, 14, 47, 15, 'w'); // flex room
   rect(47, 21, 47, 22, 'g'); // gym
   rect(37, 24, 37, 25, 'b'); // washroom lobby (from the hall)
   rect(40, 26, 40, 26, 'b'); // women's room
@@ -153,39 +153,43 @@ const officeDecor: Placement[] = OFFICE_ROOMS.flatMap((r, i) => [
 ]);
 
 export const PLACEMENTS: Placement[] = [
-  // ---- Flex room (kept open for a future use) ----
-  P('whiteboard', 1, 1),
-  P('window', 6, 1),
-  P('window', 10, 1),
-  P('clock', 14, 1),
-  P('rug', 4, 4, { w: 9, h: 4, variant: 2 }),
-  P('beanBag', 5, 5, { variant: 0 }),
-  P('beanBag', 8, 6, { variant: 1 }),
-  P('beanBag', 11, 5, { variant: 2 }),
-  P('plant', 1, 3, { variant: 0 }),
+  // ---- Lounge (top-left, sunny) ----
+  P('window', 3, 1),
+  P('painting', 6, 1, { variant: 0 }),
+  P('painting', 7, 1, { variant: 1 }),
+  P('window', 8, 1),
+  P('clock', 11, 1),
+  P('plant', 1, 3, { variant: 2 }),
+  P('bookshelf', 2, 3, { variant: 1 }),
+  P('rug', 4, 4, { w: 6, h: 5, variant: 0 }),
+  P('sofa', 5, 4, { dir: 'down' }),
+  P('coffeeTable', 6, 6),
+  P('armchair', 3, 6, { dir: 'right' }),
+  P('armchair', 10, 6, { dir: 'left' }),
+  P('floorLamp', 10, 4),
+  P('arcade', 13, 3, { id: 'arcade-1', variant: 0 }),
+  P('arcade', 14, 3, { id: 'arcade-2', variant: 1 }),
+  P('arcade', 15, 3, { id: 'arcade-3', variant: 2 }),
+  P('beanBag', 13, 6, { variant: 0 }),
+  P('beanBag', 15, 6, { variant: 2 }),
   P('plant', 16, 3, { variant: 1 }),
-  P('plant', 1, 9, { variant: 2 }),
+  P('plant', 1, 9, { variant: 1 }),
   P('plantSmall', 16, 9),
 
-  // ---- Lounge (with arcade machines) ----
-  P('window', 21, 1),
-  P('painting', 23, 1, { variant: 0 }),
-  P('painting', 24, 1, { variant: 1 }),
-  P('window', 25, 1),
-  P('plant', 18, 3, { variant: 2 }),
-  P('bookshelf', 19, 3, { variant: 1 }),
-  P('rug', 21, 4, { w: 6, h: 5, variant: 0 }),
-  P('sofa', 22, 4, { dir: 'down' }),
-  P('coffeeTable', 23, 6),
-  P('armchair', 20, 6, { dir: 'right' }),
-  P('armchair', 27, 6, { dir: 'left' }),
-  P('floorLamp', 27, 4),
-  P('arcade', 28, 3, { id: 'arcade-1', variant: 0 }),
-  P('arcade', 29, 3, { id: 'arcade-2', variant: 1 }),
-  P('arcade', 30, 3, { id: 'arcade-3', variant: 2 }),
-  P('beanBag', 28, 6, { variant: 0 }),
-  P('beanBag', 30, 6, { variant: 2 }),
-  P('plant', 18, 9, { variant: 1 }),
+  // ---- Meeting room with a small stage (top-middle, sunny) ----
+  P('window', 19, 1),
+  P('window', 28, 1),
+  P('stage', 19, 3, { w: 11, h: 2 }),
+  P('projectorScreen', 22, 3, { w: 4 }),
+  P('podium', 27, 4),
+  P('meetingTable', 21, 6, { w: 7, h: 2 }),
+  ...[22, 23, 24, 25, 26].map((x) => P('deskChair', x, 5, { dir: 'down', variant: 3 })),
+  ...[22, 23, 24, 25, 26].map((x) => P('deskChair', x, 8, { dir: 'up', variant: 3 })),
+  P('deskChair', 20, 6, { dir: 'right', variant: 3 }),
+  P('deskChair', 28, 6, { dir: 'left', variant: 3 }),
+  P('plant', 18, 3, { variant: 0 }),
+  P('plant', 30, 3, { variant: 2 }),
+  P('plantSmall', 18, 9),
   P('plantSmall', 30, 9),
 
   // ---- Pantry ----
@@ -236,7 +240,6 @@ export const PLACEMENTS: Placement[] = [
 
   // ---- Open-plan hall ----
   ...deskPlacements,
-  P('noticeBoard', 9, 10),
   P('waterCooler', 8, 11),
   P('printer', 39, 11),
   P('plant', 46, 11, { variant: 0 }),
@@ -277,17 +280,13 @@ export const PLACEMENTS: Placement[] = [
   P('urinal', 45, 29),
   P('urinal', 46, 29),
 
-  // ---- Meeting room (with a small stage for presentations) ----
+  // ---- Flex room (kept open for a future use) ----
   P('noticeBoard', 48, 10),
   P('painting', 57, 10, { variant: 1 }),
-  P('stage', 49, 11, { w: 8, h: 2 }),
-  P('projectorScreen', 51, 11, { w: 4 }),
-  P('podium', 55, 12),
-  P('meetingTable', 50, 14, { w: 6 }),
-  ...[51, 52, 53, 54].map((x) => P('deskChair', x, 13, { dir: 'down', variant: 3 })),
-  ...[51, 52, 53, 54].map((x) => P('deskChair', x, 17, { dir: 'up', variant: 3 })),
-  P('deskChair', 49, 15, { dir: 'right', variant: 3 }),
-  P('deskChair', 56, 15, { dir: 'left', variant: 3 }),
+  P('rug', 50, 13, { w: 6, h: 4, variant: 2 }),
+  P('beanBag', 51, 14, { variant: 0 }),
+  P('beanBag', 54, 14, { variant: 1 }),
+  P('beanBag', 52, 16, { variant: 2 }),
   P('plant', 48, 11, { variant: 0 }),
   P('plant', 57, 11, { variant: 1 }),
   P('plantSmall', 48, 18),
@@ -324,10 +323,10 @@ export interface AreaLabel {
 }
 
 export const AREA_LABELS: AreaLabel[] = [
-  { text: 'Flex Room', tx: 18.5, ty: 10.5 },
-  { text: 'Lounge', tx: 29.5, ty: 10.5 },
+  { text: 'Lounge', tx: 11, ty: 10.5 },
+  { text: 'Meeting Room', tx: 20.5, ty: 10.5 },
   { text: 'Pantry', tx: 32.5, ty: 10.5 },
-  { text: 'Meeting Room', tx: 53, ty: 10.5 },
+  { text: 'Flex Room', tx: 53, ty: 10.5 },
   { text: 'Gym', tx: 56, ty: 19.5 },
   { text: 'Women', tx: 40.5, ty: 26.5 },
   { text: 'Men', tx: 44.5, ty: 26.5 },
