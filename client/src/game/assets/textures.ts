@@ -49,6 +49,7 @@ export const ANIMS = {
   punch: { frames: ['idle', 'punch'], fps: 5 },
   play: { frames: ['idle', 'breathe'], fps: 7 },
   wash: { frames: ['idle', 'breathe'], fps: 5 },
+  pee: { frames: ['idle', 'breathe'], fps: 1.2 },
 } satisfies Record<string, { frames: Pose[]; fps: number }>;
 
 export type AnimName = keyof typeof ANIMS;
