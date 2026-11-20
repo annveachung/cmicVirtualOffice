@@ -89,3 +89,27 @@ tile next to it, then "snap" onto the seat and remember where you came from, so 
 back on valid floor. Seats are derived from furniture data (`seats.ts`), so every chair you add is
 sittable automatically. The server will validate "are you next to that seat?" with the same
 `isNextToSeat()` in Milestone 2.
+
+## 15. One abstraction for "things you can use"
+Sitting, running on a treadmill, punching a bag and playing an arcade game all turned out to be
+the same thing: **a position + a facing direction + an animation**, reached by walking next to it.
+So `seats.ts` became `spots.ts`, with an `action` field ('sit', 'run', 'pedal', 'lift'…). The
+controller doesn't know what a treadmill is; it just "uses a spot". Adding a rowing machine later
+= one painter + one `case` in `spotsFor()` + an animation. Spotting when two features are really
+one is one of the most valuable refactoring skills.
+
+## 16. Animations as data
+Character frames are described as data (`FRAMES`: which arms, which legs, head bob, dumbbells?),
+and animations are lists of frame names with a speed (`ANIMS`). Running is literally the walk
+frames at 14 fps instead of 8. New moves come from recombining parts rather than redrawing.
+
+## 17. Tests catch layout bugs humans miss
+Compacting the map, the reachability tests failed three times: a café chair sealing off one tile,
+a corner table cutting off the coffee machine, and two chairs boxed in between a counter and a
+table. All are invisible in a screenshot until someone gets stuck. Cheap automated checks over
+your *data* pay off fast.
+
+## 18. Filling any screen shape
+The office has one aspect ratio and monitors have many. Instead of cropping (hiding colleagues) or
+black bars, the camera fits the building and the leftover space shows a repeating garden texture
+(`TileSprite`) that extends far beyond the map. It's like a letterbox, but it looks like it belongs there.
