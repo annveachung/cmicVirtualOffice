@@ -1,0 +1,91 @@
+# Milestone 1: what's worth learning
+
+## 1. Monorepo with npm workspaces
+`package.json` → `"workspaces": ["shared", "client"]`. npm links `@little-office/shared` into
+`node_modules`, so the client imports it like any package. **Why:** the server (Milestone 2)
+will import the *same* map + collision code to validate movement. One source of truth means the
+client and server can never disagree about where a wall is.
+
+## 2. React for UI, Phaser for the world, an event bus between them
+React is great at forms and menus but re-renders often; a game loop runs 60×/sec and must not be
+interrupted. So:
+- `GameCanvas.tsx` mounts Phaser **once** and never re-creates it.
+- Prop changes (e.g. theme) are sent as events on `bus.ts`, and Phaser emits events back the same way.
+This is the "two systems, one narrow contract" pattern. Neither side imports the other's internals.
+
+## 3. Data vs rendering separation
+`shared/src/map/office.ts` is pure data: tiles + furniture placements. It knows nothing about
+pixels or colours. `OfficeRenderer.ts` turns that data into sprites. To move a sofa you edit one
+line of data; the art, collision and pathfinding all follow automatically.
+
+## 4. Tile-based collision
+The map is a grid of 16×16 tiles; `buildCollisionGrid()` marks walls and furniture as blocked in a
+`Uint8Array`. A character has a small **feet hitbox** (10×6 px). To check a move we test the four
+corners of the hitbox against the grid. Moves are resolved **one axis at a time**, which is why you
+slide along walls instead of sticking to them.
+
+## 5. A* pathfinding (click-to-move)
+A* explores tiles in order of `f = g + h`:
+- `g` = cost so far (1 straight, √2 diagonal)
+- `h` = heuristic estimate to the goal (octile distance, exact on an empty 8-way grid)
+A min-heap picks the lowest `f` quickly. Diagonals are refused when they'd clip a corner. The raw
+path zig-zags tile to tile, so `smoothPath()` does "string pulling": skip every waypoint you
+already have a clear straight line past.
+
+## 6. Y-sorting (depth)
+In top-down 3/4 view, whatever is lower on screen is closer to the camera. Every object's depth
+equals its bottom-edge y, so you walk *behind* a desk from above and *in front* of it from below.
+Chairs facing the camera sort by their top edge so a seated person sits in front of the backrest.
+
+## 7. Procedural pixel art + palette-swap theming
+No PNGs. Characters are ASCII templates (`'O'` = outline, `'H'` = hair…) drawn onto a canvas with a
+colour map. Hair colour and outfits are just different colour maps, and facing right is facing left
+mirrored. Furniture is painted with tiny helpers (`box`, `ellipse`) using **only palette colours**,
+so day/night is the same drawing code run with a second palette. Both versions are generated at
+startup, and switching theme only swaps texture keys, so nobody moves.
+Static things (floors, walls, rugs, wall art) are baked into **one** big image, which is much cheaper
+than thousands of tile sprites.
+
+## 8. Crisp pixels
+`pixelArt: true` makes Phaser use nearest-neighbour scaling. `roundPixels` stops sub-pixel shimmer.
+In CSS, `image-rendering: pixelated` does the same for the character preview `<canvas>`.
+
+## 9. Frame-rate-independent movement
+Speed is in pixels per *second*; each frame moves `speed × dt`. `dt` is clamped to 50 ms so a
+lagging/background tab can't make you jump through a wall.
+
+## 10. Design tokens
+All UI colours are CSS variables under `:root[data-theme=…]`. Components never mention a theme;
+flipping one attribute on `<html>` re-skins everything.
+
+## 11. Tests that protect the map
+`map.test.ts` flood-fills from the spawn point and fails if any floor tile is unreachable, if
+furniture overlaps, or if a desk can't be reached. If you edit the layout, run `npm test`.
+
+## 12. Why the layout change was cheap (data-driven design)
+Redesigning the office (private offices, desk groups, gym, stage) touched only:
+- `office.ts`: new coordinates (data)
+- `furniture.ts`: a registry entry per new object type (size, blocks?, layer)
+- `furnitureArt.ts`: one painter per new type
+Collision, pathfinding, depth sorting, night lighting and theme swapping all picked it up
+automatically, because they read the data rather than hard-coding positions. The map tests
+caught nothing because nothing was wrong, which is the point: if a sofa had blocked an office
+door, `npm test` would have failed with the exact tile.
+
+**Desks are now records** (`DeskDef`: id, label, zone, facing). A stable `id` is what the
+database will store in Milestone 3. The `label` ("Buddy pair · left") is for humans. Keeping the
+two separate means you can rename a desk without breaking anyone's assignment.
+
+## 13. Fit-to-screen camera + screen-sized labels
+`fitZoom = min(screenW / worldW, (screenH − topBar) / worldH)` is the largest zoom at which the
+whole office is visible. The zoom is usually fractional (e.g. 1.27×). The pixel art still scales
+with nearest-neighbour, and name tags are counter-scaled by `1 / zoom`, so they stay 12px on screen
+however far you zoom out. That's a common game trick: **world-space** objects (sprites) vs
+**screen-space** objects (UI text).
+
+## 14. Sitting is a tiny state machine
+`standing → walking → seated → standing`. A seat tile is *blocked* for walking. You walk to a free
+tile next to it, then "snap" onto the seat and remember where you came from, so standing up puts you
+back on valid floor. Seats are derived from furniture data (`seats.ts`), so every chair you add is
+sittable automatically. The server will validate "are you next to that seat?" with the same
+`isNextToSeat()` in Milestone 2.
