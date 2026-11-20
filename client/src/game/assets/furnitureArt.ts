@@ -92,28 +92,68 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     }
   },
 
-  deskChair(ctx, { pal, v, dir }) {
-    const c = accent(pal, v + 5);
-    if (dir === 'up') {
-      // seen from behind: seat first, then the backrest in front of the sitter
-      box(ctx, 2, 4, 12, 6, shade(c, -0.1), pal.outline);
-      rect(ctx, 7, 15, 2, 3, pal.metalDark);
-      box(ctx, 2, 17, 12, 3, pal.metalDark, pal.outline);
-      px(ctx, 2, 20, pal.outline);
-      px(ctx, 13, 20, pal.outline);
-      box(ctx, 3, 7, 10, 10, c, pal.outline);
-      hline(ctx, 4, 8, 8, shade(c, 0.25));
-      vline(ctx, 7, 10, 5, shade(c, -0.15));
+  /**
+   * Racing-style gaming chair: tall padded back with a headrest pillow, side
+   * wings, armrests and an accent stripe (a different colour per desk).
+   */
+  deskChair(ctx, { pal, v, dir, W }) {
+    const body = mix(pal.metalDark, pal.outline, 0.55);
+    const hi = shade(body, 0.22);
+    const acc = accent(pal, v + 5);
+    const pillow = shade(acc, 0.35);
+    const base = () => {
+      rect(ctx, 7, 19, 2, 3, pal.metalDark); // gas lift
+      box(ctx, 2, 21, 12, 3, pal.metalDark, pal.outline); // star base
+      px(ctx, 2, 24, pal.outline);
+      px(ctx, 7, 24, pal.outline);
+      px(ctx, 13, 24, pal.outline);
+    };
+
+    if (dir === 'down') {
+      // facing the camera: backrest behind the sitter
+      base();
+      roundBox(ctx, 3, 0, 10, 16, body, pal.outline);
+      rect(ctx, 4, 2, 1, 12, hi); // side wings
+      rect(ctx, 11, 2, 1, 12, hi);
+      rect(ctx, 7, 1, 2, 13, acc); // racing stripe
+      roundBox(ctx, 5, 2, 6, 3, pillow, pal.outline); // headrest pillow
+      roundBox(ctx, 5, 9, 6, 3, shade(acc, -0.1), pal.outline); // lumbar cushion
+      box(ctx, 0, 10, 3, 6, body, pal.outline); // armrests
+      box(ctx, 13, 10, 3, 6, body, pal.outline);
+      hline(ctx, 1, 11, 1, acc);
+      hline(ctx, 14, 11, 1, acc);
+      roundBox(ctx, 2, 13, 12, 7, body, pal.outline); // seat
+      hline(ctx, 3, 14, 10, hi);
+      rect(ctx, 7, 14, 2, 5, acc);
       return;
     }
-    box(ctx, 3, 0, 10, 11, c, pal.outline);
-    hline(ctx, 4, 1, 8, shade(c, 0.25));
-    box(ctx, 2, 9, 12, 6, shade(c, -0.1), pal.outline);
-    rect(ctx, 7, 15, 2, 3, pal.metalDark);
-    box(ctx, 2, 17, 12, 3, pal.metalDark, pal.outline);
-    px(ctx, 2, 20, pal.outline);
-    px(ctx, 13, 20, pal.outline);
-    px(ctx, 7, 20, pal.outline);
+
+    if (dir === 'up') {
+      // seen from behind: the backrest is in front of the sitter
+      base();
+      roundBox(ctx, 2, 10, 12, 7, body, pal.outline); // seat edges
+      box(ctx, 0, 9, 3, 6, body, pal.outline); // armrests
+      box(ctx, 13, 9, 3, 6, body, pal.outline);
+      roundBox(ctx, 3, 6, 10, 15, body, pal.outline); // back of the backrest
+      rect(ctx, 4, 8, 1, 11, hi);
+      rect(ctx, 11, 8, 1, 11, hi);
+      rect(ctx, 7, 7, 2, 12, acc);
+      hline(ctx, 5, 8, 6, pillow); // headrest strap
+      px(ctx, 7, 16, pal.paper); // little logo
+      px(ctx, 8, 16, pal.paper);
+      return;
+    }
+
+    // side view (drawn facing left; mirrored for right)
+    const f = (x: number, w: number) => (dir === 'right' ? W - x - w : x);
+    base();
+    roundBox(ctx, f(1, 12), 14, 12, 5, body, pal.outline); // seat
+    hline(ctx, f(2, 10), 15, 10, acc);
+    box(ctx, f(2, 8), 11, 8, 2, body, pal.outline); // armrest
+    vline(ctx, f(5, 1), 13, 2, pal.outline);
+    roundBox(ctx, f(10, 5), 0, 5, 18, body, pal.outline); // backrest behind the sitter
+    vline(ctx, f(12, 1), 2, 14, acc);
+    roundBox(ctx, f(9, 3), 2, 3, 4, pillow, pal.outline); // headrest pillow
   },
 
   chair(ctx, { pal, dir, v }) {
@@ -619,6 +659,13 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     hline(ctx, 4, H - 10, 8, pal.outline);
   },
 
+  mirrorLong(ctx, { pal, W }) {
+    box(ctx, 1, 1, W - 2, 14, pal.metalLight, pal.outline);
+    rect(ctx, 3, 3, W - 6, 9, pal.glassLight);
+    for (let x = 10; x < W - 10; x += 28) for (let i = 0; i < 5; i++) px(ctx, x + i, 10 - i, pal.paper);
+    hline(ctx, 3, 12, W - 6, pal.lampLight); // warm LED strip
+  },
+
   mirror(ctx, { pal, W }) {
     box(ctx, 1, 1, W - 2, 14, pal.metalLight, pal.outline);
     rect(ctx, 3, 3, W - 6, 10, pal.glassLight);
@@ -641,30 +688,45 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     box(ctx, 3, 21, W - 6, 3, pal.metal, pal.outline);
   },
 
-  washBasin(ctx, { pal, H, v }) {
-    const cab = v === 0 ? pal.accents[0] : pal.accents[1]; // dusty rose / sky per room
-    box(ctx, 2, 0, 12, 11, pal.metalLight, pal.outline); // mirror
-    rect(ctx, 3, 1, 10, 9, pal.glassLight);
-    px(ctx, 5, 7, pal.paper);
-    px(ctx, 6, 6, pal.paper);
-    px(ctx, 7, 5, pal.paper);
-    box(ctx, 1, H - 16, 14, 16, cab, pal.outline); // vanity
-    vline(ctx, 8, H - 9, 7, pal.outline);
-    box(ctx, 1, H - 17, 14, 5, pal.metalLight, pal.outline); // counter top
-    ellipse(ctx, 8, H - 15, 4, 1, pal.paper); // basin
-    rect(ctx, 7, H - 19, 2, 3, pal.metalDark); // tap
+  /** Long shared counter with integrated basins, wooden cabinet front. */
+  vanity(ctx, { pal, W, H }) {
+    box(ctx, 0, 8, W, H - 8, pal.furnLight, pal.outline);
+    for (let x = 4; x < W - 2; x += 4) vline(ctx, x, 10, H - 12, shade(pal.furnLight, -0.08));
+    box(ctx, 0, 0, W, 10, pal.metalLight, pal.outline); // stone top
+    hline(ctx, 1, 1, W - 2, shade(pal.metalLight, 0.45));
+    for (let cx = 8; cx < W; cx += 32) {
+      ellipse(ctx, cx, 5, 5, 2, pal.outline);
+      ellipse(ctx, cx, 5, 4, 1, pal.paper);
+      rect(ctx, cx - 1, 0, 2, 3, pal.metalDark); // tap
+      if (cx + 16 < W) {
+        rect(ctx, cx + 15, 2, 2, 4, pal.accents[(cx / 32) % 6]); // soap bottle
+        px(ctx, cx + 15, 1, pal.metalDark);
+      }
+    }
   },
 
-  toilet(ctx, { pal, H }) {
-    // stall partitions either side, toilet against the back (bottom) wall
-    const part = pal.metalLight;
-    box(ctx, 0, 0, 2, H - 4, part, pal.outline);
-    box(ctx, 14, 0, 2, H - 4, part, pal.outline);
-    ellipse(ctx, 8, H - 13, 4, 4, pal.outline);
-    ellipse(ctx, 8, H - 13, 3, 3, pal.paper);
-    ellipse(ctx, 8, H - 13, 1, 1, pal.glass);
-    box(ctx, 4, H - 9, 8, 7, pal.paper, pal.outline); // tank
-    hline(ctx, 5, H - 8, 6, pal.plastic);
+  /** Cubicle: laminate partitions, door left ajar, wall-hung toilet against the back wall. */
+  toilet(ctx, { pal, H, v }) {
+    const lam = v === 0 ? pal.accents[0] : pal.accents[1];
+    const lamD = shade(lam, -0.2);
+    rect(ctx, 2, 3, 12, H - 5, shade(pal.bath, -0.06)); // cubicle floor shade
+    roundBox(ctx, 4, H - 15, 8, 10, pal.paper, pal.outline); // bowl
+    ellipse(ctx, 8, H - 10, 2, 3, pal.glassLight);
+    rect(ctx, 6, H - 4, 4, 2, pal.metalLight); // flush plate
+    box(ctx, 0, 2, 2, H - 3, lamD, pal.outline); // partitions
+    box(ctx, 14, 2, 2, H - 3, lamD, pal.outline);
+    box(ctx, 0, 0, 16, 3, pal.metal, pal.outline); // top rail
+    box(ctx, 2, 3, 4, H - 13, lam, pal.outline); // door, swung open
+    px(ctx, 4, 9, pal.metalDark); // handle
+    px(ctx, 3, 5, '#7fae6e'); // "vacant" indicator
+  },
+
+  urinal(ctx, { pal, H }) {
+    box(ctx, 13, 2, 3, H - 4, shade(pal.accents[1], -0.2), pal.outline); // privacy divider
+    box(ctx, 6, H - 22, 4, 3, pal.metalLight, pal.outline); // sensor
+    vline(ctx, 8, H - 19, 4, pal.metal);
+    roundBox(ctx, 3, H - 15, 9, 12, pal.paper, pal.outline);
+    rect(ctx, 5, H - 12, 5, 7, pal.glassLight);
   },
 
   entrance(ctx, { pal, W }) {
