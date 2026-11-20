@@ -5,8 +5,9 @@ import type { Direction } from '../types.js';
  *  - floor:  painted into the static background (rugs)
  *  - wall:   painted onto wall faces in the static background (windows, whiteboards)
  *  - object: a separate sprite, depth-sorted against characters by its bottom edge
+ *  - ceiling: hangs above everyone (disco ball), drawn over characters
  */
-export type FurnitureLayer = 'floor' | 'wall' | 'object';
+export type FurnitureLayer = 'floor' | 'wall' | 'object' | 'ceiling';
 
 export interface FurnitureDef {
   /** Footprint in tiles (can be overridden per placement for resizable things like rugs). */
@@ -75,6 +76,17 @@ export const FURNITURE = {
   mirrorLong: { w: 7, h: 1, blocks: false, layer: 'wall' },
   toilet: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 14 },
   urinal: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 10 },
+  // The Potato Club
+  speaker: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 12 },
+  micStand: { w: 1, h: 1, blocks: false, layer: 'object', overhang: 8 },
+  potatoMascot: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 22 },
+  potatoPlush: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 2 },
+  potatoVending: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 18 },
+  costumeRack: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 14 },
+  danceFloor: { w: 4, h: 3, blocks: false, layer: 'floor' },
+  discoBall: { w: 2, h: 2, blocks: false, layer: 'ceiling' },
+  clubSign: { w: 4, h: 1, blocks: false, layer: 'wall' },
+  potatoPoster: { w: 1, h: 1, blocks: false, layer: 'wall' },
   // entrance
   entrance: { w: 3, h: 1, blocks: false, layer: 'wall' },
   doormat: { w: 3, h: 2, blocks: false, layer: 'floor' },
