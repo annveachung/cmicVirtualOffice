@@ -2,17 +2,17 @@ import Phaser from 'phaser';
 import {
   MAP_H,
   MAP_W,
-  SEATS,
+  SPOTS,
   SPAWN,
   TILE,
   buildCollisionGrid,
-  isNextToSeat,
-  seatForTile,
+  canReachSpot,
+  spotForTile,
   tileCenter,
   toTile,
   type Appearance,
   type CollisionGrid,
-  type Seat,
+  type Spot,
   type Theme,
 } from '@little-office/shared';
 import { registerEnvironmentTextures } from '../assets/textures';
@@ -48,8 +48,8 @@ export class OfficeScene extends Phaser.Scene {
   private player!: Character;
   private controller!: PlayerController;
   private marker!: Phaser.GameObjects.Rectangle;
-  private seatHint!: Phaser.GameObjects.Text;
-  private nearbySeat: Seat | null = null;
+  private spotHint!: Phaser.GameObjects.Text;
+  private nearbySpot: Spot | null = null;
   private data0!: OfficeSceneData;
   /** Multiplier on top of the "fit" zoom. 1 = whole office visible. */
   private zoomFactor = 1;
@@ -83,8 +83,8 @@ export class OfficeScene extends Phaser.Scene {
     this.tweens.add({ targets: this.marker, scale: { from: 1, to: 0.6 }, yoyo: true, repeat: -1, duration: 420 });
     this.controller.onPathEnd = () => this.marker.setVisible(false);
 
-    // "E · sit" hint shown above a seat you're standing next to
-    this.seatHint = this.add
+    // "E · sit" / "E · run" hint shown above a spot you're standing next to
+    this.spotHint = this.add
       .text(0, 0, 'E · sit', {
         fontFamily: '"Pixelify Sans", monospace',
         fontSize: `${LABEL_PX.hint}px`,
@@ -95,20 +95,20 @@ export class OfficeScene extends Phaser.Scene {
       .setOrigin(0.5, 1)
       .setDepth(DEPTH.nameplates)
       .setVisible(false);
-    this.seatHint.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    this.spotHint.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (!pointer.leftButtonDown()) return;
       const here = { x: this.player.x, y: this.player.y };
-      const seat = seatForTile(toTile({ x: pointer.worldX, y: pointer.worldY }));
-      const dest = seat ? this.controller.goSit(here, seat) : this.controller.goTo(here, { x: pointer.worldX, y: pointer.worldY });
+      const spot = spotForTile(toTile({ x: pointer.worldX, y: pointer.worldY }));
+      const dest = spot ? this.controller.goUse(here, spot) : this.controller.goTo(here, { x: pointer.worldX, y: pointer.worldY });
       this.marker.setVisible(!!dest);
       if (dest) this.marker.setPosition(dest.x, dest.y);
     });
 
     this.input.keyboard!.on('keydown-E', () => {
       if (isTyping()) return;
-      this.controller.interact({ x: this.player.x, y: this.player.y }, this.nearbySeat);
+      this.controller.interact({ x: this.player.x, y: this.player.y }, this.nearbySpot);
     });
 
     // Camera
@@ -162,34 +162,40 @@ export class OfficeScene extends Phaser.Scene {
     const s = 1 / zoom;
     this.player.setLabelScale(s);
     this.office.setLabelScale(s);
-    this.seatHint.setScale(s);
+    this.spotHint.setScale(s);
   }
 
   update(_time: number, delta: number) {
     const m = this.controller.update({ x: this.player.x, y: this.player.y }, delta);
     this.player.setPosition(m.x, m.y);
     this.player.setMotion(m.dir, m.pose);
-    this.updateSeatHint(m.pose === 'sit');
+    this.updateSpotHint(this.controller.activeSpot !== null);
   }
 
-  /** Find a free seat right next to the player and show the "E · sit" hint above it. */
-  private updateSeatHint(seated: boolean) {
-    this.nearbySeat = null;
-    if (!seated) {
+  /** Find a usable spot next to (or under) the player and show the "E · verb" hint above it. */
+  private updateSpotHint(busy: boolean) {
+    this.nearbySpot = null;
+    if (!busy) {
       const here = toTile({ x: this.player.x, y: this.player.y });
       let bestD = Infinity;
-      for (const s of SEATS) {
-        if (!isNextToSeat(here, s)) continue;
+      for (const s of SPOTS) {
+        if (!canReachSpot(here, s)) continue;
         const d = Math.hypot(s.pos.x - this.player.x, s.pos.y - this.player.y);
         if (d < bestD) {
           bestD = d;
-          this.nearbySeat = s;
+          this.nearbySpot = s;
         }
       }
     }
-    const s = this.nearbySeat;
-    this.seatHint.setVisible(!!s);
-    if (s) this.seatHint.setPosition(s.pos.x, s.tile.ty * TILE - 4);
+    const s = this.nearbySpot;
+    this.spotHint.setVisible(!!s);
+    if (!s) return;
+    const label = `E · ${s.verb}`;
+    if (this.spotHint.text !== label) {
+      this.spotHint.setText(label); // only re-render the text texture when it changes
+      this.spotHint.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    }
+    this.spotHint.setPosition(s.pos.x, s.tile.ty * TILE - 6);
   }
 }
 

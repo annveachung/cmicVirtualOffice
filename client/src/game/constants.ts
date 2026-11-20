@@ -13,7 +13,7 @@ export const DEPTH = {
 export const MAX_ZOOM = 4;
 
 /** Space reserved for the React top bar, so the fitted office isn't hidden under it. */
-export const TOP_BAR_PX = 64;
+export const TOP_BAR_PX = 56;
 
 /** Label font sizes in SCREEN pixels (labels are counter-scaled by 1/zoom). */
 export const LABEL_PX = { name: 12, plaque: 11, desk: 10, hint: 11 } as const;

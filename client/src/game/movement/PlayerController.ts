@@ -3,7 +3,7 @@ import {
   WALK_SPEED,
   approachTiles,
   findPath,
-  isNextToSeat,
+  canReachSpot,
   moveWithCollision,
   nearestWalkable,
   smoothPath,
@@ -11,7 +11,7 @@ import {
   toTile,
   type CollisionGrid,
   type Direction,
-  type Seat,
+  type Spot,
   type TilePos,
   type Vec2,
 } from '@little-office/shared';
@@ -28,9 +28,9 @@ export interface MotionResult {
  * Turns input into movement for the local player — a tiny state machine:
  *
  *   standing ──click floor──▶ walking ──arrive──▶ standing
- *   standing ──click seat───▶ walking ──arrive──▶ SEATED
- *   standing ──E next to a seat───────────────▶ SEATED
- *   SEATED   ──any move key / click / E───────▶ standing (back where you came from)
+ *   standing ──click spot───▶ walking ──arrive──▶ USING (sit, run, lift, punch…)
+ *   standing ──E next to a spot───────────────▶ USING
+ *   USING    ──any move key / click / E───────▶ standing (back where you came from)
  *
  * Keyboard always wins over a click path. All collision rules come from
  * @little-office/shared so the server can re-run the same checks later.
@@ -40,10 +40,10 @@ export class PlayerController {
   private waypoints: Vec2[] = [];
   private dir: Direction = 'up';
   private stuckTime = 0;
-  /** Where we're heading to sit, once the path is walked. */
-  private pendingSeat: { seat: Seat; standTile: TilePos } | null = null;
-  /** Currently seated (and where to stand up to). */
-  private seated: { seat: Seat; standTile: TilePos } | null = null;
+  /** The spot we're walking to, to use once the path is walked. */
+  private pending: { spot: Spot; standTile: TilePos } | null = null;
+  /** The spot currently in use (and where to step back to afterwards). */
+  private using: { spot: Spot; standTile: TilePos } | null = null;
   /** After standing up, the next frame snaps the character back onto the floor here. */
   private teleport: Vec2 | null = null;
   /** Called when a click-path finishes or is cancelled (to hide the target marker). */
@@ -57,45 +57,45 @@ export class PlayerController {
     this.keys = scene.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT', false) as PlayerController['keys'];
   }
 
-  get seat(): Seat | null {
-    return this.seated?.seat ?? null;
+  get activeSpot(): Spot | null {
+    return this.using?.spot ?? null;
   }
 
   /** Plan a route to a clicked floor position. Returns the destination, or null if unreachable. */
   goTo(pos: Vec2, target: Vec2): Vec2 | null {
     const from = this.standUp(pos);
-    this.pendingSeat = null;
+    this.pending = null;
     const goal = nearestWalkable(this.grid, toTile(target));
     if (!goal) return null;
     return this.planPath(from, goal);
   }
 
-  /** Walk to the best free spot next to a seat, then sit. Returns the walk destination. */
-  goSit(pos: Vec2, seat: Seat): Vec2 | null {
-    if (this.seated?.seat.id === seat.id) return null;
+  /** Walk to the best tile next to (or on) a spot, then use it. Returns the walk destination. */
+  goUse(pos: Vec2, spot: Spot): Vec2 | null {
+    if (this.using?.spot.id === spot.id) return null;
     const from = this.standUp(pos);
     const here = toTile(from);
-    if (isNextToSeat(here, seat)) {
-      this.sit(seat, here);
+    if (canReachSpot(here, spot)) {
+      this.use(spot, here);
       return null;
     }
-    // try each tile next to the seat; take the one with the shortest walk
+    // try each tile next to the spot; take the one with the shortest walk
     let best: { tile: TilePos; len: number } | null = null;
-    for (const t of approachTiles(this.grid, seat)) {
+    for (const t of approachTiles(this.grid, spot)) {
       const path = findPath(this.grid, here, t);
       if (path && (!best || path.length < best.len)) best = { tile: t, len: path.length };
     }
     if (!best) return null;
     const dest = this.planPath(from, best.tile);
-    this.pendingSeat = { seat, standTile: best.tile };
-    if (!dest) this.sit(seat, best.tile); // already standing on the approach tile
+    this.pending = { spot, standTile: best.tile };
+    if (!dest) this.use(spot, best.tile); // already standing on the approach tile
     return dest;
   }
 
-  /** "E": sit on an adjacent seat, or stand up if seated. */
-  interact(pos: Vec2, nearby: Seat | null): void {
-    if (this.seated) this.standUp(pos);
-    else if (nearby) this.goSit(pos, nearby);
+  /** "E": use a nearby spot, or stop if already using one. */
+  interact(pos: Vec2, nearby: Spot | null): void {
+    if (this.using) this.standUp(pos);
+    else if (nearby) this.goUse(pos, nearby);
   }
 
   update(pos: Vec2, dtMs: number): MotionResult {
@@ -116,9 +116,10 @@ export class PlayerController {
       if (this.keys.S.isDown || this.keys.DOWN.isDown) iy += 1;
     }
 
-    if (this.seated) {
-      if (ix === 0 && iy === 0) return { ...this.seated.seat.pos, dir: this.seated.seat.facing, pose: 'sit' };
-      pos = this.standUp(pos); // any movement key stands you up
+    if (this.using) {
+      const { spot } = this.using;
+      if (ix === 0 && iy === 0) return { ...spot.pos, dir: spot.facing, pose: spot.action };
+      pos = this.standUp(pos); // any movement key stops the activity
       this.teleport = null;
     }
 
@@ -151,10 +152,10 @@ export class PlayerController {
     // Arrived at the end of a click path?
     if (this.waypoints.length === 0 && (dx !== 0 || dy !== 0) && ix === 0 && iy === 0) {
       this.onPathEnd();
-      if (this.pendingSeat) {
-        const { seat, standTile } = this.pendingSeat;
-        this.sit(seat, standTile);
-        return { ...seat.pos, dir: seat.facing, pose: 'sit' };
+      if (this.pending) {
+        const { spot, standTile } = this.pending;
+        this.use(spot, standTile);
+        return { ...spot.pos, dir: spot.facing, pose: spot.action };
       }
     }
 
@@ -169,19 +170,19 @@ export class PlayerController {
 
   // ---------------------------------------------------------------- helpers --
 
-  private sit(seat: Seat, standTile: TilePos) {
+  private use(spot: Spot, standTile: TilePos) {
     this.waypoints = [];
-    this.pendingSeat = null;
-    this.seated = { seat, standTile };
+    this.pending = null;
+    this.using = { spot, standTile };
     this.teleport = null;
-    this.dir = seat.facing;
+    this.dir = spot.facing;
   }
 
-  /** Leave the seat (if seated) and return the standing position. */
+  /** Stop using a spot (if any) and return the standing position. */
   private standUp(pos: Vec2): Vec2 {
-    if (!this.seated) return pos;
-    const stand = tileCenter(this.seated.standTile);
-    this.seated = null;
+    if (!this.using) return pos;
+    const stand = tileCenter(this.using.standTile);
+    this.using = null;
     this.teleport = stand;
     return stand;
   }
@@ -194,7 +195,7 @@ export class PlayerController {
   }
 
   private cancelPath(): void {
-    this.pendingSeat = null;
+    this.pending = null;
     if (this.waypoints.length) {
       this.waypoints = [];
       this.onPathEnd();
