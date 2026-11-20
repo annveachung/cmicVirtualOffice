@@ -157,9 +157,21 @@ export class CameraRig {
     this.update();
   }
 
-  /** One-off: move the view to the player (only matters when zoomed in). Never follows. */
+  /**
+   * One-off: move the view to the player (only matters when zoomed in). Never follows.
+   * The centre is clamped so the view stays inside the office — it never shows empty
+   * space beyond the walls (e.g. below the entrance on arrival).
+   */
   private lookAtPlayer() {
-    this.cam.centerOn(this.target.x, this.target.y);
+    const { width, height } = this.scene.scale;
+    const z = this.cam.zoom;
+    const viewW = width / z;
+    const viewH = height / z;
+    const top = -TOP_BAR_PX / z; // the strip under the top bar counts as "inside"
+    const cx = viewW >= WORLD_W ? WORLD_W / 2 : Phaser.Math.Clamp(this.target.x, viewW / 2, WORLD_W - viewW / 2);
+    const cy =
+      viewH >= WORLD_H - top ? this.fitCentre(z).y : Phaser.Math.Clamp(this.target.y, top + viewH / 2, WORLD_H - viewH / 2);
+    this.cam.centerOn(cx, cy);
   }
 
   private skipIntro() {
