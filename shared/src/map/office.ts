@@ -167,10 +167,6 @@ export const PLACEMENTS: Placement[] = [
   P('armchair', 3, 6, { dir: 'right' }),
   P('armchair', 10, 6, { dir: 'left' }),
   P('floorLamp', 10, 4),
-  // second group: a lavender sofa with its own little table
-  P('rug', 11, 5, { w: 5, h: 3, variant: 1 }),
-  P('sofa', 11, 5, { dir: 'down', variant: 1 }),
-  P('coffeeTable', 12, 7),
   P('arcade', 15, 3, { id: 'arcade', variant: 1 }), // one cabinet in the corner, screen facing you
 
   // ---- Meeting room with a small stage (top-middle, sunny) ----
