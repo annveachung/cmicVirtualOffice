@@ -130,20 +130,32 @@ describe('pathfinding', () => {
   });
 });
 
-describe('seats', () => {
-  it('every seat can be reached from the entrance', async () => {
-    const { SEATS, approachTiles } = await import('./seats.js');
-    expect(SEATS.length).toBeGreaterThan(50);
-    for (const s of SEATS) {
+describe('activity spots', () => {
+  it('every spot (seats + gym + arcade) can be reached from the entrance', async () => {
+    const { SPOTS, approachTiles } = await import('./spots.js');
+    expect(SPOTS.length).toBeGreaterThan(60);
+    for (const s of SPOTS) {
       const ok = approachTiles(grid, s).some((t) => findPath(grid, SPAWN, t));
-      expect(ok, `seat ${s.id}`).toBe(true);
+      expect(ok, `spot ${s.id}`).toBe(true);
     }
   });
 
-  it('clicking a desk resolves to its chair', async () => {
-    const { seatForTile } = await import('./seats.js');
+  it('has every gym activity', async () => {
+    const { SPOTS } = await import('./spots.js');
+    const actions = new Set(SPOTS.map((s) => s.action));
+    for (const a of ['run', 'pedal', 'lift', 'benchPress', 'stretch', 'punch', 'play']) expect(actions.has(a as never), a).toBe(true);
+  });
+
+  it('floor spots are on walkable tiles, furniture spots are not', async () => {
+    const { SPOTS } = await import('./spots.js');
+    for (const s of SPOTS) expect(grid.isBlocked(s.tile.tx, s.tile.ty), s.id).toBe(!s.onFloor);
+  });
+
+  it('clicking a desk or a treadmill resolves to the right spot', async () => {
+    const { spotForTile } = await import('./spots.js');
     const d = DESKS[4];
-    expect(seatForTile({ tx: d.desk.tx + 2, ty: d.desk.ty + 1 })?.tile).toEqual(d.chair);
+    expect(spotForTile({ tx: d.desk.tx + 2, ty: d.desk.ty + 1 })?.tile).toEqual(d.chair);
+    expect(spotForTile({ tx: 44, ty: 20 })?.action).toBe('run');
   });
 
   it('spawns on a walkable tile', () => {

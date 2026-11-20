@@ -48,7 +48,13 @@ export interface EnvPalette {
   lampLight: string;
   shadow: string; // rgba for soft shadows
   sky: string;
-  bg: string; // page/canvas background outside the map
+  bg: string;
+  // outdoors around the building
+  grass: string;
+  grassDark: string;
+  grassLight: string;
+  paving: string;
+  pavingAlt: string; // page/canvas background outside the map
 }
 
 export const PALETTES: Record<Theme, EnvPalette> = {
@@ -93,6 +99,11 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(74, 54, 45, 0.16)',
     sky: '#cfe6ef',
     bg: '#e8dcc4',
+    grass: '#a3bb8b',
+    grassDark: '#8fa878',
+    grassLight: '#b9cf9f',
+    paving: '#dccfb5',
+    pavingAlt: '#cdbfa3',
   },
   dark: {
     outline: '#16141c',
@@ -135,5 +146,10 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(5, 5, 12, 0.32)',
     sky: '#1b2440',
     bg: '#14151d',
+    grass: '#2a3a32',
+    grassDark: '#23312a',
+    grassLight: '#33463a',
+    paving: '#3e3c45',
+    pavingAlt: '#36343d',
   },
 };

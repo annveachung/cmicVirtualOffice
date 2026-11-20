@@ -1,10 +1,13 @@
 import Phaser from 'phaser';
 import type { Appearance, Direction, Theme } from '@little-office/shared';
 import { FEET_ROW, FRAME_H } from '../assets/characterArt';
-import { animKey, ensureCharacter } from '../assets/textures';
+import { animKey, ensureCharacter, type AnimName } from '../assets/textures';
 import { DEPTH, LABEL_PX, NIGHT_TINT } from '../constants';
 
-export type CharacterPose = 'idle' | 'walk' | 'sit';
+/** Which animation is playing: idle, walk, sit, run, pedal, lift... (see ANIMS). */
+export type CharacterPose = AnimName;
+
+const SEATED: ReadonlySet<CharacterPose> = new Set(['sit', 'pedal', 'benchPress']);
 
 /**
  * A character in the world: sprite + floor shadow + floating name tag.
@@ -55,7 +58,7 @@ export class Character {
     const ry = Math.round(y);
     this.sprite.setPosition(rx, ry).setDepth(DEPTH.world + y);
     this.shadow.setPosition(rx, ry).setDepth(DEPTH.world + y - 0.5);
-    this.nameTag.setPosition(rx, ry - (this.pose === 'sit' ? 19 : 21));
+    this.nameTag.setPosition(rx, ry - (SEATED.has(this.pose) ? 19 : 21));
   }
 
   /** Update facing + pose; only restarts the animation when something changed. */
@@ -64,7 +67,7 @@ export class Character {
     this.dir = dir;
     this.pose = pose;
     this.playAnim();
-    this.shadow.setVisible(pose !== 'sit'); // the seat already grounds a seated character
+    this.shadow.setVisible(!SEATED.has(pose)); // the seat already grounds a seated character
   }
 
   /** Keep the name tag a constant on-screen size regardless of camera zoom. */

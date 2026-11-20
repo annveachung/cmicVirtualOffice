@@ -260,7 +260,7 @@ const HAIR: Record<HairStyle, Record<Facing, string[]>> = {
 };
 
 // ---------------------------------------------------------------- bodies ----
-// Body rows 12..21 (10 rows).
+// Upper body rows 12..17, legs rows 18..21.
 const BODY_FRONT_TOP = [
   '....OTTTTTTO....',
   '...OTTTTTTTTO...',
@@ -269,11 +269,27 @@ const BODY_FRONT_TOP = [
   '...OStTTTTtSO...',
   '...OOPPPPPPOO...',
 ];
-const LEGS_FRONT = {
-  stand: ['....OPPPPPPO....', '....OPPOOPPO....', '....OBBOOBBO....', '.....OO..OO.....'],
-  stepA: ['....OPPPPPPO....', '....OPPOOBBO....', '....OBBO.OOO....', '.....OO.........'],
-  sit: ['....OPPPPPPO....', '....OBBOOBBO....', '.....OO..OO.....', '................'],
-};
+/** Arms raised: the torso without hands at the sides... */
+const BODY_FRONT_ARMS_UP = [
+  '...OTTTTTTTTO...',
+  '...OTTTTTTTTO...',
+  '....OTTTTTTO....',
+  '....OTTTTTTO....',
+  '....OTTTTTTO....',
+  '...OOPPPPPPOO...',
+];
+/** ...plus the raised arms, drawn over the head (rows 7..12). */
+const ARMS_UP_OVERLAY = [
+  '..O..........O..',
+  '.OSO........OSO.',
+  '.OTO........OTO.',
+  '.OTO........OTO.',
+  '..OTO......OTO..',
+  '...OTTTTTTTTO...',
+];
+const DUMBBELLS_UP = '.DDD........DDD.'; // row 7, above the raised hands
+const DUMBBELLS_DOWN = '..DDD......DDD..'; // row 17, in the lowered hands
+
 const BODY_SIDE_TOP = [
   '.....OTTTTO.....',
   '....OTTTTTTO....',
@@ -282,27 +298,75 @@ const BODY_SIDE_TOP = [
   '....OTTSTTTO....',
   '....OPPPPPPO....',
 ];
+/** Facing left with the arm thrown forward (punch / ping-pong swing). */
+const BODY_SIDE_PUNCH = [
+  '.....OTTTTO.....',
+  '....OTTTTTTO....',
+  'OOOOOTTTTTTO....',
+  'OSSTTTTTTTTO....',
+  'OOOOOTTTTTTO....',
+  '....OPPPPPPO....',
+];
+
+const LEGS_FRONT = {
+  stand: ['....OPPPPPPO....', '....OPPOOPPO....', '....OBBOOBBO....', '.....OO..OO.....'],
+  stepA: ['....OPPPPPPO....', '....OPPOOBBO....', '....OBBO.OOO....', '.....OO.........'],
+  sit: ['....OPPPPPPO....', '....OBBOOBBO....', '.....OO..OO.....', '................'],
+  pedalA: ['....OPPPPPPO....', '....OBBOOPPO....', '.....OO.OBBO....', '.........OO.....'],
+};
 const LEGS_SIDE = {
   stand: ['.....OPPPPO.....', '.....OPPPPO.....', '.....OBBBBO.....', '......OOOO......'],
   stepA: ['....OPPOOPPO....', '...OPPO..OPPO...', '...OBBO..OBBO...', '....OO....OO....'],
   sit: ['....OPPPPPPO....', '...OBBPPPPPO....', '...OOOOOOOO.....', '................'],
 };
 
-export type Pose = 'idle' | 'breathe' | 'walkA' | 'walkB' | 'sit';
-export const POSES: Pose[] = ['idle', 'breathe', 'walkA', 'walkB', 'sit'];
+type Arms = 'side' | 'up' | 'punch';
+type Legs = 'stand' | 'stepA' | 'stepB' | 'sit' | 'pedalA' | 'pedalB';
+interface FrameSpec {
+  arms: Arms;
+  legs: Legs;
+  /** Head bobs down 1px for bounce/breathing. */
+  headDy?: number;
+  /** Seated characters sink 2px so the desk/sofa covers their legs. */
+  sitDy?: number;
+  dumbbells?: boolean;
+}
+
+/**
+ * Every frame in the sheet, described as data. Animations (textures.ts) are
+ * just sequences of these names.
+ */
+export const FRAMES = {
+  idle: { arms: 'side', legs: 'stand' },
+  breathe: { arms: 'side', legs: 'stand', headDy: 1 },
+  walkA: { arms: 'side', legs: 'stepA', headDy: 1 },
+  walkB: { arms: 'side', legs: 'stepB', headDy: 1 },
+  sit: { arms: 'side', legs: 'sit', sitDy: 2 },
+  pedalA: { arms: 'side', legs: 'pedalA', sitDy: 2 },
+  pedalB: { arms: 'side', legs: 'pedalB', sitDy: 2, headDy: 1 },
+  liftUp: { arms: 'up', legs: 'stand', dumbbells: true },
+  liftDown: { arms: 'side', legs: 'stand', headDy: 1, dumbbells: true },
+  benchUp: { arms: 'up', legs: 'sit', sitDy: 2, dumbbells: true },
+  benchDown: { arms: 'side', legs: 'sit', sitDy: 2, headDy: 1, dumbbells: true },
+  armsUp: { arms: 'up', legs: 'stand' },
+  punch: { arms: 'punch', legs: 'stand' },
+} satisfies Record<string, FrameSpec>;
+
+export type Pose = keyof typeof FRAMES;
+export const POSES = Object.keys(FRAMES) as Pose[];
 export const DIRECTIONS: Direction[] = ['down', 'left', 'right', 'up'];
 
 const reverse = (s: string) => s.split('').reverse().join('');
 
-function bodyRows(facing: Facing, pose: Pose): string[] {
-  const top = facing === 'side' ? BODY_SIDE_TOP : BODY_FRONT_TOP;
-  const legs = facing === 'side' ? LEGS_SIDE : LEGS_FRONT;
-  let l: string[];
-  if (pose === 'sit') l = legs.sit;
-  else if (pose === 'walkA') l = legs.stepA;
-  else if (pose === 'walkB') l = facing === 'side' ? legs.stand : legs.stepA.map(reverse);
-  else l = legs.stand;
-  return [...top, ...l];
+function legRows(facing: Facing, legs: Legs): string[] {
+  if (facing === 'side') {
+    if (legs === 'stepA') return LEGS_SIDE.stepA;
+    if (legs === 'sit' || legs === 'pedalA' || legs === 'pedalB') return LEGS_SIDE.sit;
+    return LEGS_SIDE.stand;
+  }
+  if (legs === 'stepB') return LEGS_FRONT.stepA.map(reverse);
+  if (legs === 'pedalB') return LEGS_FRONT.pedalA.map(reverse);
+  return LEGS_FRONT[legs as keyof typeof LEGS_FRONT];
 }
 
 function colorsFor(a: Appearance): Record<string, string> {
@@ -322,6 +386,7 @@ function colorsFor(a: Appearance): Record<string, string> {
     B: '#3d302c',
     H: hair,
     h: shade(hair, -0.25),
+    D: '#4d4f58',
   };
 }
 
@@ -331,14 +396,25 @@ export function drawCharacterFrame(ctx: Ctx, ox: number, oy: number, a: Appearan
   const mirror = dir === 'right';
   const colors = colorsFor(a);
   const style = HAIR_STYLES[a.hairStyle];
-  // Head bobs down 1px on alternate frames for a bouncy walk / breathing idle.
-  const headDy = pose === 'breathe' || pose === 'walkA' || pose === 'walkB' ? 1 : 0;
-  // Seated characters sink 2px so the desk/sofa covers their legs.
-  const sitDy = pose === 'sit' ? 2 : 0;
+  const spec: FrameSpec = FRAMES[pose];
+  const headDy = spec.headDy ?? 0;
+  const sitDy = spec.sitDy ?? 0;
+  // Raised arms only make sense facing front/back; punching only sideways.
+  const arms: Arms =
+    spec.arms === 'up' && facing === 'side' ? 'side' : spec.arms === 'punch' && facing !== 'side' ? 'side' : spec.arms;
 
-  drawTemplate(ctx, bodyRows(facing, pose), ox, oy + 12 + sitDy, colors, mirror);
-  drawTemplate(ctx, HEAD[facing], ox, oy + headDy + sitDy, colors, mirror);
-  drawTemplate(ctx, HAIR[style][facing], ox, oy + headDy + sitDy, colors, mirror);
+  const top =
+    facing === 'side' ? (arms === 'punch' ? BODY_SIDE_PUNCH : BODY_SIDE_TOP) : arms === 'up' ? BODY_FRONT_ARMS_UP : BODY_FRONT_TOP;
+  const y0 = oy + sitDy;
+  drawTemplate(ctx, [...top, ...legRows(facing, spec.legs)], ox, y0 + 12, colors, mirror);
+  drawTemplate(ctx, HEAD[facing], ox, y0 + headDy, colors, mirror);
+  drawTemplate(ctx, HAIR[style][facing], ox, y0 + headDy, colors, mirror);
+  if (arms === 'up') {
+    drawTemplate(ctx, ARMS_UP_OVERLAY, ox, y0 + 7, colors);
+    if (spec.dumbbells) drawTemplate(ctx, [DUMBBELLS_UP], ox, y0 + 7, colors);
+  } else if (spec.dumbbells && facing !== 'side') {
+    drawTemplate(ctx, [DUMBBELLS_DOWN], ox, y0 + 17, colors);
+  }
 }
 
 /**

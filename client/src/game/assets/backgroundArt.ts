@@ -184,3 +184,38 @@ export function paintGlow(radius: number, hex: string, peak = 0.5): HTMLCanvasEl
   ctx.putImageData(img, 0, 0);
   return canvas;
 }
+
+// ---------------------------------------------------------------------------
+// Outdoors: a repeating garden tile + a paved path, shown around the building
+// so the office always fills the whole window, whatever its shape.
+// ---------------------------------------------------------------------------
+
+export function paintGrassTile(pal: EnvPalette): HTMLCanvasElement {
+  const { canvas, ctx } = makeCanvas(48, 48);
+  rect(ctx, 0, 0, 48, 48, pal.grass);
+  const tuft = (x: number, y: number) => {
+    px(ctx, x, y, pal.grassDark);
+    px(ctx, x + 2, y, pal.grassDark);
+    px(ctx, x + 1, y - 1, pal.grassDark);
+  };
+  [[5, 7], [30, 4], [18, 20], [40, 26], [8, 36], [27, 41], [44, 12]].forEach(([x, y]) => tuft(x, y));
+  [[12, 14], [36, 36], [22, 31]].forEach(([x, y]) => px(ctx, x, y, pal.grassLight));
+  // a few tiny flowers
+  [[14, 27, 0], [38, 9, 3], [3, 44, 1]].forEach(([x, y, c]) => {
+    px(ctx, x, y, pal.accents[c]);
+    px(ctx, x - 1, y + 1, pal.accents[c]);
+    px(ctx, x + 1, y + 1, pal.accents[c]);
+    px(ctx, x, y + 1, pal.paper);
+  });
+  return canvas;
+}
+
+export function paintPavingTile(pal: EnvPalette): HTMLCanvasElement {
+  const { canvas, ctx } = makeCanvas(16, 16);
+  rect(ctx, 0, 0, 16, 16, pal.paving);
+  hline(ctx, 0, 7, 16, pal.pavingAlt);
+  hline(ctx, 0, 15, 16, pal.pavingAlt);
+  vline(ctx, 7, 0, 7, pal.pavingAlt);
+  vline(ctx, 15, 8, 7, pal.pavingAlt);
+  return canvas;
+}

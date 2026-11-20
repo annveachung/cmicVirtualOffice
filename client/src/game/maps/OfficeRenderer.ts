@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import {
   AREA_LABELS,
   DESKS,
+  MAP_H,
+  MAP_W,
   FURNITURE,
   PLACEMENTS,
   TILE,
@@ -12,7 +14,7 @@ import {
 } from '@little-office/shared';
 import { furnitureTextureKey } from '../assets/furnitureArt';
 import { PALETTES } from '../assets/palette';
-import { BEAM_KEYS, GLOW_KEYS, bgKey } from '../assets/textures';
+import { BEAM_KEYS, GLOW_KEYS, bgKey, grassKey, pavingKey } from '../assets/textures';
 import { DEPTH, LABEL_PX } from '../constants';
 
 /**
@@ -21,6 +23,8 @@ import { DEPTH, LABEL_PX } from '../constants';
  * decides where things are. ("Separate map data from rendering logic.")
  */
 export class OfficeRenderer {
+  private readonly grass: Phaser.GameObjects.TileSprite;
+  private readonly path: Phaser.GameObjects.TileSprite;
   private readonly bg: Phaser.GameObjects.Image;
   private readonly sun: Phaser.GameObjects.Image;
   private readonly moon: Phaser.GameObjects.Image;
@@ -35,6 +39,18 @@ export class OfficeRenderer {
     private theme: Theme,
   ) {
     const add = scene.add;
+    // Outdoors: grass far beyond the map edges + a paved path out of the entrance.
+    const OUT = 2400;
+    const W = MAP_W * TILE;
+    const H = MAP_H * TILE;
+    this.grass = add.tileSprite(-OUT, -OUT, W + OUT * 2, H + OUT * 2, grassKey(theme)).setOrigin(0).setDepth(DEPTH.background - 2);
+    const door = PLACEMENTS.find((p) => p.type === 'entrance');
+    const doorW = door ? footprint(door).w * TILE : 48;
+    this.path = add
+      .tileSprite(door ? door.tx * TILE : W / 2, H, doorW, OUT, pavingKey(theme))
+      .setOrigin(0)
+      .setDepth(DEPTH.background - 1);
+    add.rectangle(4, H, W - 4, 5, 0x000000, 0.18).setOrigin(0).setDepth(DEPTH.background - 1); // building shadow
     this.bg = add.image(0, 0, bgKey(theme)).setOrigin(0).setDepth(DEPTH.background);
     this.sun = add.image(0, 0, BEAM_KEYS.sun).setOrigin(0).setDepth(DEPTH.sunbeams).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.45);
     this.moon = add.image(0, 0, BEAM_KEYS.moon).setOrigin(0).setDepth(DEPTH.sunbeams).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.22);
@@ -108,6 +124,8 @@ export class OfficeRenderer {
   applyTheme(theme: Theme): void {
     this.theme = theme;
     this.bg.setTexture(bgKey(theme));
+    this.grass.setTexture(grassKey(theme));
+    this.path.setTexture(pavingKey(theme));
     for (const { p, img } of this.furniture) img.setTexture(furnitureTextureKey(p, theme));
     this.sun.setVisible(theme === 'light');
     this.moon.setVisible(theme === 'dark');
@@ -126,16 +144,16 @@ export class OfficeRenderer {
 }
 
 /**
- * Depth rule for y-sorting. Most furniture sorts by its bottom edge. Seats
- * facing the camera (sofas, bean bags, chairs facing down) sort by their TOP
- * edge so someone sitting on them is drawn in front of the backrest. Seats
+ * Depth rule for y-sorting. Most furniture sorts by its bottom edge. Things you
+ * get ON — seats facing the camera, treadmills, the weight bench — sort by
+ * their TOP edge so the person using them is drawn in front. Seats
  * facing away sort normally, so their backrest hides the sitter's back.
  * Items on a counter sort just above it.
  */
-const CAMERA_FACING_SEATS = new Set<Placement['type']>(['deskChair', 'chair', 'armchair', 'sofa', 'beanBag']);
+const TOP_SORTED = new Set<Placement['type']>(['deskChair', 'chair', 'armchair', 'sofa', 'beanBag', 'treadmill', 'weightBench']);
 
 function furnitureDepth(p: Placement, def: FurnitureDef, bottom: number): number {
-  if (CAMERA_FACING_SEATS.has(p.type) && (p.dir ?? 'down') === 'down') return p.ty * TILE + 1;
+  if (TOP_SORTED.has(p.type) && (p.dir ?? 'down') === 'down') return p.ty * TILE + 1;
   if (def.onTop) return bottom + 0.5;
   return bottom;
 }

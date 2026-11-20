@@ -564,14 +564,16 @@ const P: Partial<Record<Placement['type'], Painter>> = {
   },
 
   exerciseBike(ctx, { pal }) {
+    // seen from the front: seat at the back, handlebars + flywheel in front of the rider
     ellipse(ctx, 8, 21, 6, 2, pal.outline);
-    ellipse(ctx, 8, 15, 5, 5, pal.outline);
-    ellipse(ctx, 8, 15, 4, 4, pal.accents[1]);
-    ellipse(ctx, 8, 15, 1, 1, pal.metalLight);
-    rect(ctx, 7, 4, 2, 16, pal.metalDark);
-    box(ctx, 2, 1, 12, 3, pal.metal, pal.outline); // handlebars
-    box(ctx, 5, 7, 6, 4, pal.fabricB, pal.outline); // seat
-    hline(ctx, 6, 8, 4, shade(pal.fabricB, 0.25));
+    box(ctx, 5, 2, 6, 4, pal.fabricB, pal.outline); // seat
+    hline(ctx, 6, 3, 4, shade(pal.fabricB, 0.25));
+    rect(ctx, 7, 6, 2, 14, pal.metalDark);
+    box(ctx, 1, 10, 14, 3, pal.metal, pal.outline); // handlebars
+    rect(ctx, 6, 9, 4, 2, pal.screenOn); // little display
+    ellipse(ctx, 8, 17, 4, 4, pal.outline);
+    ellipse(ctx, 8, 17, 3, 3, pal.accents[1]);
+    px(ctx, 8, 17, pal.metalLight);
   },
 
   weightRack(ctx, { pal, W, H }) {
