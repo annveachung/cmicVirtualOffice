@@ -9,14 +9,20 @@ export const DEPTH = {
   nameplates: 3000,
 } as const;
 
-/** Max camera zoom when zooming in with the wheel. Minimum is "whole office fits". */
+/** Max camera zoom when zooming in with the wheel. Minimum is "office fills the window". */
 export const MAX_ZOOM = 4;
+
+/**
+ * Start a little closer than "fill the window" so characters and furniture are easier
+ * to read. The camera follows you to reveal the edges; scroll out to see everything.
+ */
+export const DEFAULT_ZOOM_BOOST = 1.2;
 
 /** Space reserved for the React top bar, so the fitted office isn't hidden under it. */
 export const TOP_BAR_PX = 56;
 
 /** Label font sizes in SCREEN pixels (labels are counter-scaled by 1/zoom). */
-export const LABEL_PX = { name: 12, plaque: 11, desk: 10, hint: 11 } as const;
+export const LABEL_PX = { name: 13, plaque: 12, desk: 11, hint: 12 } as const;
 
 /** Tint applied to characters at night so they sit in the darker scene. */
 export const NIGHT_TINT = 0xc9c2d8;
