@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { Appearance, Direction, Theme } from '@little-office/shared';
 import { FEET_ROW, FRAME_H } from '../assets/characterArt';
 import { COSTUME_KEY, REACTION_KEYS, animKey, ensureCharacter, type AnimName, type Reaction } from '../assets/textures';
-import { DEPTH, LABEL_PX, NIGHT_TINT } from '../constants';
+import { DEPTH, GAME_FONT, LABEL_PX, NIGHT_TINT, TEXT_RESOLUTION } from '../constants';
 import { SpeechBubble } from './SpeechBubble';
 
 /** Which animation is playing: idle, walk, sit, run, pedal, lift... (see ANIMS). */
@@ -42,13 +42,14 @@ export class Character {
     this.sprite = scene.add.sprite(0, 0, texKey, 'down-idle').setOrigin(0.5, FEET_ROW / FRAME_H);
     this.nameTag = scene.add
       .text(0, 0, name, {
-        fontFamily: '"Pixelify Sans", monospace',
+        fontFamily: GAME_FONT,
         fontSize: `${LABEL_PX.name}px`,
         color: '#1f3a2c',
         backgroundColor: opts.isLocal ? '#d4ef84' : '#fbf8ee', // you = lime tag, others = cream
         padding: { x: 2, y: 1 },
       })
       .setOrigin(0.5, 1)
+      .setResolution(TEXT_RESOLUTION)
       .setDepth(DEPTH.nameplates);
     // Name tags are sized in SCREEN pixels: the scene scales them by 1/zoom so they
     // stay readable when the whole office is zoomed out to fit the monitor.

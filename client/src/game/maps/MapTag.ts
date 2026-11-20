@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { Theme } from '@little-office/shared';
+import { GAME_FONT, TEXT_RESOLUTION } from '../constants';
 
 /**
  * A small bordered tag, like the room/desk labels in the team's Figma design:
@@ -33,11 +34,11 @@ export class MapTag {
     this.box = scene.add.graphics();
     this.label = scene.add
       .text(0, 0, text.toUpperCase(), {
-        fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+        fontFamily: GAME_FONT,
         fontSize: `${fontPx}px`,
-        letterSpacing: 0.5,
       })
-      .setOrigin(0, 0);
+      .setOrigin(0, 0)
+      .setResolution(TEXT_RESOLUTION);
     this.container = scene.add.container(x, y, [this.box, this.label]).setDepth(depth);
     this.setTheme('light');
   }

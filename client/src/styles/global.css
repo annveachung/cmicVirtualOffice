@@ -63,15 +63,23 @@ body,
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Pixelify Sans', ui-monospace, monospace;
-  font-size: 16px;
+  font-family: 'VT323', ui-monospace, monospace; /* clear retro-terminal pixel font for UI text */
+  font-size: 19px;
   -webkit-font-smoothing: none;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+h1,
+.brand-name,
+.club-title,
+.toast strong,
+.pixel-btn.primary {
+  font-family: 'Silkscreen', ui-monospace, monospace; /* crisp pixel display font for headings */
+}
+
 h1 {
-  font-size: 26px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   margin: 0;
   letter-spacing: 0.5px;
 }

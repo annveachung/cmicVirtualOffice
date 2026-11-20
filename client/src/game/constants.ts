@@ -21,8 +21,20 @@ export const DEFAULT_ZOOM_BOOST = 1.2;
 /** Space reserved for the React top bar, so the fitted office isn't hidden under it. */
 export const TOP_BAR_PX = 56;
 
+/**
+ * Fonts. Silkscreen is a crisp pixel font designed for small sizes — used for
+ * everything drawn in the game (name tags, room tags, hints, bubbles).
+ */
+export const GAME_FONT = '"Silkscreen", monospace';
+
+/**
+ * Text is rendered at 2x (or the screen's pixel ratio, if higher) and then
+ * scaled down, so small labels stay sharp instead of slightly blurry.
+ */
+export const TEXT_RESOLUTION = Math.max(2, Math.ceil(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1));
+
 /** Label font sizes in SCREEN pixels (labels are counter-scaled by 1/zoom). */
-export const LABEL_PX = { name: 13, plaque: 12, desk: 11, hint: 12 } as const;
+export const LABEL_PX = { name: 12, plaque: 11, desk: 10, hint: 11 } as const;
 
 /** Tint applied to characters at night so they sit in the darker scene. */
 export const NIGHT_TINT = 0xc9c2d8;
