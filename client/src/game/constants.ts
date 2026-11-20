@@ -36,5 +36,11 @@ export const TEXT_RESOLUTION = Math.max(2, Math.ceil(typeof window !== 'undefine
 /** Label font sizes in SCREEN pixels (labels are counter-scaled by 1/zoom). */
 export const LABEL_PX = { name: 12, plaque: 11, desk: 10, hint: 11 } as const;
 
+/**
+ * Characters are drawn a little larger than the furniture grid (16px tiles) so
+ * people read clearly and the office feels lived-in. Collision is unchanged.
+ */
+export const CHARACTER_SCALE = 1.2;
+
 /** Tint applied to characters at night so they sit in the darker scene. */
 export const NIGHT_TINT = 0xc9c2d8;
