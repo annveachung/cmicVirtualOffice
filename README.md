@@ -1,4 +1,4 @@
-# The Little Office
+# CMiCity
 
 A cozy, private, browser-based pixel-art virtual office for a small remote team (<15 people).
 For fun and informal bonding, not productivity monitoring.
