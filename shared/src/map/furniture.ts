@@ -89,7 +89,6 @@ export const FURNITURE = {
   clubSign: { w: 4, h: 1, blocks: false, layer: 'wall' },
   potatoPoster: { w: 1, h: 1, blocks: false, layer: 'wall' },
   // lounge + pantry extras
-  ballPit: { w: 4, h: 1, blocks: false, layer: 'object', overhang: 6 }, // walk in; the balls hide your legs
   boothBench: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 10 }, // one seat; variant 0 = back piece, 1 = front piece
   boothTable: { w: 2, h: 2, blocks: true, layer: 'object', overhang: 2 },
   beverageCounter: { w: 1, h: 3, blocks: true, layer: 'object', overhang: 4 },

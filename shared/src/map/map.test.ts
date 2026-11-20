@@ -198,6 +198,12 @@ describe('activity spots', () => {
     for (const s of SPOTS) expect(frontTiles(grid, s).length, s.id).toBeGreaterThan(0);
   });
 
+  it('has plenty of sofa seating in the lounge', async () => {
+    const { SPOTS } = await import('./spots.js');
+    const loungeSofaSeats = SPOTS.filter((s) => s.id.startsWith('sofa') && s.tile.tx <= 16 && s.tile.ty <= 9);
+    expect(loungeSofaSeats.length).toBeGreaterThanOrEqual(12);
+  });
+
   it('has a booth for four in the pantry', async () => {
     const { SPOTS } = await import('./spots.js');
     expect(SPOTS.filter((s) => s.id.startsWith('booth-')).length).toBe(4);

@@ -159,16 +159,19 @@ export const PLACEMENTS: Placement[] = [
   // ---- Lounge (top-left, sunny) ----
   // shelf and arcades stand flat against the side walls, keeping the window clear
   P('bookshelf', 1, 4, { w: 1, h: 3, dir: 'right', variant: 1 }),
+  // main seating group: two sofas facing each other across a coffee table
   P('rug', 4, 4, { w: 6, h: 5, variant: 0 }),
   P('sofa', 5, 4, { dir: 'down' }),
   P('coffeeTable', 6, 6),
+  P('sofa', 5, 8, { dir: 'up' }),
   P('armchair', 3, 6, { dir: 'right' }),
   P('armchair', 10, 6, { dir: 'left' }),
   P('floorLamp', 10, 4),
+  // second group: a lavender sofa with its own little table
+  P('rug', 11, 5, { w: 5, h: 3, variant: 1 }),
+  P('sofa', 11, 5, { dir: 'down', variant: 1 }),
+  P('coffeeTable', 12, 7),
   P('arcade', 15, 3, { id: 'arcade', variant: 1 }), // one cabinet in the corner, screen facing you
-  // ball pit (4x2): a back row + a front row, so whoever's in front isn't hidden behind the back
-  P('ballPit', 11, 7, { id: 'ball-pit-back', w: 4, variant: 0 }),
-  P('ballPit', 11, 8, { id: 'ball-pit-front', w: 4, variant: 1 }),
 
   // ---- Meeting room with a small stage (top-middle, sunny) ----
   P('stage', 19, 3, { w: 11, h: 2 }),
