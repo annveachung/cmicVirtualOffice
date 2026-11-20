@@ -51,10 +51,8 @@ export class OfficeScene extends Phaser.Scene {
   private nearbySpot: Spot | null = null;
   private data0!: OfficeSceneData;
   /** Multiplier on top of the "cover" zoom. 1 = office fills the window. */
-  private zoomFactor: number = DEFAULT_ZOOM_BOOST;
+  private zoomFactor = 1;
   private unsubscribers: (() => void)[] = [];
-  /** False during the arrival camera move (skyline → you); the camera follows you afterwards. */
-  private introDone = false;
   private club!: PotatoClub;
 
   constructor() {
@@ -117,7 +115,6 @@ export class OfficeScene extends Phaser.Scene {
     // Camera
     const cam = this.cameras.main;
     cam.setRoundPixels(true);
-    this.applyZoom();
     this.scale.on(Phaser.Scale.Events.RESIZE, this.applyZoom, this);
     this.playArrivalIntro();
     this.input.on('wheel', (_p: unknown, _o: unknown, _dx: number, dy: number) => {
@@ -146,18 +143,33 @@ export class OfficeScene extends Phaser.Scene {
    * usually nothing is cut off; on unusual shapes a sliver of the edge is
    * hidden and the camera gently follows you to reveal it.
    */
-  private applyZoom() {
-    const cam = this.cameras.main;
+  /** Zoom where the office fills the window (cover), times the current zoom factor. */
+  private playZoom(): number {
     const { width, height } = this.scale;
     const cover = Math.max(width / WORLD_W, (height - TOP_BAR_PX) / WORLD_H);
     this.zoomFactor = Phaser.Math.Clamp(this.zoomFactor, 1, Math.max(1, MAX_ZOOM / cover));
-    const zoom = cover * this.zoomFactor;
-    cam.setZoom(zoom);
-    // Bounds include a strip above the map for the top bar, so the bar never covers the office.
-    cam.setBounds(0, -TOP_BAR_PX / zoom, WORLD_W, WORLD_H + TOP_BAR_PX / zoom);
-    if (this.introDone) cam.startFollow(this.player.sprite, true, 0.12, 0.12);
+    return cover * this.zoomFactor;
+  }
 
-    // Labels stay the same size on screen at every zoom level.
+  private applyZoom() {
+    const cam = this.cameras.main;
+    cam.setZoom(this.playZoom());
+    this.syncBoundsAndLabels();
+    cam.startFollow(this.player.sprite, true, 0.12, 0.12);
+  }
+
+  /**
+   * Keep camera bounds and label sizes in step with the zoom — also every frame
+   * while a zoom animation is running.
+   *  - Bounds include a strip above the map for the top bar, so it never covers the office.
+   *  - Labels stay the same size on screen at every zoom level.
+   */
+  private lastZoom = 0;
+  private syncBoundsAndLabels() {
+    const zoom = this.cameras.main.zoom;
+    if (zoom === this.lastZoom) return;
+    this.lastZoom = zoom;
+    this.cameras.main.setBounds(0, -TOP_BAR_PX / zoom, WORLD_W, WORLD_H + TOP_BAR_PX / zoom);
     const s = 1 / zoom;
     this.player.setLabelScale(s);
     this.office.setLabelScale(s);
@@ -166,26 +178,30 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   /**
-   * Arrival shot: start on the skyline at the top of the office, hold a beat,
-   * then glide down to the player at the entrance and start following.
-   * Any key or click skips straight to following.
+   * Arrival shot: start close up on you at the entrance (a little bigger), then
+   * smoothly zoom out until the whole office fills the window — and stay there,
+   * so you can see where everyone is. Any key or click jumps to the zoomed-out view.
    */
   private playArrivalIntro() {
     const cam = this.cameras.main;
-    cam.centerOn(WORLD_W / 2, 0); // bounds clamp this to the very top: skyline in view
+    this.zoomFactor = DEFAULT_ZOOM_BOOST;
+    this.applyZoom();
+    let done = false;
     const finish = () => {
-      if (this.introDone) return;
-      this.introDone = true;
-      cam.panEffect.reset();
-      cam.startFollow(this.player.sprite, true, 0.12, 0.12);
+      if (done) return;
+      done = true;
+      cam.zoomEffect.reset();
+      this.zoomFactor = 1;
+      this.applyZoom();
     };
-    const pan = this.time.delayedCall(1100, () => {
-      cam.pan(this.player.x, this.player.y, 1700, 'Sine.easeInOut', false, (_c: unknown, progress: number) => {
+    const zoomOut = this.time.delayedCall(1400, () => {
+      this.zoomFactor = 1;
+      cam.zoomTo(this.playZoom(), 1800, 'Sine.easeInOut', false, (_c: unknown, progress: number) => {
         if (progress >= 1) finish();
       });
     });
     const skip = () => {
-      pan.remove();
+      zoomOut.remove();
       finish();
     };
     this.input.keyboard!.once('keydown', skip);
@@ -195,6 +211,7 @@ export class OfficeScene extends Phaser.Scene {
   update(_time: number, delta: number) {
     const m = this.controller.update({ x: this.player.x, y: this.player.y }, delta);
     this.player.setPosition(m.x, m.y);
+    this.syncBoundsAndLabels(); // cheap no-op unless the zoom changed
     this.player.setMotion(m.dir, this.club.animFor(m.pose));
     this.club.update(m.pose);
     this.updateSpotHint(this.controller.activeSpot !== null);
