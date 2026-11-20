@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { Theme } from '@little-office/shared';
+import type { Theme, ZoneId } from '@little-office/shared';
 import type { Profile } from '../App';
 import { TopBar } from '../components/TopBar';
 import { GameCanvas } from '../game/GameCanvas';
@@ -19,10 +19,10 @@ interface Props {
 export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
   const [ready, setReady] = useState(false);
   const [showHelp, setShowHelp] = useState(true);
-  const [zone, setZone] = useState<string | null>(null);
+  const [zone, setZone] = useState<ZoneId | null>(null);
   useEffect(() => bus.on('zone:changed', setZone), []);
-  // party music inside The Potato Club, the cozy office tune everywhere else
-  useEffect(() => sound.setTrack(zone === 'potato-club' ? 'club' : 'office'), [zone]);
+  // each special area has its own soundtrack; the cozy office tune plays everywhere else
+  useEffect(() => sound.setTrack(zone === 'potato-club' ? 'club' : zone === 'gym' ? 'gym' : 'office'), [zone]);
 
   // Cozy background music while you're in the office (if not switched off).
   useEffect(() => {

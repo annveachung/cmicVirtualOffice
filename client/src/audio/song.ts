@@ -15,8 +15,8 @@ export interface Song {
   arp: number[];
   /** 'walk' = cozy root + octave hop; 'pump' = driving octave eighths for dancing. */
   bass: 'walk' | 'pump';
-  /** Add a little synthesised drum kit (kick / snare / hi-hat). */
-  drums: boolean;
+  /** Synth drum kit: none, 'backbeat' (kick 1 & 3, snare 2 & 4) or 'fourOnFloor' (kick every beat). */
+  drums: false | 'backbeat' | 'fourOnFloor';
   leadVolume: number;
 }
 
@@ -69,6 +69,31 @@ export const CLUB_SONG: Song = {
   chords: [[cC, cC], [cF, cF], [cG, cG], [cC, cC], [cAm, cAm], [cF, cF], [cG, cG], [cC, cC]],
   arp: [0, 2, 1, 2, 0, 2, 1, 2],
   bass: 'pump',
-  drums: true,
+  drums: 'backbeat',
   leadVolume: 0.055,
+};
+
+/** "Rep It Out": energetic, motivational workout beat for the gym. A minor, 140 BPM, four-on-the-floor. */
+const gAm = ch(45, [69, 72, 76]);
+const gF = ch(41, [65, 69, 72]);
+const gC = ch(48, [64, 67, 72]);
+const gG = ch(43, [67, 71, 74]);
+
+export const GYM_SONG: Song = {
+  bpm: 140,
+  lead: [
+    [76, null, 76, 79, 81, null, 79, 76], // Am — "let's go"
+    [77, null, 76, 74, 72, null, 74, null], // F
+    [72, 72, 76, null, 79, 76, 72, null], // C
+    [74, null, 71, null, 67, 71, 74, null], // G
+    [81, null, 81, 79, 76, null, 79, 81], // Am — up an octave of energy
+    [84, null, 81, null, 77, 79, 81, null], // F
+    [79, 79, 76, 72, 76, null, 79, null], // C
+    [74, 76, 77, 79, 83, null, null, null], // G — climb, then one more rep
+  ],
+  chords: [[gAm, gAm], [gF, gF], [gC, gC], [gG, gG], [gAm, gAm], [gF, gF], [gC, gC], [gG, gG]],
+  arp: [0, 1, 2, 1, 0, 1, 2, 1],
+  bass: 'pump',
+  drums: 'fourOnFloor',
+  leadVolume: 0.05,
 };

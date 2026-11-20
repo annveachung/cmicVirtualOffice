@@ -1,14 +1,14 @@
-import { CLUB_SONG, OFFICE_SONG, type Song } from './song';
+import { CLUB_SONG, GYM_SONG, OFFICE_SONG, type Song } from './song';
 
-export type Track = 'office' | 'club';
-const TRACKS: Record<Track, Song> = { office: OFFICE_SONG, club: CLUB_SONG };
+export type Track = 'office' | 'club' | 'gym';
+const TRACKS: Record<Track, Song> = { office: OFFICE_SONG, club: CLUB_SONG, gym: GYM_SONG };
 
 /**
  * All sound is SYNTHESISED with the Web Audio API — no audio files, no licensing.
  *
  *  - sfx: a short square-wave "blip" for clicks
- *  - music: the original chiptunes in song.ts (a cozy office loop and a party
- *    track for The Potato Club), played by a small look-ahead scheduler
+ *  - music: the original chiptunes in song.ts (cozy office loop, a party track
+ *    for The Potato Club, a workout beat for the gym), played by a look-ahead scheduler
  *
  * Browsers only allow audio after a user gesture, so the AudioContext is created
  * lazily on the first click/keypress. Preferences live in localStorage (they're
@@ -192,9 +192,10 @@ class SoundEngine {
       // 'pump': driving eighths, octave up on the off-beats — makes you want to dance
       this.tone('triangle', midiToHz(chord.bass + (slot % 2 ? 12 : 0)), t, eighth * 0.7, 0.15);
     }
-    // drums: kick on beats 1 & 3, snare on 2 & 4, hi-hat on every off-beat
+    // drums: snare on 2 & 4, hi-hat on every off-beat; kick on 1 & 3 (backbeat) or every beat (four-on-the-floor)
     if (song.drums) {
-      if (slot === 0 || slot === 4) this.kick(t);
+      const kickSlots = song.drums === 'fourOnFloor' ? [0, 2, 4, 6] : [0, 4];
+      if (kickSlots.includes(slot)) this.kick(t);
       if (slot === 2 || slot === 6) this.noiseHit(t, 0.14, 1800, 0.09); // snare
       if (slot % 2 === 1) this.noiseHit(t, 0.04, 7000, 0.035); // hi-hat
     }
