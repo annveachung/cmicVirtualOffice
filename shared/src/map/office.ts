@@ -12,6 +12,9 @@ import type { Placement } from './furniture.js';
  *   '#' wall      'c' carpet (open-plan hall)   'w' wooden floor
  *   'k' pantry tiles   'g' gym rubber floor     'b' washroom tiles
  *
+ * The whole back wall (rows 1-2) is floor-to-ceiling glass with a city skyline
+ * behind it — painted by the client, so there are no separate window objects.
+ *
  * 59 x 31 tiles ≈ the shape of a typical desktop browser window (~1.9:1),
  * so the office fills the screen edge to edge without zooming.
  *
@@ -154,11 +157,6 @@ const officeDecor: Placement[] = OFFICE_ROOMS.flatMap((r, i) => [
 
 export const PLACEMENTS: Placement[] = [
   // ---- Lounge (top-left, sunny) ----
-  P('window', 3, 1),
-  P('painting', 6, 1, { variant: 0 }),
-  P('painting', 7, 1, { variant: 1 }),
-  P('window', 8, 1),
-  P('clock', 11, 1),
   P('plant', 1, 3, { variant: 2 }),
   P('bookshelf', 2, 3, { variant: 1 }),
   P('rug', 4, 4, { w: 6, h: 5, variant: 0 }),
@@ -177,8 +175,6 @@ export const PLACEMENTS: Placement[] = [
   P('plantSmall', 16, 9),
 
   // ---- Meeting room with a small stage (top-middle, sunny) ----
-  P('window', 19, 1),
-  P('window', 28, 1),
   P('stage', 19, 3, { w: 11, h: 2 }),
   P('projectorScreen', 22, 3, { w: 4 }),
   P('podium', 27, 4),
@@ -194,10 +190,6 @@ export const PLACEMENTS: Placement[] = [
 
   // ---- Pantry ----
   P('upperCabinet', 33, 1),
-  P('window', 38, 1),
-  P('window', 48, 1),
-  P('painting', 51, 1, { variant: 2 }),
-  P('window', 54, 1),
   P('counter', 33, 3, { w: 9 }),
   P('microwave', 33, 3),
   P('coffeeMachine', 35, 3, { id: 'coffee-machine' }),
