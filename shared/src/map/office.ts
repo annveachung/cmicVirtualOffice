@@ -40,11 +40,14 @@ export const MAP_H = 31;
 // Floor plan
 // ---------------------------------------------------------------------------
 
-/** Three roomy private offices down the left side (6, 5 and 6 tiles tall). */
+/**
+ * Three equal private offices down the left side, 5 tiles tall each,
+ * separated by double-thickness walls (5 + 2 + 5 + 2 + 5 = the 19 rows available).
+ */
 const OFFICE_ROOMS = [
-  { y0: 11, y1: 16 },
+  { y0: 11, y1: 15 },
   { y0: 18, y1: 22 },
-  { y0: 24, y1: 29 },
+  { y0: 25, y1: 29 },
 ];
 
 function buildTiles(): TileKind[][] {

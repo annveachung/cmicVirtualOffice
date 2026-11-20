@@ -73,6 +73,15 @@ describe('office map data', () => {
     }
   });
 
+  it('makes the three private offices the same size', () => {
+    const sizes = [11, 18, 25].map((y0) => {
+      let h = 0;
+      while (TILES[y0 + h]?.[3] === 'w') h++;
+      return h;
+    });
+    expect(new Set(sizes).size).toBe(1);
+  });
+
   it('has 15 desks (3 private offices + 12 open-plan) with a reachable spot next to every chair', () => {
     expect(DESKS).toHaveLength(15);
     expect(new Set(DESKS.map((d) => d.id)).size).toBe(15);
