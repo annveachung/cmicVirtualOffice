@@ -198,6 +198,11 @@ describe('activity spots', () => {
     for (const s of SPOTS) expect(frontTiles(grid, s).length, s.id).toBeGreaterThan(0);
   });
 
+  it('has a booth for four in the pantry', async () => {
+    const { SPOTS } = await import('./spots.js');
+    expect(SPOTS.filter((s) => s.id.startsWith('booth-')).length).toBe(4);
+  });
+
   it('clicking a desk or a treadmill resolves to the right spot', async () => {
     const { spotForTile } = await import('./spots.js');
     const d = DESKS[4];

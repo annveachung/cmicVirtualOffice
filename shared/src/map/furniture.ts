@@ -90,6 +90,8 @@ export const FURNITURE = {
   potatoPoster: { w: 1, h: 1, blocks: false, layer: 'wall' },
   // lounge + pantry extras
   ballPit: { w: 4, h: 1, blocks: false, layer: 'object', overhang: 6 }, // walk in; the balls hide your legs
+  boothBench: { w: 1, h: 2, blocks: true, layer: 'object', overhang: 10 }, // seats 2, facing `dir`
+  boothTable: { w: 2, h: 2, blocks: true, layer: 'object', overhang: 2 },
   beverageCounter: { w: 1, h: 3, blocks: true, layer: 'object', overhang: 4 },
   buffetCounter: { w: 1, h: 3, blocks: true, layer: 'object', overhang: 4 },
   // entrance
