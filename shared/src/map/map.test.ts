@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FURNITURE, footprint } from './furniture.js';
-import { DESKS, MAP_H, MAP_W, PLACEMENTS, SPAWN, TILES } from './office.js';
+import { DESKS, MAP_H, MAP_W, PLACEMENTS, SPAWN, TILES, isSolidTile } from './office.js';
 import { buildCollisionGrid, canStandAt, moveWithCollision, tileCenter } from './collision.js';
 import { findPath, nearestWalkable, smoothPath } from './pathfinding.js';
 
@@ -27,6 +27,14 @@ describe('office map data', () => {
     for (const row of TILES) expect(row).toHaveLength(MAP_W);
   });
 
+  it('keeps washrooms private: no glass next to them', () => {
+    for (let y = 0; y < MAP_H; y++)
+      for (let x = 0; x < MAP_W; x++) {
+        if (TILES[y][x] !== 'b') continue;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) expect(TILES[y + dy]?.[x + dx], `${x},${y}`).not.toBe('G');
+      }
+  });
+
   it('is enclosed by walls', () => {
     for (let x = 0; x < MAP_W; x++) { expect(TILES[0][x]).toBe('#'); expect(TILES[MAP_H - 1][x]).toBe('#'); }
     for (let y = 0; y < MAP_H; y++) { expect(TILES[y][0]).toBe('#'); expect(TILES[y][MAP_W - 1]).toBe('#'); }
@@ -39,8 +47,9 @@ describe('office map data', () => {
         for (let x = p.tx; x < p.tx + w; x++) {
           const tile = TILES[y]?.[x];
           expect(tile, `${p.id} out of bounds`).toBeDefined();
-          if (FURNITURE[p.type].layer === 'wall') expect(tile, `${p.id} should hang on a wall`).toBe('#');
-          else expect(tile, `${p.id} should stand on floor`).not.toBe('#');
+          // wall decor needs a solid wall (not glass); everything else needs floor
+          if (FURNITURE[p.type].layer === 'wall') expect(tile, `${p.id} should hang on a solid wall`).toBe('#');
+          else expect(isSolidTile(tile!), `${p.id} should stand on floor`).toBe(false);
         }
     }
   });
