@@ -16,7 +16,10 @@ import { DESKS, PLACEMENTS } from './office.js';
  * Spots are derived from furniture data, so adding a treadmill to the map
  * automatically makes it usable.
  */
-export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee' | 'present';
+export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee' | 'present' | 'sing' | 'dance' | 'costume' | 'vend' | 'mascot';
+
+/** Actions that happen once (a toggle, a snack, a poke) instead of putting you in a pose. */
+export const INSTANT_ACTIONS: ReadonlySet<SpotAction> = new Set(['costume', 'vend', 'mascot']);
 
 export interface Spot {
   id: string;
@@ -46,6 +49,11 @@ const VERB: Record<SpotAction, string> = {
   wash: 'wash hands',
   pee: 'pee',
   present: 'present',
+  sing: 'sing',
+  dance: 'dance',
+  costume: 'potato suit',
+  vend: 'get a snack',
+  mascot: 'poke Mr. Potato',
 };
 
 function footprintTiles(p: Placement): TilePos[] {
@@ -114,7 +122,18 @@ function spotsFor(p: Placement): Spot[] {
       return [spot(p.id, 'sit', t(0, 0), 'down', { dy: 2 })];
     case 'podium': // stand behind the lectern, facing the audience
       return [spot(p.id, 'present', t(0, -1), 'down', { dy: 3, clickTiles: [t(0, 0), t(0, -1)], onFloor: true })];
+    case 'micStand': // step up to the karaoke mic, facing the room
+      return [spot(p.id, 'sing', t(0, 0), 'down', { dy: 2, onFloor: true })];
+    case 'danceFloor': // every tile of the dance floor is a place to dance
+      return footprintTiles(p).map((c, i) => spot(`${p.id}:${i}`, 'dance', c, 'down', { onFloor: true }));
+    case 'potatoVending':
+      return [spot(p.id, 'vend', t(0, 1), 'up', { clickTiles: [t(0, 0), t(0, 1)], onFloor: true })];
+    case 'costumeRack':
+      return [spot(p.id, 'costume', t(0, 1), 'up', { clickTiles: [t(0, 0), t(0, 1)], onFloor: true })];
+    case 'potatoMascot':
+      return [spot(p.id, 'mascot', t(0, 0), 'down')];
     case 'stage': { // centre stage, in front of the screen
+      if (p.variant === 1) return []; // the karaoke stage uses the mic instead
       const { w, h } = footprint(p);
       const centre = t(Math.floor(w / 2) - 1, h - 1);
       return [spot(`${p.id}:centre`, 'present', centre, 'down', { onFloor: true })];

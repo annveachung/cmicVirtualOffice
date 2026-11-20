@@ -47,6 +47,13 @@ function paintFloor(ctx: Ctx, pal: EnvPalette, tx: number, ty: number) {
       }
       break;
     }
+    case 'p': {
+      // Potato Club party carpet: deep purple with confetti specks
+      rect(ctx, x, y, TILE, TILE, (tx + ty) % 2 ? pal.clubFloor : pal.clubFloorAlt);
+      const confetti = [pal.neonPink, pal.neonAmber, pal.neonPurple, pal.glassLight];
+      for (let i = 0; i < 3; i++) px(ctx, x + ((tx * 7 + ty * 3 + i * 5) % 15), y + ((tx * 5 + ty * 11 + i * 7) % 15), confetti[(tx + ty + i) % 4]);
+      break;
+    }
     case 'b': {
       // small square washroom tiles with grout lines
       rect(ctx, x, y, TILE, TILE, pal.bath);
@@ -82,9 +89,11 @@ function paintWall(ctx: Ctx, pal: EnvPalette, tx: number, ty: number) {
     if (!isWall(tx - 1, ty)) vline(ctx, x + 1, y, TILE, pal.wallTopEdge);
     return;
   }
+  // walls facing into the Potato Club get purple party wallpaper
+  const club = TILES[ty + 1]?.[tx] === 'p';
   const stripes = (y0: number, h: number) => {
-    rect(ctx, x, y0, TILE, h, pal.wallPaper);
-    for (let sx = 2; sx < TILE; sx += 4) vline(ctx, x + sx, y0, h, pal.wallPaperAlt);
+    rect(ctx, x, y0, TILE, h, club ? pal.clubWall : pal.wallPaper);
+    for (let sx = 2; sx < TILE; sx += 4) vline(ctx, x + sx, y0, h, club ? pal.clubWallAlt : pal.wallPaperAlt);
   };
   if (kind === 'upper') {
     stripes(y, TILE);

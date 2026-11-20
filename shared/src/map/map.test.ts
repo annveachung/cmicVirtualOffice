@@ -164,6 +164,18 @@ describe('activity spots', () => {
     expect(SPOTS.filter((s) => s.action === 'present').length).toBe(2);
   });
 
+  it('has a working Potato Club', async () => {
+    const { SPOTS, INSTANT_ACTIONS } = await import('./spots.js');
+    const count = (a: string) => SPOTS.filter((s) => s.action === a).length;
+    expect(count('sing')).toBe(1);
+    expect(count('dance')).toBe(12); // 4x3 dance floor
+    expect(count('vend')).toBe(1);
+    expect(count('costume')).toBe(1);
+    expect(count('mascot')).toBe(1);
+    expect(['costume', 'vend', 'mascot'].every((a) => INSTANT_ACTIONS.has(a as never))).toBe(true);
+    expect(SPOTS.some((s) => s.action === 'present' && s.id.startsWith('stage') && s.tile.tx > 47)).toBe(false);
+  });
+
   it('clicking a desk or a treadmill resolves to the right spot', async () => {
     const { spotForTile } = await import('./spots.js');
     const d = DESKS[4];

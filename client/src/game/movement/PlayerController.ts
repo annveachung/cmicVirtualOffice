@@ -3,6 +3,7 @@ import {
   WALK_SPEED,
   approachTiles,
   findPath,
+  INSTANT_ACTIONS,
   canReachSpot,
   moveWithCollision,
   nearestWalkable,
@@ -48,6 +49,8 @@ export class PlayerController {
   private teleport: Vec2 | null = null;
   /** Called when a click-path finishes or is cancelled (to hide the target marker). */
   onPathEnd: () => void = () => {};
+  /** Called for one-off actions (costume, snack, poke the mascot) — they don't put you in a pose. */
+  onInstant: (spot: Spot) => void = () => {};
 
   constructor(
     scene: Phaser.Scene,
@@ -118,7 +121,7 @@ export class PlayerController {
 
     if (this.using) {
       const { spot } = this.using;
-      if (ix === 0 && iy === 0) return { ...spot.pos, dir: spot.facing, pose: spot.action };
+      if (ix === 0 && iy === 0) return { ...spot.pos, dir: spot.facing, pose: spot.action as CharacterPose };
       pos = this.standUp(pos); // any movement key stops the activity
       this.teleport = null;
     }
@@ -155,7 +158,7 @@ export class PlayerController {
       if (this.pending) {
         const { spot, standTile } = this.pending;
         this.use(spot, standTile);
-        return { ...spot.pos, dir: spot.facing, pose: spot.action };
+        if (this.using) return { ...spot.pos, dir: spot.facing, pose: spot.action as CharacterPose };
       }
     }
 
@@ -173,6 +176,12 @@ export class PlayerController {
   private use(spot: Spot, standTile: TilePos) {
     this.waypoints = [];
     this.pending = null;
+    if (INSTANT_ACTIONS.has(spot.action)) {
+      // one-off: face it, do the thing, stay standing where you are
+      this.dir = spot.facing;
+      this.onInstant(spot);
+      return;
+    }
     this.using = { spot, standTile };
     this.teleport = null;
     this.dir = spot.facing;

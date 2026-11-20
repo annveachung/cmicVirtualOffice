@@ -11,6 +11,7 @@ import type { Placement } from './furniture.js';
  * Tile kinds:
  *   '#' wall      'c' carpet (open-plan hall)   'w' wooden floor
  *   'k' pantry tiles   'g' gym rubber floor     'b' washroom tiles
+ *   'p' Potato Club party carpet
  *
  * The whole back wall (rows 1-2) is floor-to-ceiling glass with a city skyline
  * behind it — painted by the client, so there are no separate window objects.
@@ -21,8 +22,8 @@ import type { Placement } from './furniture.js';
  *   ┌──────────────┬────────────┬──────────────────────────┐
  *   │    Lounge    │  Meeting   │          Pantry          │
  *   ├─────┬────────┴────────────┴────────────┬─────────────┤
- *   │ Off1│                                  │    Flex     │
- *   ├─────┤                                  │    room     │
+ *   │ Off1│                                  │ The Potato  │
+ *   ├─────┤                                  │    Club     │
  *   │ Off2│   Open-plan hall: 12 desks       ├─────────────┤
  *   ├─────┤   in pairs, pods and solo         │             │
  *   │ Off3│                     ┌─[vanity]──┐│     Gym     │
@@ -30,7 +31,7 @@ import type { Placement } from './furniture.js';
  *   │ Off4│                     │ ▢▢▢ │ ▢▢⊓⊓││             │
  *   └─────┴─────────[ entrance ]────┴───┴───┴┴─────────────┘
  */
-export type TileKind = '#' | 'c' | 'w' | 'k' | 'g' | 'b';
+export type TileKind = '#' | 'c' | 'w' | 'k' | 'g' | 'b' | 'p';
 
 export const MAP_W = 59;
 export const MAP_H = 31;
@@ -55,7 +56,7 @@ function buildTiles(): TileKind[][] {
 
   rect(8, 11, 46, 29, 'c'); // open-plan hall
   for (const r of OFFICE_ROOMS) rect(1, r.y0, 6, r.y1, 'w'); // private offices
-  rect(48, 11, 57, 18, 'w'); // flex room (kept open for a future use)
+  rect(48, 11, 57, 18, 'p'); // The Potato Club (karaoke + dance room)
   rect(48, 20, 57, 29, 'g'); // gym
 
   // Washrooms (bottom-right of the hall): a shared hand-wash lobby, then
@@ -70,7 +71,7 @@ function buildTiles(): TileKind[][] {
   rect(23, 10, 25, 10, 'c'); // meeting room
   rect(34, 10, 37, 10, 'c'); // pantry
   for (const r of OFFICE_ROOMS) rect(7, r.y0 + 1, 7, r.y0 + 2, 'w'); // office doors
-  rect(47, 14, 47, 15, 'w'); // flex room
+  rect(47, 14, 47, 15, 'p'); // The Potato Club
   rect(47, 21, 47, 22, 'g'); // gym
   rect(37, 24, 37, 25, 'b'); // washroom lobby (from the hall)
   rect(40, 26, 40, 26, 'b'); // women's room
@@ -272,17 +273,27 @@ export const PLACEMENTS: Placement[] = [
   P('urinal', 45, 29),
   P('urinal', 46, 29),
 
-  // ---- Flex room (kept open for a future use) ----
-  P('noticeBoard', 48, 10),
-  P('painting', 57, 10, { variant: 1 }),
-  P('rug', 50, 13, { w: 6, h: 4, variant: 2 }),
-  P('beanBag', 51, 14, { variant: 0 }),
-  P('beanBag', 54, 14, { variant: 1 }),
-  P('beanBag', 52, 16, { variant: 2 }),
-  P('plant', 48, 11, { variant: 0 }),
-  P('plant', 57, 11, { variant: 1 }),
-  P('plantSmall', 48, 18),
-  P('plantSmall', 57, 18),
+  // ---- The Potato Club: karaoke stage, dance floor, disco ball, potatoes ----
+  P('potatoPoster', 48, 10, { variant: 0 }),
+  P('clubSign', 50, 10, { w: 4 }),
+  P('potatoPoster', 55, 10, { variant: 1 }),
+  P('potatoPoster', 57, 10, { variant: 2 }),
+  P('stage', 49, 11, { w: 7, h: 2, variant: 1 }), // variant 1 = karaoke stage
+  P('speaker', 49, 11),
+  P('potatoPlush', 50, 11, { variant: 0 }),
+  P('micStand', 52, 12, { id: 'karaoke-mic' }),
+  P('potatoMascot', 54, 11, { id: 'potato-mascot' }),
+  P('speaker', 55, 11),
+  P('danceFloor', 50, 14, { w: 4, h: 3 }),
+  P('discoBall', 51, 14, { w: 2, h: 2 }),
+  P('costumeRack', 48, 11, { id: 'potato-costume' }),
+  P('potatoVending', 57, 11, { id: 'potato-vending' }),
+  P('beanBag', 48, 17, { variant: 0 }),
+  P('beanBag', 50, 18, { variant: 4 }),
+  P('armchair', 56, 15, { dir: 'left' }),
+  P('armchair', 56, 17, { dir: 'left' }),
+  P('potatoPlush', 54, 18, { variant: 1 }),
+  P('potatoPlush', 57, 18, { variant: 2 }),
 
   // ---- Gym ----
   P('mirror', 49, 19),
@@ -318,11 +329,14 @@ export const AREA_LABELS: AreaLabel[] = [
   { text: 'Lounge', tx: 1, ty: 3 },
   { text: 'Meeting Room', tx: 18, ty: 3 },
   { text: 'Pantry', tx: 32, ty: 3 },
-  { text: 'Flex Room', tx: 48, ty: 11 },
+  { text: 'The Potato Club', tx: 49, ty: 13 },
   { text: 'Gym', tx: 48, ty: 20 },
   { text: 'Women', tx: 38, ty: 27 },
   { text: 'Men', tx: 43, ty: 27 },
 ];
+
+/** The Potato Club's floor area (inclusive tile bounds) — the client shows the club controls inside it. */
+export const POTATO_CLUB = { x0: 48, y0: 11, x1: 57, y1: 18 } as const;
 
 /** Everyone arrives just inside the main entrance (bottom of the open-plan hall). */
 export const SPAWN: TilePos = { tx: 25, ty: 29 };

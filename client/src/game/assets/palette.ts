@@ -51,6 +51,17 @@ export interface EnvPalette {
   shadow: string; // rgba for soft shadows
   sky: string;
   bg: string;
+  // The Potato Club: purple party room, neon lights, potatoes
+  clubFloor: string;
+  clubFloorAlt: string;
+  clubWall: string;
+  clubWallAlt: string;
+  neonPink: string;
+  neonPurple: string;
+  neonAmber: string;
+  potato: string;
+  potatoDark: string;
+  potatoLight: string;
   // city skyline seen through the back window wall
   skyTop: string;
   skyHorizon: string;
@@ -108,6 +119,16 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(31, 58, 44, 0.14)',
     sky: '#d8ebe4',
     bg: '#b9cbb2',
+    clubFloor: '#3d2754',
+    clubFloorAlt: '#36224c',
+    clubWall: '#5a3680',
+    clubWallAlt: '#523176',
+    neonPink: '#ff5fb4',
+    neonPurple: '#b779ff',
+    neonAmber: '#ffb547',
+    potato: '#cf9f5f',
+    potatoDark: '#9b7140',
+    potatoLight: '#e8c486',
     skyTop: '#6fa4e0',
     skyHorizon: '#cfe4f5',
     cityFar: '#a3b6cc',
@@ -159,6 +180,16 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(0, 8, 4, 0.36)',
     sky: '#13221b',
     bg: '#16221b',
+    clubFloor: '#2a1a3c',
+    clubFloorAlt: '#251735',
+    clubWall: '#3b2358',
+    clubWallAlt: '#351f50',
+    neonPink: '#ff5fb4',
+    neonPurple: '#b779ff',
+    neonAmber: '#ffb547',
+    potato: '#b88a50',
+    potatoDark: '#86603a',
+    potatoLight: '#d4ad72',
     skyTop: '#0a0f2e',
     skyHorizon: '#2c2a5e',
     cityFar: '#1d2449',

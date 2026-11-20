@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { Appearance, Direction, Theme } from '@little-office/shared';
 import { FEET_ROW, FRAME_H } from '../assets/characterArt';
-import { animKey, ensureCharacter, type AnimName } from '../assets/textures';
+import { COSTUME_KEY, REACTION_KEYS, animKey, ensureCharacter, type AnimName, type Reaction } from '../assets/textures';
 import { DEPTH, LABEL_PX, NIGHT_TINT } from '../constants';
 import { SpeechBubble } from './SpeechBubble';
 
@@ -23,6 +23,8 @@ export class Character {
   private readonly shadow: Phaser.GameObjects.Ellipse;
   private readonly nameTag: Phaser.GameObjects.Text;
   private readonly bubble: SpeechBubble;
+  private readonly costume: Phaser.GameObjects.Image;
+  private sayTimer: Phaser.Time.TimerEvent | null = null;
   private labelScale = 1;
   private dir: Direction = 'down';
   private pose: CharacterPose = 'idle';
@@ -30,7 +32,7 @@ export class Character {
   y = 0;
 
   constructor(
-    scene: Phaser.Scene,
+    private readonly scene: Phaser.Scene,
     private readonly appearance: Appearance,
     name: string,
     opts: { isLocal: boolean },
@@ -52,6 +54,7 @@ export class Character {
     // stay readable when the whole office is zoomed out to fit the monitor.
     this.nameTag.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
     this.bubble = new SpeechBubble(scene);
+    this.costume = scene.add.image(0, 0, COSTUME_KEY).setOrigin(0.5, FEET_ROW / FRAME_H).setVisible(false);
     this.playAnim();
   }
 
@@ -61,6 +64,8 @@ export class Character {
     const rx = Math.round(x);
     const ry = Math.round(y);
     this.sprite.setPosition(rx, ry).setDepth(DEPTH.world + y);
+    // the potato suit follows the body (and sinks with it when sitting)
+    this.costume.setPosition(rx, ry + (SEATED.has(this.pose) ? 2 : 0)).setDepth(DEPTH.world + y + 0.1);
     this.shadow.setPosition(rx, ry).setDepth(DEPTH.world + y - 0.5);
     const tagY = ry - (SEATED.has(this.pose) ? 19 : 21);
     this.nameTag.setPosition(rx, tagY);
@@ -77,7 +82,7 @@ export class Character {
     this.shadow.setVisible(!SEATED.has(pose)); // the seat already grounds a seated character
     // Presenting shows an animated "..." bubble while you're on stage.
     if (pose === 'present') this.bubble.typing();
-    else this.bubble.hide();
+    else if (!this.sayTimer) this.bubble.hide();
   }
 
   /** Keep the name tag a constant on-screen size regardless of camera zoom. */
@@ -88,15 +93,58 @@ export class Character {
   }
 
   setTheme(theme: Theme): void {
-    if (theme === 'dark') this.sprite.setTint(NIGHT_TINT);
-    else this.sprite.clearTint();
+    if (theme === 'dark') {
+      this.sprite.setTint(NIGHT_TINT);
+      this.costume.setTint(NIGHT_TINT);
+    } else {
+      this.sprite.clearTint();
+      this.costume.clearTint();
+    }
   }
 
   private playAnim(): void {
     this.sprite.play(animKey(this.appearance, `${this.pose}-${this.dir}`), true);
   }
 
+  /** Show a message in the speech bubble for a few seconds. */
+  say(text: string, ms = 3500): void {
+    this.sayTimer?.remove();
+    this.bubble.say(text);
+    this.sayTimer = this.scene.time.delayedCall(ms, () => {
+      this.sayTimer = null;
+      if (this.pose === 'present') this.bubble.typing();
+      else this.bubble.hide();
+    });
+  }
+
+  /** Put the potato suit on / take it off. */
+  setCostume(on: boolean): void {
+    this.costume.setVisible(on);
+  }
+
+  get wearingCostume(): boolean {
+    return this.costume.visible;
+  }
+
+  /** A little reaction icon (heart, clap, laugh) floats up from the head and fades. */
+  react(kind: Reaction): void {
+    const icon = this.scene.add
+      .image(this.x + (Math.random() * 8 - 4), this.y - 26, REACTION_KEYS[kind])
+      .setDepth(DEPTH.nameplates + 2);
+    this.scene.tweens.add({
+      targets: icon,
+      y: icon.y - 18,
+      alpha: { from: 1, to: 0 },
+      scale: { from: 1, to: 1.4 },
+      duration: 1400,
+      ease: 'Sine.easeOut',
+      onComplete: () => icon.destroy(),
+    });
+  }
+
   destroy(): void {
+    this.sayTimer?.remove();
+    this.costume.destroy();
     this.sprite.destroy();
     this.shadow.destroy();
     this.nameTag.destroy();
