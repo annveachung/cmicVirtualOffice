@@ -544,7 +544,8 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     hline(ctx, 3, 13, 10, shade(c, -0.2));
   },
 
-  stage(ctx, { pal, W, H }) {
+  stage(ctx, { pal, W, H, v }) {
+    if (v === 1) return karaokeStage(ctx, pal, W, H);
     const top = shade(pal.furnLight, 0.06);
     const front = 6;
     rect(ctx, 0, 0, W, H - front, top);
@@ -752,6 +753,103 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     for (let x = 8; x < W - 8; x += 3) vline(ctx, x, 10, H - 16, c);
   },
 
+  speaker(ctx, { pal, H }) {
+    box(ctx, 1, 0, 14, H - 2, '#2a2236', pal.outline);
+    ellipse(ctx, 8, 6, 3, 3, '#4a3d5c');
+    ellipse(ctx, 8, 6, 1, 1, pal.neonPurple);
+    ellipse(ctx, 8, 16, 5, 5, '#4a3d5c');
+    ellipse(ctx, 8, 16, 2, 2, '#16111e');
+    px(ctx, 12, 2, pal.neonPink); // power LED
+  },
+
+  micStand(ctx, { pal, H }) {
+    ellipse(ctx, 8, H - 2, 4, 1, pal.outline);
+    vline(ctx, 8, 5, H - 7, pal.metalDark);
+    box(ctx, 6, 0, 5, 6, pal.metal, pal.outline); // mic head
+    hline(ctx, 7, 2, 3, pal.metalLight);
+    px(ctx, 10, 6, pal.neonPink);
+  },
+
+  potatoMascot(ctx, { pal, H }) {
+    // Mr. Potato: big, round, wearing a party hat
+    const cy = H - 14;
+    ellipse(ctx, 8, H - 1, 6, 1, pal.potatoDark); // floor shadow
+    ellipse(ctx, 8, cy, 8, 13, pal.outline);
+    ellipse(ctx, 8, cy, 7, 12, pal.potato);
+    ellipse(ctx, 6, cy - 4, 3, 5, pal.potatoLight);
+    [[4, cy + 5], [11, cy + 7], [12, cy - 6], [3, cy - 7]].forEach(([x, y]) => px(ctx, x, y, pal.potatoDark));
+    px(ctx, 5, cy - 2, pal.outline); // eyes
+    px(ctx, 10, cy - 2, pal.outline);
+    px(ctx, 4, cy, pal.neonPink); // blush
+    px(ctx, 11, cy, pal.neonPink);
+    hline(ctx, 6, cy + 2, 4, pal.outline); // smile
+    px(ctx, 5, cy + 1, pal.outline);
+    px(ctx, 10, cy + 1, pal.outline);
+    rect(ctx, 0, cy, 2, 1, pal.potatoDark); // little arms
+    rect(ctx, 14, cy - 1, 2, 1, pal.potatoDark);
+    for (let i = 0; i < 6; i++) hline(ctx, 8 - Math.floor(i / 2), cy - 18 + i, 1 + Math.floor(i / 2) * 2, pal.neonPink); // party hat
+    px(ctx, 8, cy - 19, pal.neonAmber);
+  },
+
+  potatoPlush(ctx, { pal, H, v }) {
+    const cy = H - 7;
+    ellipse(ctx, 8, cy, 6, 5, pal.outline);
+    ellipse(ctx, 8, cy, 5, 4, pal.potato);
+    px(ctx, 6, cy - 1, pal.outline);
+    px(ctx, 10, cy - 1, pal.outline);
+    hline(ctx, 7, cy + 1, 3, pal.potatoDark);
+    if (v === 1) { rect(ctx, 6, cy - 5, 2, 2, pal.neonPink); rect(ctx, 9, cy - 5, 2, 2, pal.neonPink); px(ctx, 8, cy - 4, pal.neonPink); } // bow
+    if (v === 2) { hline(ctx, 6, cy - 4, 5, pal.neonAmber); px(ctx, 6, cy - 5, pal.neonAmber); px(ctx, 8, cy - 5, pal.neonAmber); px(ctx, 10, cy - 5, pal.neonAmber); } // crown
+  },
+
+  potatoVending(ctx, { pal, H }) {
+    box(ctx, 1, 0, 14, H, mix(pal.neonPurple, pal.outline, 0.35), pal.outline);
+    box(ctx, 3, 4, 8, 16, pal.glassLight, pal.outline); // window of snacks
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) rect(ctx, 4 + c * 4, 6 + r * 5, 3, 3, [pal.neonAmber, pal.potatoLight, pal.neonPink][(r + c) % 3]);
+    rect(ctx, 12, 6, 2, 3, pal.outline); // coin slot
+    px(ctx, 12, 11, pal.neonAmber);
+    box(ctx, 3, H - 9, 10, 4, pal.outline, pal.outline); // pickup flap
+    ellipse(ctx, 8, 1, 3, 2, pal.potato); // little potato on top
+  },
+
+  costumeRack(ctx, { pal, H }) {
+    ellipse(ctx, 8, H - 2, 5, 1, pal.outline);
+    vline(ctx, 8, 2, H - 4, pal.metalDark);
+    hline(ctx, 4, 2, 9, pal.metalDark);
+    // the potato suit on its hanger
+    ellipse(ctx, 8, 13, 6, 8, pal.outline);
+    ellipse(ctx, 8, 13, 5, 7, pal.potato);
+    px(ctx, 6, 10, pal.potatoDark);
+    px(ctx, 10, 15, pal.potatoDark);
+    rect(ctx, 6, 6, 5, 3, shade(pal.potato, -0.1)); // neck hole
+    rect(ctx, 7, 7, 3, 1, pal.outline);
+  },
+
+  danceFloor(ctx, { pal, W, H }) {
+    const colors = [pal.neonPink, pal.neonPurple, pal.neonAmber, pal.glass];
+    for (let ty = 0; ty < H / TILE; ty++)
+      for (let tx = 0; tx < W / TILE; tx++) {
+        const c = mix(colors[(tx + ty * 2) % colors.length], pal.outline, 0.45); // lights "off"; the renderer animates them
+        box(ctx, tx * TILE, ty * TILE, TILE, TILE, c, pal.outline);
+        hline(ctx, tx * TILE + 2, ty * TILE + 2, 4, shade(c, 0.3));
+      }
+  },
+
+  clubSign(ctx, { pal, W }) {
+    box(ctx, 0, 1, W, 14, '#1a1024', pal.outline);
+    drawPixelText(ctx, 'POTATO CLUB', W / 2, 6, pal.neonPink, pal.neonAmber);
+  },
+
+  potatoPoster(ctx, { pal, v }) {
+    box(ctx, 2, 1, 12, 14, '#1a1024', pal.neonPurple);
+    ellipse(ctx, 8, 9, 4, 4, pal.potato);
+    px(ctx, 7, 8, pal.outline);
+    px(ctx, 9, 8, pal.outline);
+    if (v === 1) { vline(ctx, 12, 6, 5, pal.metalDark); rect(ctx, 11, 4, 3, 2, pal.metal); } // potato with a mic
+    else if (v === 2) { px(ctx, 5, 3, pal.neonPink); px(ctx, 7, 3, pal.neonPink); hline(ctx, 5, 4, 3, pal.neonPink); px(ctx, 6, 5, pal.neonPink); } // heart
+    else { hline(ctx, 6, 4, 5, pal.neonAmber); px(ctx, 8, 3, pal.neonAmber); } // crown
+  },
+
   rug(ctx, { pal, W, H, v }) {
     const base = [pal.fabricC, pal.accents[3], pal.accents[1]][v % 3];
     roundBox(ctx, 0, 0, W, H, mix(base, pal.outline, 0.25), mix(base, pal.outline, 0.45));
@@ -760,6 +858,45 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     for (let y = 6; y < H - 6; y += 6) for (let x = 6 + ((y / 6) % 2) * 3; x < W - 6; x += 6) px(ctx, x, y, shade(base, 0.2));
   },
 };
+
+// ------------------------------------------------------------ club helpers --
+
+function karaokeStage(ctx: Ctx, pal: EnvPalette, W: number, H: number) {
+  const top = mix(pal.neonPurple, pal.outline, 0.55);
+  const front = 6;
+  rect(ctx, 0, 0, W, H - front, top);
+  for (let y = 4; y < H - front; y += 5) hline(ctx, 0, y, W, shade(top, -0.12));
+  ellipse(ctx, W / 2, (H - front) / 2 + 1, 18, 7, shade(top, 0.15)); // spotlight
+  rect(ctx, 0, H - front, W, front, '#1a1024');
+  for (let x = 3; x < W; x += 6) px(ctx, x, H - front + 2, [pal.neonPink, pal.neonAmber, pal.neonPurple][(x / 6) % 3 | 0]); // marquee bulbs
+  hline(ctx, 0, H - front, W, pal.neonPink);
+  hline(ctx, 0, H - 1, W, pal.outline);
+  vline(ctx, 0, 0, H, pal.outline);
+  vline(ctx, W - 1, 0, H, pal.outline);
+}
+
+/** 3x5 pixel font — just the letters the club sign needs. */
+const GLYPHS: Record<string, string[]> = {
+  P: ['###', '#.#', '###', '#..', '#..'],
+  O: ['###', '#.#', '#.#', '#.#', '###'],
+  T: ['###', '.#.', '.#.', '.#.', '.#.'],
+  A: ['.#.', '#.#', '###', '#.#', '#.#'],
+  C: ['###', '#..', '#..', '#..', '###'],
+  L: ['#..', '#..', '#..', '#..', '###'],
+  U: ['#.#', '#.#', '#.#', '#.#', '###'],
+  B: ['##.', '#.#', '##.', '#.#', '##.'],
+  ' ': ['...', '...', '...', '...', '...'],
+};
+
+function drawPixelText(ctx: Ctx, text: string, cx: number, y: number, color: string, glow: string) {
+  const w = text.length * 4 - 1;
+  let x = Math.round(cx - w / 2);
+  for (const ch of text) {
+    const g = GLYPHS[ch] ?? GLYPHS[' '];
+    g.forEach((row, gy) => [...row].forEach((c, gx) => { if (c === '#') { px(ctx, x + gx, y + gy + 1, glow); px(ctx, x + gx, y + gy, color); } }));
+    x += 4;
+  }
+}
 
 /** Render one placement to its own canvas. */
 export function paintFurniture(p: Placement, pal: EnvPalette): HTMLCanvasElement {
