@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { Appearance, Direction, Theme } from '@little-office/shared';
 import { FEET_ROW, FRAME_H } from '../assets/characterArt';
 import { COSTUME_KEY, REACTION_KEYS, animKey, ensureCharacter, type AnimName, type Reaction } from '../assets/textures';
-import { DEPTH, GAME_FONT, LABEL_PX, NIGHT_TINT, TEXT_RESOLUTION } from '../constants';
+import { CHARACTER_SCALE, DEPTH, GAME_FONT, LABEL_PX, NIGHT_TINT, TEXT_RESOLUTION } from '../constants';
 import { SpeechBubble } from './SpeechBubble';
 
 /** Which animation is playing: idle, walk, sit, run, pedal, lift... (see ANIMS). */
@@ -38,8 +38,8 @@ export class Character {
     opts: { isLocal: boolean },
   ) {
     const texKey = ensureCharacter(scene, appearance);
-    this.shadow = scene.add.ellipse(0, 0, 11, 4, 0x2a1e1a, 0.25);
-    this.sprite = scene.add.sprite(0, 0, texKey, 'down-idle').setOrigin(0.5, FEET_ROW / FRAME_H);
+    this.shadow = scene.add.ellipse(0, 0, 11 * CHARACTER_SCALE, 4 * CHARACTER_SCALE, 0x2a1e1a, 0.25);
+    this.sprite = scene.add.sprite(0, 0, texKey, 'down-idle').setOrigin(0.5, FEET_ROW / FRAME_H).setScale(CHARACTER_SCALE);
     this.nameTag = scene.add
       .text(0, 0, name, {
         fontFamily: GAME_FONT,
@@ -55,7 +55,7 @@ export class Character {
     // stay readable when the whole office is zoomed out to fit the monitor.
     this.nameTag.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
     this.bubble = new SpeechBubble(scene);
-    this.costume = scene.add.image(0, 0, COSTUME_KEY).setOrigin(0.5, FEET_ROW / FRAME_H).setVisible(false);
+    this.costume = scene.add.image(0, 0, COSTUME_KEY).setOrigin(0.5, FEET_ROW / FRAME_H).setScale(CHARACTER_SCALE).setVisible(false);
     this.playAnim();
   }
 
@@ -66,9 +66,9 @@ export class Character {
     const ry = Math.round(y);
     this.sprite.setPosition(rx, ry).setDepth(DEPTH.world + y);
     // the potato suit follows the body (and sinks with it when sitting)
-    this.costume.setPosition(rx, ry + (SEATED.has(this.pose) ? 2 : 0)).setDepth(DEPTH.world + y + 0.1);
+    this.costume.setPosition(rx, ry + (SEATED.has(this.pose) ? 2 * CHARACTER_SCALE : 0)).setDepth(DEPTH.world + y + 0.1);
     this.shadow.setPosition(rx, ry).setDepth(DEPTH.world + y - 0.5);
-    const tagY = ry - (SEATED.has(this.pose) ? 19 : 21);
+    const tagY = ry - (SEATED.has(this.pose) ? 19 : 21) * CHARACTER_SCALE;
     this.nameTag.setPosition(rx, tagY);
     // bubble floats just above the name tag (both measured in screen px, scaled by 1/zoom)
     this.bubble.setPosition(rx, tagY - this.nameTag.displayHeight - 2 * this.labelScale);
@@ -130,7 +130,7 @@ export class Character {
   /** A little reaction icon (heart, clap, laugh) floats up from the head and fades. */
   react(kind: Reaction): void {
     const icon = this.scene.add
-      .image(this.x + (Math.random() * 8 - 4), this.y - 26, REACTION_KEYS[kind])
+      .image(this.x + (Math.random() * 8 - 4), this.y - 26 * CHARACTER_SCALE, REACTION_KEYS[kind])
       .setDepth(DEPTH.nameplates + 2);
     this.scene.tweens.add({
       targets: icon,
