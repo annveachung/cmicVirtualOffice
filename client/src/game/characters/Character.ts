@@ -42,8 +42,8 @@ export class Character {
       .text(0, 0, name, {
         fontFamily: '"Pixelify Sans", monospace',
         fontSize: `${LABEL_PX.name}px`,
-        color: opts.isLocal ? '#fff3cf' : '#f6efe2',
-        backgroundColor: opts.isLocal ? 'rgba(122, 82, 56, 0.9)' : 'rgba(46, 36, 34, 0.78)',
+        color: '#1f3a2c',
+        backgroundColor: opts.isLocal ? '#d4ef84' : '#fbf8ee', // you = lime tag, others = cream
         padding: { x: 2, y: 1 },
       })
       .setOrigin(0.5, 1)

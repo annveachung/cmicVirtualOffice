@@ -52,7 +52,7 @@ export class OfficeRenderer {
 
     for (const l of AREA_LABELS) {
       this.plaques.push(
-        this.makeLabel(l.tx * TILE, l.ty * TILE, l.text, LABEL_PX.plaque).setDepth(DEPTH.labels),
+        this.makeLabel(l.tx * TILE, l.ty * TILE, l.text.toUpperCase(), LABEL_PX.plaque).setDepth(DEPTH.labels),
       );
     }
     this.applyTheme(theme);
@@ -121,7 +121,7 @@ export class OfficeRenderer {
   private styleLabels() {
     const pal = PALETTES[this.theme];
     const style = (t: Phaser.GameObjects.Text) =>
-      t.setColor(this.theme === 'light' ? '#fbf3e2' : '#f3d9a8').setBackgroundColor(this.theme === 'light' ? pal.wallTop : '#2b2f40');
+      t.setColor(this.theme === 'light' ? '#1f3a2c' : '#e6f3c2').setBackgroundColor(this.theme === 'light' ? pal.paper : '#1a3024');
     this.plaques.forEach(style);
     this.deskTags.forEach(style);
   }
