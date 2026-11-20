@@ -925,6 +925,35 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     [[5, 40], [7, 40], [6, 42], [8, 42], [7, 44]].forEach(([x, y]) => px(ctx, x, oh + y, pal.accents[3]));
   },
 
+  /** One side of a booth: tall tufted backrest on the outer side, two seat cushions. */
+  boothBench(ctx, { pal, H, oh, dir }) {
+    const up = pal.fabricB;
+    const back = shade(up, -0.22);
+    const f = (x: number, w: number) => (dir === 'left' ? 16 - x - w : x); // drawn for 'right', mirrored for 'left'
+    box(ctx, f(0, 6), 0, 6, H - 2, back, pal.outline); // tall backrest
+    for (let y = 5; y < H - 6; y += 6) px(ctx, f(3, 1), y, shade(up, -0.4)); // button tufting
+    vline(ctx, f(1, 1), 1, H - 4, shade(back, 0.2));
+    for (let i = 0; i < 2; i++) {
+      box(ctx, f(4, 11), oh + i * TILE + 2, 11, 12, up, pal.outline); // seat cushion
+      hline(ctx, f(5, 9), oh + i * TILE + 3, 9, shade(up, 0.25));
+    }
+    box(ctx, f(4, 11), H - 4, 11, 3, pal.furn, pal.outline); // wooden base
+  },
+
+  /** The booth's table: wooden top on a pedestal, set for four. */
+  boothTable(ctx, { pal, W, H }) {
+    rect(ctx, W / 2 - 2, H - 8, 4, 6, pal.furnDark); // pedestal
+    ellipse(ctx, W / 2, H - 2, 6, 1, pal.outline);
+    box(ctx, 0, 1, W, H - 9, pal.furnLight, pal.outline);
+    hline(ctx, 1, 2, W - 2, shade(pal.furnLight, 0.2));
+    box(ctx, 0, H - 9, W, 3, pal.furn, pal.outline);
+    ellipse(ctx, 7, 8, 3, 2, pal.paper); // plates for each side
+    ellipse(ctx, W - 8, 8, 3, 2, pal.paper);
+    ellipse(ctx, 7, 18, 3, 2, pal.paper);
+    ellipse(ctx, W - 8, 18, 3, 2, pal.paper);
+    mug(ctx, pal, W / 2 - 3, 10, pal.accents[0]);
+  },
+
   rug(ctx, { pal, W, H, v }) {
     const base = [pal.fabricC, pal.accents[3], pal.accents[1]][v % 3];
     roundBox(ctx, 0, 0, W, H, mix(base, pal.outline, 0.25), mix(base, pal.outline, 0.45));
