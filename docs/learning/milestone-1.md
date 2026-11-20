@@ -178,3 +178,19 @@ The music is an original composition: real game music (e.g. Nintendo's) is copyr
 The pixel cursors are ASCII templates drawn onto a `<canvas>`, turned into a PNG with
 `canvas.toDataURL()`, and handed to CSS (`cursor: url(data:...) x y, auto`). The `x y` numbers are
 the **hotspot**, the exact pixel that "clicks" (the arrow's tip, the hand's fingertip).
+
+## 28. Building a feature room as its own module
+The Potato Club touches nearly every layer, but each layer only got a small, focused addition:
+- **shared**: the room's tiles, furniture and spots (`sing`, `dance`, plus *instant* actions
+  `costume`/`vend`/`mascot` that fire once instead of putting you in a pose)
+- **art**: painters for each new object, a 3×5 pixel font for the neon sign, a potato-suit overlay
+- **animation data**: four dance styles, where "spin" reuses one frame across all four directions
+- **`club/PotatoClub.ts`**: all the club *behaviour* in one class (songs, messages, snacks,
+  mascot, achievements); the scene just forwards events to it
+- **React**: a `ClubPanel` that only appears in the club (`zone:changed` on the bus) and achievement toasts
+Keeping the behaviour in one module means the scene stays readable, and in Milestone 2 there's one
+obvious place to add "broadcast this to everyone".
+
+**Instant vs ongoing actions** is a useful distinction in any interaction system: sitting, singing
+and dancing are *states* you're in until you leave; putting on a costume or getting a snack are
+*events* that happen once.
