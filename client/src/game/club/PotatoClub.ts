@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { POTATO_CLUB, SPOTS, TILE, toTile, type Spot } from '@little-office/shared';
+import { SPOTS, TILE, type Spot } from '@little-office/shared';
 import { DANCE_STYLES, type DanceStyle, type Reaction } from '../assets/textures';
 import { bus } from '../bus';
 import type { Character, CharacterPose } from '../characters/Character';
@@ -23,7 +23,6 @@ export class PotatoClub {
   private danceStyle: DanceStyle = 'danceGroove';
   private lastPose: CharacterPose = 'idle';
   private singTimer: Phaser.Time.TimerEvent | null = null;
-  private inClub = false;
   private readonly mascotBubble: SpeechBubble;
   private readonly unsubscribers: (() => void)[] = [];
 
@@ -54,12 +53,6 @@ export class PotatoClub {
       if (pose === 'sing') this.onStartSinging();
       if (this.lastPose === 'sing') this.stopSinging();
       this.lastPose = pose;
-    }
-    const t = toTile({ x: this.player.x, y: this.player.y });
-    const inside = t.tx >= POTATO_CLUB.x0 && t.tx <= POTATO_CLUB.x1 && t.ty >= POTATO_CLUB.y0 && t.ty <= POTATO_CLUB.y1;
-    if (inside !== this.inClub) {
-      this.inClub = inside;
-      bus.emit('zone:changed', inside ? 'potato-club' : null);
     }
   }
 

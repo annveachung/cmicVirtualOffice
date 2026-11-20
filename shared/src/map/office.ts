@@ -312,8 +312,18 @@ export const AREA_LABELS: AreaLabel[] = [
   { text: 'Women', tx: 43, ty: 30 },
 ];
 
-/** The Potato Club's floor area (inclusive tile bounds) — the client shows the club controls inside it. */
-export const POTATO_CLUB = { x0: 48, y0: 11, x1: 57, y1: 18 } as const;
+/** Special areas (inclusive tile bounds). Walking into one can change the music, show extra controls, etc. */
+export const ZONES = [
+  { id: 'potato-club', x0: 48, y0: 11, x1: 57, y1: 18 },
+  { id: 'gym', x0: 48, y0: 20, x1: 57, y1: 29 },
+] as const;
+
+export type ZoneId = (typeof ZONES)[number]['id'];
+
+/** Which special area (if any) a tile is in. */
+export function zoneAt(tx: number, ty: number): ZoneId | null {
+  return ZONES.find((z) => tx >= z.x0 && tx <= z.x1 && ty >= z.y0 && ty <= z.y1)?.id ?? null;
+}
 
 /** Everyone arrives just inside the main entrance (bottom of the open-plan hall). */
 export const SPAWN: TilePos = { tx: 25, ty: 29 };

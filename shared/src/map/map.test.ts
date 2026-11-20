@@ -204,6 +204,13 @@ describe('activity spots', () => {
     expect(loungeSofaSeats.length).toBeGreaterThanOrEqual(8); // two facing sofas
   });
 
+  it('knows which special area a tile is in', async () => {
+    const { zoneAt } = await import('./office.js');
+    expect(zoneAt(52, 15)).toBe('potato-club');
+    expect(zoneAt(52, 25)).toBe('gym');
+    expect(zoneAt(SPAWN.tx, SPAWN.ty)).toBeNull();
+  });
+
   it('has a booth for four in the pantry', async () => {
     const { SPOTS } = await import('./spots.js');
     expect(SPOTS.filter((s) => s.id.startsWith('booth-')).length).toBe(4);

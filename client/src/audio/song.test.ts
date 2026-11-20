@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { CLUB_SONG, OFFICE_SONG } from './song';
+import { CLUB_SONG, GYM_SONG, OFFICE_SONG } from './song';
 
 describe.each([
   ['office', OFFICE_SONG],
   ['club', CLUB_SONG],
+  ['gym', GYM_SONG],
 ])('%s song', (_name, song) => {
   it('has 8 eighth-notes per bar and a chord pair for every bar', () => {
     for (const bar of song.lead) expect(bar).toHaveLength(8);
@@ -17,7 +18,9 @@ describe.each([
   });
 });
 
-it('the club track is faster and has drums', () => {
+it('party and gym tracks are livelier than the office tune and have drums', () => {
   expect(CLUB_SONG.bpm).toBeGreaterThan(OFFICE_SONG.bpm);
-  expect(CLUB_SONG.drums).toBe(true);
+  expect(GYM_SONG.bpm).toBeGreaterThan(CLUB_SONG.bpm); // the gym is the fastest
+  expect(CLUB_SONG.drums).toBeTruthy();
+  expect(GYM_SONG.drums).toBeTruthy();
 });

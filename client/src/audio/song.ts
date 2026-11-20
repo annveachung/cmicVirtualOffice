@@ -15,9 +15,11 @@ export interface Song {
   arp: number[];
   /** 'walk' = cozy root + octave hop; 'pump' = driving octave eighths for dancing. */
   bass: 'walk' | 'pump';
-  /** Add a little synthesised drum kit (kick / snare / hi-hat). */
-  drums: boolean;
+  /** Synth drum kit: none, 'backbeat' (kick 1 & 3, snare 2 & 4) or 'fourOnFloor' (kick every beat). */
+  drums: false | 'backbeat' | 'fourOnFloor';
   leadVolume: number;
+  /** Lead instrument: 'square' = classic chiptune, 'triangle' = soft, electric-piano-like. */
+  leadWave?: 'square' | 'triangle';
 }
 
 const ch = (bass: number, triad: [number, number, number]): Chord => ({ bass, triad });
@@ -69,6 +71,35 @@ export const CLUB_SONG: Song = {
   chords: [[cC, cC], [cF, cF], [cG, cG], [cC, cC], [cAm, cAm], [cF, cF], [cG, cG], [cC, cC]],
   arp: [0, 2, 1, 2, 0, 2, 1, 2],
   bass: 'pump',
-  drums: true,
+  drums: 'backbeat',
   leadVolume: 0.055,
+};
+
+/**
+ * "Max Reps": a fast, high-energy workout beat for the gym. G major, 160 BPM,
+ * nonstop driving eighth-note lead, pumping bass, four-on-the-floor kick, and a
+ * climb to the top note at the end of every loop. An ORIGINAL composition.
+ */
+const gG = ch(43, [67, 71, 74]);
+const gEm = ch(40, [64, 67, 71]);
+const gC = ch(48, [64, 67, 72]);
+const gD = ch(38, [62, 66, 69]);
+
+export const GYM_SONG: Song = {
+  bpm: 160,
+  lead: [
+    [79, 79, 83, 79, 86, null, 83, 79], // G  — the hook
+    [76, 79, 83, null, 81, 79, 76, null], // Em
+    [76, 76, 79, 76, 84, null, 79, 76], // C
+    [78, 81, 78, null, 74, 76, 78, null], // D
+    [79, null, 86, 83, 79, 83, 86, null], // G  — higher energy
+    [88, null, 86, 83, 79, null, 83, null], // Em
+    [84, 83, 81, 79, 76, null, 79, 81], // C  — run down…
+    [83, 81, 78, 81, 83, 86, 90, null], // D  — …and climb to the top, loop!
+  ],
+  chords: [[gG, gG], [gEm, gEm], [gC, gC], [gD, gD], [gG, gG], [gEm, gEm], [gC, gC], [gD, gD]],
+  arp: [0, 2, 1, 2, 0, 2, 1, 2],
+  bass: 'pump',
+  drums: 'fourOnFloor',
+  leadVolume: 0.045,
 };
