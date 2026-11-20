@@ -157,18 +157,18 @@ const officeDecor: Placement[] = OFFICE_ROOMS.flatMap((r, i) => [
 
 export const PLACEMENTS: Placement[] = [
   // ---- Lounge (top-left, sunny) ----
-  P('bookshelf', 2, 3, { variant: 1 }),
+  // shelf and arcades stand flat against the side walls, keeping the window clear
+  P('bookshelf', 1, 4, { w: 1, h: 3, dir: 'right', variant: 1 }),
   P('rug', 4, 4, { w: 6, h: 5, variant: 0 }),
   P('sofa', 5, 4, { dir: 'down' }),
   P('coffeeTable', 6, 6),
   P('armchair', 3, 6, { dir: 'right' }),
   P('armchair', 10, 6, { dir: 'left' }),
   P('floorLamp', 10, 4),
-  P('arcade', 13, 3, { id: 'arcade-1', variant: 0 }),
-  P('arcade', 14, 3, { id: 'arcade-2', variant: 1 }),
-  P('arcade', 15, 3, { id: 'arcade-3', variant: 2 }),
-  P('beanBag', 13, 6, { variant: 0 }),
-  P('beanBag', 15, 6, { variant: 2 }),
+  P('arcade', 16, 4, { id: 'arcade-1', dir: 'left', variant: 0 }),
+  P('arcade', 16, 5, { id: 'arcade-2', dir: 'left', variant: 1 }),
+  P('arcade', 16, 6, { id: 'arcade-3', dir: 'left', variant: 2 }),
+  P('ballPit', 11, 8, { id: 'ball-pit', w: 4 }), // wade in, press E to bounce
 
   // ---- Meeting room with a small stage (top-middle, sunny) ----
   P('stage', 19, 3, { w: 11, h: 2 }),
@@ -190,28 +190,25 @@ export const PLACEMENTS: Placement[] = [
   P('fridge', 56, 9),
   P('waterCooler', 55, 9),
   P('bin', 57, 8),
-  // the big communal table
-  P('diningTable', 36, 6, { w: 6, h: 2 }),
-  ...[37, 38, 39, 40].map((x) => P('chair', x, 5, { dir: 'down', variant: 1 })),
-  ...[37, 38, 39, 40].map((x) => P('chair', x, 8, { dir: 'up', variant: 1 })),
-  P('chair', 35, 6, { dir: 'right', variant: 1 }),
-  P('chair', 42, 6, { dir: 'left', variant: 1 }),
-  // little café tables
-  P('roundTable', 32, 6),
-  P('chair', 32, 5, { dir: 'down', variant: 1 }),
-  P('chair', 34, 7, { dir: 'left', variant: 1 }),
-  P('roundTable', 45, 5),
-  P('chair', 44, 5, { dir: 'right', variant: 1 }),
-  P('chair', 47, 5, { dir: 'left', variant: 1 }),
-  P('roundTable', 50, 5),
-  P('chair', 49, 5, { dir: 'right', variant: 1 }),
-  P('chair', 52, 5, { dir: 'left', variant: 1 }),
-  P('roundTable', 47, 8),
-  P('chair', 46, 8, { dir: 'right', variant: 1 }),
-  P('chair', 49, 8, { dir: 'left', variant: 1 }),
-  P('roundTable', 53, 8),
-  P('chair', 52, 8, { dir: 'right', variant: 1 }),
-  P('chair', 55, 8, { dir: 'left', variant: 1 }),
+  // left wall: tea & drinks station, then the breakfast/lunch buffet
+  P('beverageCounter', 32, 3, { id: 'beverage-station', w: 1, h: 3 }),
+  P('buffetCounter', 32, 6, { id: 'buffet', w: 1, h: 3 }),
+  // the big communal table sits in the middle, well away from the entrance
+  P('diningTable', 42, 5, { w: 6, h: 2 }),
+  ...[43, 44, 45, 46].map((x) => P('chair', x, 4, { dir: 'down', variant: 1 })),
+  ...[43, 44, 45, 46].map((x) => P('chair', x, 7, { dir: 'up', variant: 1 })),
+  P('chair', 41, 5, { dir: 'right', variant: 1 }),
+  P('chair', 48, 5, { dir: 'left', variant: 1 }),
+  // little café tables, none near the door
+  P('roundTable', 37, 4),
+  P('chair', 36, 4, { dir: 'right', variant: 1 }),
+  P('chair', 39, 4, { dir: 'left', variant: 1 }),
+  P('roundTable', 51, 4),
+  P('chair', 50, 4, { dir: 'right', variant: 1 }),
+  P('chair', 53, 4, { dir: 'left', variant: 1 }),
+  P('roundTable', 50, 8),
+  P('chair', 49, 8, { dir: 'right', variant: 1 }),
+  P('chair', 52, 8, { dir: 'left', variant: 1 }),
 
   // ---- Private offices ----
   ...officeDecor,
