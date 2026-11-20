@@ -130,3 +130,17 @@ Turning every office chair into a gaming chair changed **one painter function** 
 depth sorting and seat positions didn't change at all, because they depend on the furniture's
 *type and direction*, not on how it looks. That's the payoff of separating "what it is" (data)
 from "how it's drawn" (painters): visual redesigns are cheap and can't break gameplay.
+
+## 21. Build the reusable piece, not the one-off
+"Show '...' when presenting" could have been a hard-coded text above one character. Instead it's a
+`SpeechBubble` component (`characters/SpeechBubble.ts`) with `say(text)`, `typing()` and `hide()`.
+Presenting uses `typing()` today; Milestone 4's chat bubbles will use `say()` with no new drawing
+code. When a small feature is obviously the first case of a bigger one, give it the general shape.
+
+## 22. A re-theme is mostly a palette swap
+Turning the cozy cottage office into a bright tech campus was mainly **one file**: `palette.ts`
+(plus the CSS tokens for the UI). Every painter draws with named colours like `pal.furnLight` or
+`pal.carpet`, never with literal hex codes, so changing the palette re-skins hundreds of objects at
+once. The few real code changes were *new things*: glass walls (a new tile kind `'G'` that blocks
+like a wall but paints see-through), dual monitors, the neon sign, the dashboard and the snack wall.
+A test also guards privacy: no glass is allowed next to washroom tiles.

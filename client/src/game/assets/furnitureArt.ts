@@ -42,53 +42,43 @@ function legs(ctx: Ctx, pal: EnvPalette, xs: number[], y: number, h: number, col
 
 // ----------------------------------------------------------------- painters --
 const P: Partial<Record<Placement['type'], Painter>> = {
+  /** Modern sit/stand desk: pale top on slim dark legs, dual monitors, laptop or notebook. */
   desk(ctx, { pal, oh, v, dir }) {
     const y0 = oh;
-    legs(ctx, pal, [2, 43], y0 + 22, 10);
+    legs(ctx, pal, [3, 42], y0 + 20, 12);
     box(ctx, 0, y0, 48, 21, pal.furnLight, pal.outline);
-    hline(ctx, 1, y0 + 1, 46, shade(pal.furnLight, 0.18));
-    for (let i = 0; i < 3; i++) hline(ctx, 4 + i * 13, y0 + 6 + i * 4, 7, shade(pal.furnLight, -0.08));
-    box(ctx, 0, y0 + 20, 48, 6, pal.furn, pal.outline);
-    rect(ctx, 21, y0 + 22, 6, 1, pal.furnDark);
-    // desk lamp (left)
-    ellipse(ctx, 6, y0 + 9, 3, 1, pal.metalDark);
-    vline(ctx, 6, 3, y0 + 6, pal.metalDark);
-    rect(ctx, 2, 0, 9, 1, pal.outline);
-    box(ctx, 1, 1, 11, 5, accent(pal, v + 2), pal.outline);
-    hline(ctx, 3, 6, 7, pal.lampLight);
-    if (dir === 'up') {
-      // the colleague sits below with their back to us, so we see the screen
-      box(ctx, 15, 0, 18, 12, pal.outline, pal.outline);
-      rect(ctx, 16, 1, 16, 9, pal.screenOn);
-      for (let i = 0; i < 4; i++)
-        hline(ctx, 18 + (i % 2) * 2, 2 + i * 2, 5 + ((i * 5 + v) % 7), shade(pal.screenOn, -0.35));
-    } else {
-      // we see the monitor's back — the screen faces the seated colleague
-      box(ctx, 15, 0, 18, 12, pal.metalDark, pal.outline);
-      hline(ctx, 16, 1, 16, mix(pal.metalDark, pal.screenOn, 0.45));
-      rect(ctx, 23, 5, 2, 2, pal.metal);
-    }
-    box(ctx, 21, 11, 6, 4, pal.metalDark, pal.outline);
-    box(ctx, 18, 14, 12, 3, pal.metal, pal.outline);
+    hline(ctx, 1, y0 + 1, 46, shade(pal.furnLight, 0.25));
+    box(ctx, 0, y0 + 19, 48, 4, pal.furnDark, pal.outline); // slim edge band
+    // dual monitors on a shared arm
+    const monitor = (mx: number) => {
+      if (dir === 'up') {
+        box(ctx, mx, 0, 16, 11, pal.outline, pal.outline);
+        rect(ctx, mx + 1, 1, 14, 8, pal.screenOn);
+        for (let i = 0; i < 3; i++) hline(ctx, mx + 2 + (i % 2) * 2, 2 + i * 2, 4 + ((i * 5 + v + mx) % 7), shade(pal.screenOn, -0.4));
+      } else {
+        box(ctx, mx, 0, 16, 11, pal.metalDark, pal.outline);
+        hline(ctx, mx + 1, 1, 14, mix(pal.metalDark, pal.screenOn, 0.5)); // screen light spilling over the top
+      }
+    };
+    monitor(7);
+    monitor(25);
+    rect(ctx, 22, 9, 4, 5, pal.metalDark); // arm
+    box(ctx, 18, 13, 12, 3, pal.metal, pal.outline); // clamp base
     // keyboard + mouse
-    box(ctx, 16, y0 + 11, 15, 5, pal.plastic, pal.outline);
-    for (let i = 0; i < 6; i++) px(ctx, 18 + i * 2, y0 + 13, pal.metalDark);
-    roundBox(ctx, 33, y0 + 11, 4, 5, pal.plastic, pal.outline);
-    // mug
-    mug(ctx, pal, 9, y0 + 9, accent(pal, v));
-    // right-hand clutter varies per desk
+    box(ctx, 15, y0 + 11, 17, 5, pal.plastic, pal.outline);
+    for (let i = 0; i < 7; i++) px(ctx, 17 + i * 2, y0 + 13, pal.metalDark);
+    roundBox(ctx, 34, y0 + 11, 4, 5, pal.plastic, pal.outline);
+    // mug + per-desk extras
+    mug(ctx, pal, 4, y0 + 10, accent(pal, v));
     if (v % 3 === 0) {
-      box(ctx, 38, y0 + 10, 8, 3, accent(pal, v + 1), pal.outline);
-      box(ctx, 39, y0 + 8, 7, 3, accent(pal, v + 3), pal.outline);
-      box(ctx, 38, y0 + 6, 8, 3, accent(pal, v + 4), pal.outline);
+      box(ctx, 38, y0 + 6, 9, 7, pal.metalLight, pal.outline); // laptop
+      rect(ctx, 39, y0 + 7, 7, 4, accent(pal, v + 1));
     } else if (v % 3 === 1) {
-      box(ctx, 39, y0 + 8, 6, 5, pal.pot, pal.outline);
-      leafCluster(ctx, pal, 42, y0 + 5, 3);
+      box(ctx, 40, y0 + 8, 6, 5, pal.pot, pal.outline); // succulent
+      leafCluster(ctx, pal, 43, y0 + 6, 3);
     } else {
-      box(ctx, 37, y0 + 7, 9, 7, pal.paper, pal.outline);
-      hline(ctx, 39, y0 + 9, 5, pal.metal);
-      hline(ctx, 39, y0 + 11, 4, pal.metal);
-      vline(ctx, 45, y0 + 3, 5, accent(pal, v + 1));
+      box(ctx, 38, y0 + 7, 8, 8, accent(pal, v + 2), pal.outline); // notebook
+      vline(ctx, 40, y0 + 8, 6, shade(accent(pal, v + 2), -0.25));
     }
   },
 
@@ -659,6 +649,51 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     hline(ctx, 4, H - 10, 8, pal.outline);
   },
 
+  /** Neon "</>" sign — glows at night. */
+  neonSign(ctx, { pal, W }) {
+    const c = pal.accents[1];
+    const glow = shade(c, 0.45);
+    box(ctx, 1, 2, W - 2, 12, pal.outline, pal.outline);
+    rect(ctx, 2, 3, W - 4, 10, shade(pal.outline, 0.12));
+    // "<"
+    for (let i = 0; i < 4; i++) { px(ctx, 9 - i, 4 + i, glow); px(ctx, 6 + i, 8 + i, glow); }
+    // "/"
+    for (let i = 0; i < 8; i++) px(ctx, 18 - Math.floor(i / 2), 4 + i, pal.accents[2]);
+    // ">"
+    for (let i = 0; i < 4; i++) { px(ctx, 22 + i, 4 + i, glow); px(ctx, 25 - i, 8 + i, glow); }
+    hline(ctx, 4, 13, W - 8, c);
+  },
+
+  /** Wall TV with live-looking team stats: a line chart, bars and a big number. */
+  dashboard(ctx, { pal, W }) {
+    box(ctx, 1, 1, W - 2, 14, pal.outline, pal.outline);
+    rect(ctx, 2, 2, W - 4, 12, pal.screenOff);
+    const pts = [10, 8, 9, 6, 7, 4, 5, 3];
+    for (let i = 0; i < pts.length - 1; i++) {
+      px(ctx, 4 + i * 2, 2 + pts[i], pal.accents[3]);
+      px(ctx, 5 + i * 2, 2 + Math.round((pts[i] + pts[i + 1]) / 2), pal.accents[3]);
+    }
+    for (let i = 0; i < 4; i++) rect(ctx, 22 + i * 3, 12 - (i * 2 + 2), 2, i * 2 + 2, pal.accents[(i + 1) % 6]);
+    rect(ctx, 36, 4, 8, 3, pal.screenOn);
+    rect(ctx, 36, 9, 6, 2, pal.accents[2]);
+    px(ctx, W - 4, 3, pal.accents[3]); // live dot
+  },
+
+  /** Micro-kitchen snack wall: open shelves of colourful jars and fruit. */
+  snackWall(ctx, { pal, W, H }) {
+    box(ctx, 0, 1, W, H - 2, pal.furn, pal.outline);
+    for (const sy of [3, 11, 19]) {
+      rect(ctx, 2, sy, W - 4, 7, shade(pal.furn, -0.12));
+      hline(ctx, 1, sy + 7, W - 2, pal.furnDark);
+      for (let x = 3, i = sy; x < W - 4; x += 5, i++) {
+        const c = pal.accents[i % 6];
+        box(ctx, x, sy + 2, 4, 5, pal.glassLight, pal.outline); // jar
+        rect(ctx, x + 1, sy + 4, 2, 2, c); // snacks inside
+        hline(ctx, x, sy + 2, 4, c); // lid
+      }
+    }
+  },
+
   mirrorLong(ctx, { pal, W }) {
     box(ctx, 1, 1, W - 2, 14, pal.metalLight, pal.outline);
     rect(ctx, 3, 3, W - 6, 9, pal.glassLight);
@@ -753,11 +788,13 @@ const P: Partial<Record<Placement['type'], Painter>> = {
   },
 
   rug(ctx, { pal, W, H, v }) {
-    const base = [pal.fabricC, pal.accents[3], pal.accents[1]][v % 3];
-    roundBox(ctx, 0, 0, W, H, mix(base, pal.outline, 0.25), mix(base, pal.outline, 0.45));
-    roundBox(ctx, 2, 2, W - 4, H - 4, base, shade(base, 0.25));
-    rect(ctx, 4, 4, W - 8, H - 8, base);
-    for (let y = 6; y < H - 6; y += 6) for (let x = 6 + ((y / 6) % 2) * 3; x < W - 6; x += 6) px(ctx, x, y, shade(base, 0.2));
+    // modern colour-block rug with a thin border
+    const base = [pal.fabricA, pal.accents[4], pal.accents[5]][v % 3];
+    roundBox(ctx, 0, 0, W, H, base, shade(base, -0.35));
+    const band = Math.max(4, Math.floor(H / 4));
+    rect(ctx, 2, H - band - 2, W - 4, band, shade(base, -0.12));
+    rect(ctx, 2, 2, W - 4, 2, shade(base, 0.2));
+    for (let x = 6; x < W - 6; x += 10) rect(ctx, x, H - band - 2, 4, band, pal.accents[(x / 10 + v) % 6]);
   },
 };
 

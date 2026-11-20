@@ -3,6 +3,7 @@ import type { Appearance, Direction, Theme } from '@little-office/shared';
 import { FEET_ROW, FRAME_H } from '../assets/characterArt';
 import { animKey, ensureCharacter, type AnimName } from '../assets/textures';
 import { DEPTH, LABEL_PX, NIGHT_TINT } from '../constants';
+import { SpeechBubble } from './SpeechBubble';
 
 /** Which animation is playing: idle, walk, sit, run, pedal, lift... (see ANIMS). */
 export type CharacterPose = AnimName;
@@ -21,6 +22,8 @@ export class Character {
   readonly sprite: Phaser.GameObjects.Sprite;
   private readonly shadow: Phaser.GameObjects.Ellipse;
   private readonly nameTag: Phaser.GameObjects.Text;
+  private readonly bubble: SpeechBubble;
+  private labelScale = 1;
   private dir: Direction = 'down';
   private pose: CharacterPose = 'idle';
   x = 0;
@@ -39,8 +42,8 @@ export class Character {
       .text(0, 0, name, {
         fontFamily: '"Pixelify Sans", monospace',
         fontSize: `${LABEL_PX.name}px`,
-        color: opts.isLocal ? '#fff3cf' : '#f6efe2',
-        backgroundColor: opts.isLocal ? 'rgba(122, 82, 56, 0.9)' : 'rgba(46, 36, 34, 0.78)',
+        color: '#ffffff',
+        backgroundColor: opts.isLocal ? 'rgba(52, 102, 196, 0.92)' : 'rgba(31, 41, 51, 0.78)', // you = blue tag
         padding: { x: 2, y: 1 },
       })
       .setOrigin(0.5, 1)
@@ -48,6 +51,7 @@ export class Character {
     // Name tags are sized in SCREEN pixels: the scene scales them by 1/zoom so they
     // stay readable when the whole office is zoomed out to fit the monitor.
     this.nameTag.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    this.bubble = new SpeechBubble(scene);
     this.playAnim();
   }
 
@@ -58,7 +62,10 @@ export class Character {
     const ry = Math.round(y);
     this.sprite.setPosition(rx, ry).setDepth(DEPTH.world + y);
     this.shadow.setPosition(rx, ry).setDepth(DEPTH.world + y - 0.5);
-    this.nameTag.setPosition(rx, ry - (SEATED.has(this.pose) ? 19 : 21));
+    const tagY = ry - (SEATED.has(this.pose) ? 19 : 21);
+    this.nameTag.setPosition(rx, tagY);
+    // bubble floats just above the name tag (both measured in screen px, scaled by 1/zoom)
+    this.bubble.setPosition(rx, tagY - this.nameTag.displayHeight - 2 * this.labelScale);
   }
 
   /** Update facing + pose; only restarts the animation when something changed. */
@@ -68,11 +75,16 @@ export class Character {
     this.pose = pose;
     this.playAnim();
     this.shadow.setVisible(!SEATED.has(pose)); // the seat already grounds a seated character
+    // Presenting shows an animated "..." bubble while you're on stage.
+    if (pose === 'present') this.bubble.typing();
+    else this.bubble.hide();
   }
 
   /** Keep the name tag a constant on-screen size regardless of camera zoom. */
   setLabelScale(scale: number): void {
+    this.labelScale = scale;
     this.nameTag.setScale(scale);
+    this.bubble.setScale(scale);
   }
 
   setTheme(theme: Theme): void {
@@ -88,5 +100,6 @@ export class Character {
     this.sprite.destroy();
     this.shadow.destroy();
     this.nameTag.destroy();
+    this.bubble.destroy();
   }
 }
