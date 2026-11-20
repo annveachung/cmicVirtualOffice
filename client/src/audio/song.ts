@@ -76,37 +76,30 @@ export const CLUB_SONG: Song = {
 };
 
 /**
- * "Fresh Start": a light, breezy, jazzy fitness-lobby tune for the gym —
- * relaxed 116 BPM, soft electric-piano-style lead, smooth seventh chords
- * (the triads below are the upper notes of maj7/m7/7 chords over the bass).
- * An ORIGINAL composition in that easy-going workout-game style.
+ * "Max Reps": a fast, high-energy workout beat for the gym. G major, 160 BPM,
+ * nonstop driving eighth-note lead, pumping bass, four-on-the-floor kick, and a
+ * climb to the top note at the end of every loop. An ORIGINAL composition.
  */
-const gCmaj7 = ch(48, [64, 67, 71]);
-const gAm7 = ch(45, [64, 67, 72]);
-const gDm7 = ch(50, [65, 69, 72]);
-const gG7 = ch(43, [65, 71, 74]);
-const gFmaj7 = ch(41, [64, 69, 72]);
-const gEm7 = ch(40, [67, 71, 74]);
+const gG = ch(43, [67, 71, 74]);
+const gEm = ch(40, [64, 67, 71]);
+const gC = ch(48, [64, 67, 72]);
+const gD = ch(38, [62, 66, 69]);
 
 export const GYM_SONG: Song = {
-  bpm: 116,
+  bpm: 160,
   lead: [
-    [76, null, null, 79, null, 76, 74, null], // Cmaj7
-    [72, null, 76, null, 79, null, null, 81], // Am7
-    [null, 77, null, 76, 74, null, 72, null], // Dm7 — laid-back, starts off the beat
-    [71, null, 74, null, 77, 76, 74, null], // G7
-    [76, null, null, 79, null, 83, 81, null], // Cmaj7
-    [79, null, 76, null, 77, null, 81, null], // Fmaj7
-    [79, null, 76, 74, 72, null, 76, null], // Em7 → Am7
-    [74, null, 72, null, 71, null, null, null], // Dm7 → G7, back to the top
+    [79, 79, 83, 79, 86, null, 83, 79], // G  — the hook
+    [76, 79, 83, null, 81, 79, 76, null], // Em
+    [76, 76, 79, 76, 84, null, 79, 76], // C
+    [78, 81, 78, null, 74, 76, 78, null], // D
+    [79, null, 86, 83, 79, 83, 86, null], // G  — higher energy
+    [88, null, 86, 83, 79, null, 83, null], // Em
+    [84, 83, 81, 79, 76, null, 79, 81], // C  — run down…
+    [83, 81, 78, 81, 83, 86, 90, null], // D  — …and climb to the top, loop!
   ],
-  chords: [
-    [gCmaj7, gCmaj7], [gAm7, gAm7], [gDm7, gDm7], [gG7, gG7],
-    [gCmaj7, gCmaj7], [gFmaj7, gFmaj7], [gEm7, gAm7], [gDm7, gG7],
-  ],
+  chords: [[gG, gG], [gEm, gEm], [gC, gC], [gD, gD], [gG, gG], [gEm, gEm], [gC, gC], [gD, gD]],
   arp: [0, 2, 1, 2, 0, 2, 1, 2],
-  bass: 'walk',
-  drums: 'backbeat',
-  leadVolume: 0.09,
-  leadWave: 'triangle',
+  bass: 'pump',
+  drums: 'fourOnFloor',
+  leadVolume: 0.045,
 };
