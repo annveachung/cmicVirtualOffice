@@ -177,7 +177,7 @@ describe('activity spots', () => {
   it('lets you sit on every toilet, use every urinal and wash at every basin', async () => {
     const { SPOTS } = await import('./spots.js');
     expect(SPOTS.filter((s) => s.id.startsWith('toilet')).every((s) => s.action === 'sit')).toBe(true);
-    expect(SPOTS.filter((s) => s.id.startsWith('toilet')).length).toBe(5);
+    expect(SPOTS.filter((s) => s.id.startsWith('toilet')).length).toBe(6); // 2 men's + 4 women's
     expect(SPOTS.filter((s) => s.action === 'wash').length).toBe(4);
     expect(SPOTS.filter((s) => s.action === 'pee').length).toBe(2);
   });

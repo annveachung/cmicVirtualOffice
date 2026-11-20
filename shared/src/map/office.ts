@@ -251,8 +251,9 @@ export const PLACEMENTS: Placement[] = [
   P('toilet', 39, 29, { variant: 1 }),
   P('urinal', 40, 29),
   P('urinal', 41, 29),
-  // women (right room): a row of cubicles, with a ♀ door
+  // women (right room): a row of 4 cubicles, with a ♀ door
   P('washroomDoor', 44, 26, { id: 'door-women', variant: 0 }),
+  P('toilet', 43, 29, { variant: 0 }),
   P('toilet', 44, 29, { variant: 0 }),
   P('toilet', 45, 29, { variant: 0 }),
   P('toilet', 46, 29, { variant: 0 }),
