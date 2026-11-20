@@ -220,8 +220,20 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     rect(ctx, W / 2 - 3, 28, 6, 2, pal.metalDark);
   },
 
-  sofa(ctx, { pal, W }) {
-    const f = pal.fabricA;
+  sofa(ctx, { pal, W, H, dir, v }) {
+    const f = [pal.fabricA, pal.fabricB, pal.fabricC][v % 3];
+    if (dir === 'up') {
+      // seen from behind: seat cushions at the back, the tall backrest in front of whoever sits here
+      const cw = (W - 12) / 2;
+      for (let i = 0; i < 2; i++) box(ctx, 6 + i * cw, 4, cw, 9, shade(f, 0.08), pal.outline);
+      box(ctx, 0, 2, 7, H - 4, shade(f, -0.05), pal.outline); // arms
+      box(ctx, W - 7, 2, 7, H - 4, shade(f, -0.05), pal.outline);
+      box(ctx, 2, 10, W - 4, H - 12, shade(f, -0.15), pal.outline); // backrest (facing us)
+      hline(ctx, 3, 11, W - 6, shade(f, 0.12));
+      for (let x = 10; x < W - 8; x += 12) vline(ctx, x, 13, H - 17, shade(f, -0.3)); // stitching
+      box(ctx, 2, H - 3, W - 4, 3, shade(f, -0.3), pal.outline);
+      return;
+    }
     box(ctx, 2, 0, W - 4, 13, shade(f, -0.12), pal.outline);
     hline(ctx, 3, 1, W - 6, shade(f, 0.1));
     const cw = (W - 12) / 2;
@@ -874,22 +886,6 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     if (v === 1) { vline(ctx, 12, 6, 5, pal.metalDark); rect(ctx, 11, 4, 3, 2, pal.metal); } // potato with a mic
     else if (v === 2) { px(ctx, 5, 3, pal.neonPink); px(ctx, 7, 3, pal.neonPink); hline(ctx, 5, 4, 3, pal.neonPink); px(ctx, 6, 5, pal.neonPink); } // heart
     else { hline(ctx, 6, 4, 5, pal.neonAmber); px(ctx, 8, 3, pal.neonAmber); } // crown
-  },
-
-  /** A colourful ball pit: low padded rim, heaps of balls. Characters inside are hidden from the waist down. */
-  ballPit(ctx, { pal, W, H }) {
-    const colors = [pal.accents[0], pal.accents[1], pal.accents[2], pal.accents[5], '#ff7aa8', '#7ad1ff'];
-    roundBox(ctx, 0, 2, W, H - 2, mix(pal.fabricC, pal.outline, 0.2), pal.outline); // padded rim
-    rect(ctx, 3, 4, W - 6, H - 9, shade(pal.fabricA, -0.3)); // inside
-    for (let y = 4; y < H - 6; y += 3)
-      for (let x = 3 + (Math.floor(y / 3) % 2) * 2; x < W - 4; x += 4) { // whole numbers only: they index the colour list
-        const c = colors[(x * 7 + y * 3) % colors.length];
-        rect(ctx, x, y, 3, 3, c);
-        px(ctx, x, y, shade(c, 0.45)); // shiny highlight
-      }
-    rect(ctx, 0, H - 6, W, 5, pal.fabricC); // front padding (hides wading legs)
-    hline(ctx, 1, H - 6, W - 2, shade(pal.fabricC, 0.35));
-    hline(ctx, 0, H - 1, W, pal.outline);
   },
 
   /** Tea & drinks station along a side wall: kettle, tea tins, coffee pot, cups. */

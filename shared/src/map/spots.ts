@@ -16,7 +16,7 @@ import { DESKS, PLACEMENTS } from './office.js';
  * Spots are derived from furniture data, so adding a treadmill to the map
  * automatically makes it usable.
  */
-export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee' | 'present' | 'sing' | 'dance' | 'costume' | 'vend' | 'mascot' | 'ballpit';
+export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee' | 'present' | 'sing' | 'dance' | 'costume' | 'vend' | 'mascot';
 
 /** Actions that happen once (a toggle, a snack, a poke) instead of putting you in a pose. */
 export const INSTANT_ACTIONS: ReadonlySet<SpotAction> = new Set(['costume', 'vend', 'mascot']);
@@ -54,7 +54,6 @@ const VERB: Record<SpotAction, string> = {
   costume: 'potato suit',
   vend: 'get a snack',
   mascot: 'poke Mr. Potato',
-  ballpit: 'bounce',
 };
 
 function footprintTiles(p: Placement): TilePos[] {
@@ -97,8 +96,10 @@ function spotsFor(p: Placement): Spot[] {
     }
     case 'boothBench': // one seat per bench piece, facing the table
       return [spot(p.id, 'sit', t(0, 0), p.dir ?? 'right')];
-    case 'sofa': // every cushion is its own seat
-      return Array.from({ length: footprint(p).w }, (_, i) => spot(`${p.id}:${i}`, 'sit', t(i, 0), 'down', { dy: 2 }));
+    case 'sofa': { // every cushion is its own seat
+      const facing = p.dir ?? 'down';
+      return Array.from({ length: footprint(p).w }, (_, i) => spot(`${p.id}:${i}`, 'sit', t(i, 0), facing, { dy: facing === 'down' ? 2 : 0 }));
+    }
     case 'treadmill':
       return [spot(p.id, 'run', t(0, 1), 'up', { dy: -2, clickTiles: footprintTiles(p) })];
     case 'exerciseBike':
@@ -151,8 +152,6 @@ function spotsFor(p: Placement): Spot[] {
       if (p.dir === 'left') return [spot(p.id, 'play', t(-1, 0), 'right', { clickTiles: [t(0, 0), t(-1, 0)], onFloor: true })];
       if (p.dir === 'right') return [spot(p.id, 'play', t(1, 0), 'left', { clickTiles: [t(0, 0), t(1, 0)], onFloor: true })];
       return [spot(p.id, 'play', t(0, 1), 'up', { clickTiles: [t(0, 0), t(0, 1)], onFloor: true })];
-    case 'ballPit': // every tile of the pit is a place to bounce
-      return footprintTiles(p).map((c, i) => spot(`${p.id}:${i}`, 'ballpit', c, 'down', { dy: 2, onFloor: true }));
     default:
       return [];
   }

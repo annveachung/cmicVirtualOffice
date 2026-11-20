@@ -159,26 +159,25 @@ export const PLACEMENTS: Placement[] = [
   // ---- Lounge (top-left, sunny) ----
   // shelf and arcades stand flat against the side walls, keeping the window clear
   P('bookshelf', 1, 4, { w: 1, h: 3, dir: 'right', variant: 1 }),
+  // main seating group: two sofas facing each other across a coffee table
   P('rug', 4, 4, { w: 6, h: 5, variant: 0 }),
   P('sofa', 5, 4, { dir: 'down' }),
   P('coffeeTable', 6, 6),
+  P('sofa', 5, 8, { dir: 'up' }),
   P('armchair', 3, 6, { dir: 'right' }),
   P('armchair', 10, 6, { dir: 'left' }),
   P('floorLamp', 10, 4),
-  P('arcade', 16, 4, { id: 'arcade-1', dir: 'left', variant: 0 }),
-  P('arcade', 16, 5, { id: 'arcade-2', dir: 'left', variant: 1 }),
-  P('arcade', 16, 6, { id: 'arcade-3', dir: 'left', variant: 2 }),
-  P('ballPit', 11, 8, { id: 'ball-pit', w: 4 }), // wade in, press E to bounce
+  P('arcade', 15, 3, { id: 'arcade', variant: 1 }), // one cabinet in the corner, screen facing you
 
   // ---- Meeting room with a small stage (top-middle, sunny) ----
   P('stage', 19, 3, { w: 11, h: 2 }),
   P('projectorScreen', 22, 3, { w: 4 }),
   P('podium', 27, 4),
   P('meetingTable', 21, 6, { w: 7, h: 2 }),
-  ...[22, 23, 24, 25, 26].map((x) => P('deskChair', x, 5, { dir: 'down', variant: 3 })),
+  // everyone faces the stage: no chairs on the stage side, so the aisle in front of it stays clear
   ...[22, 23, 24, 25, 26].map((x) => P('deskChair', x, 8, { dir: 'up', variant: 3 })),
-  P('deskChair', 20, 6, { dir: 'right', variant: 3 }),
-  P('deskChair', 28, 6, { dir: 'left', variant: 3 }),
+  ...[6, 7].map((y) => P('deskChair', 20, y, { dir: 'right', variant: 3 })),
+  ...[6, 7].map((y) => P('deskChair', 28, y, { dir: 'left', variant: 3 })),
 
   // ---- Pantry ----
   // the kitchen runs along the RIGHT wall, so the skyline window stays clear

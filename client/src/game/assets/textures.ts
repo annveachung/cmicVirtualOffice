@@ -115,7 +115,6 @@ export const ANIMS = {
   danceShuffle: { frames: ['walkA', 'breathe', 'walkB', 'breathe'], fps: 7 },
   danceHop: { frames: ['idle', 'hop', 'idle', 'breathe'], fps: 5 },
   danceSpin: { frames: ['idle'], fps: 7, spin: true }, // turns through all four directions
-  ballpit: { frames: ['idle', 'hop', 'idle', 'breathe'], fps: 3.5 }, // bouncing in the balls
 } satisfies Record<string, { frames: Pose[]; fps: number; spin?: boolean }>;
 
 export const DANCE_STYLES = ['danceGroove', 'danceShuffle', 'danceHop', 'danceSpin'] as const;
