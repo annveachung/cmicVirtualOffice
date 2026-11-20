@@ -188,7 +188,7 @@ export const PLACEMENTS: Placement[] = [
   P('sink', 57, 6),
   P('fridge', 56, 9),
   P('waterCooler', 55, 9),
-  P('bin', 57, 8),
+  P('bin', 57, 8), // pantry bin, against the wall at the end of the counter
   // left wall: tea & drinks station, then the breakfast/lunch buffet
   P('beverageCounter', 32, 3, { id: 'beverage-station', w: 1, h: 3 }),
   P('buffetCounter', 32, 6, { id: 'buffet', w: 1, h: 3 }),
@@ -221,8 +221,7 @@ export const PLACEMENTS: Placement[] = [
   ...deskPlacements,
   P('waterCooler', 8, 11),
   P('printer', 39, 11),
-  P('bin', 19, 15),
-  P('bin', 35, 15),
+  P('bin', 41, 11), // the only hall bin: next to the printer, against the wall
   // chill corner
   P('rug', 9, 20, { w: 6, h: 4, variant: 1 }),
   P('sofa', 10, 20, { dir: 'down' }),
