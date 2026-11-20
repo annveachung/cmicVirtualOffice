@@ -45,7 +45,8 @@ const HAND = [
   '.....XXXXXXXXX..',
 ];
 
-const SCALE = 2;
+/** 1 template pixel = 1 screen pixel: a normal-sized cursor (12x19 arrow), smaller than a character. */
+const SCALE = 1;
 
 function toDataUrl(rows: string[], outline: string, fill: string): string {
   const canvas = document.createElement('canvas');
