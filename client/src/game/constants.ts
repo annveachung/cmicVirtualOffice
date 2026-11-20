@@ -13,8 +13,8 @@ export const DEPTH = {
 export const MAX_ZOOM = 4;
 
 /**
- * Start a little closer than "fill the window" so characters and furniture are easier
- * to read. The camera follows you to reveal the edges; scroll out to see everything.
+ * The arrival shot starts this much closer than "fill the window" (a bigger, close-up
+ * view of you at the entrance), then zooms out so the whole office is visible.
  */
 export const DEFAULT_ZOOM_BOOST = 1.2;
 
