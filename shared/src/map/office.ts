@@ -114,7 +114,8 @@ const desk = (id: number, label: string, zone: DeskDef['zone'], facing: DeskFaci
 });
 
 export const DESKS: DeskDef[] = [
-  ...OFFICE_ROOMS.map((r, i) => desk(i + 1, `Private office ${i + 1}`, 'office', 'down', 1, r.y0 + 1)),
+  // one row down from the back wall, so the tall chair doesn't cover the wall
+  ...OFFICE_ROOMS.map((r, i) => desk(i + 1, `Private office ${i + 1}`, 'office', 'down', 1, r.y0 + 2)),
   // Trio row: three desks side by side, facing the room
   desk(5, 'Trio row · left', 'open', 'down', 10, 14),
   desk(6, 'Trio row · middle', 'open', 'down', 13, 14),
@@ -154,10 +155,11 @@ const deskPlacements: Placement[] = DESKS.flatMap((d) => [
 
 const officeDecor: Placement[] = OFFICE_ROOMS.flatMap((r, i) => [
   P('painting', 3, r.y0 - 1, { variant: i }),
-  P('floorLamp', 1, r.y0), // fills the corner the chair would otherwise box in
+  P('floorLamp', 1, r.y0 + 1), // fills the spot beside the chair that would otherwise be boxed in
   P('bookshelf', 5, r.y0, { variant: i }),
   P('armchair', 6, r.y1, { dir: 'left' }),
-  P('rug', 2, r.y0 + 3, { w: 3, h: Math.max(1, r.y1 - r.y0 - 3), variant: i }), // a little rug in the extra space
+  // a room-sized carpet under the furniture, a different (non-green) colour per office
+  P('rug', 1, r.y0 + 1, { w: 6, h: r.y1 - r.y0, variant: 3 + i }),
 ]);
 
 export const PLACEMENTS: Placement[] = [
