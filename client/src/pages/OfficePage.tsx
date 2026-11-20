@@ -3,6 +3,7 @@ import type { Theme } from '@little-office/shared';
 import type { Profile } from '../App';
 import { TopBar } from '../components/TopBar';
 import { GameCanvas } from '../game/GameCanvas';
+import { sound } from '../audio/sound';
 
 interface Props {
   profile: Profile;
@@ -14,6 +15,12 @@ interface Props {
 export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
   const [ready, setReady] = useState(false);
   const [showHelp, setShowHelp] = useState(true);
+
+  // Cozy background music while you're in the office (if not switched off).
+  useEffect(() => {
+    sound.startMusic();
+    return () => sound.stopMusic();
+  }, []);
 
   // The controls card shows on arrival, then gets out of the way.
   useEffect(() => {
