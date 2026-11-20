@@ -876,20 +876,41 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     else { hline(ctx, 6, 4, 5, pal.neonAmber); px(ctx, 8, 3, pal.neonAmber); } // crown
   },
 
-  /** A colourful ball pit: low padded rim, heaps of balls. Characters inside are hidden from the waist down. */
-  ballPit(ctx, { pal, W, H }) {
-    const colors = [pal.accents[0], pal.accents[1], pal.accents[2], pal.accents[5], '#ff7aa8', '#7ad1ff'];
-    roundBox(ctx, 0, 2, W, H - 2, mix(pal.fabricC, pal.outline, 0.2), pal.outline); // padded rim
-    rect(ctx, 3, 4, W - 6, H - 9, shade(pal.fabricA, -0.3)); // inside
-    for (let y = 4; y < H - 6; y += 3)
-      for (let x = 3 + (Math.floor(y / 3) % 2) * 2; x < W - 4; x += 4) { // whole numbers only: they index the colour list
-        const c = colors[(x * 7 + y * 3) % colors.length];
-        rect(ctx, x, y, 3, 3, c);
-        px(ctx, x, y, shade(c, 0.45)); // shiny highlight
-      }
-    rect(ctx, 0, H - 6, W, 5, pal.fabricC); // front padding (hides wading legs)
-    hline(ctx, 1, H - 6, W - 2, shade(pal.fabricC, 0.35));
-    hline(ctx, 0, H - 1, W, pal.outline);
+  /**
+   * Ball pit, built from a back row (variant 0: safety net on posts) and a front
+   * row (variant 1: padded front edge). Heaps of big, shiny, bright balls; anyone
+   * wading in is hidden from the waist down.
+   */
+  ballPit(ctx, { pal, W, H, oh, v }) {
+    const BALLS = ['#e8443a', '#2f7fe0', '#f6c42c', '#3fb24f', '#ff6fae', '#ff8c2a', '#9b5de5'];
+    const pad = '#2f7fe0';
+    const ball = (cx: number, cy: number, i: number) => {
+      const c = BALLS[i % BALLS.length];
+      ellipse(ctx, cx, cy, 2, 2, shade(c, -0.35)); // outline
+      rect(ctx, cx - 1, cy - 1, 3, 3, c);
+      px(ctx, cx - 1, cy - 1, '#ffffff'); // shine
+    };
+    if (v === 0) {
+      // safety net behind the pit: posts at the ends, mesh between
+      rect(ctx, 0, 0, 2, H - 4, pad);
+      rect(ctx, W - 2, 0, 2, H - 4, pad);
+      hline(ctx, 0, 0, W, pal.outline);
+      for (let x = 2; x < W - 2; x += 3) vline(ctx, x, 1, oh + 4, shade(pal.paper, -0.1));
+      for (let y = 1; y < oh + 5; y += 3) hline(ctx, 2, y, W - 4, shade(pal.paper, -0.1));
+    } else {
+      // side walls continue down to the padded front edge
+      rect(ctx, 0, 0, 2, H, pad);
+      rect(ctx, W - 2, 0, 2, H, pad);
+    }
+    // the balls: three staggered rows filling the tile
+    let n = v * 11;
+    for (let row = 0; row < 3; row++)
+      for (let x = 4 + (row % 2) * 2; x < W - 3; x += 5) ball(x, oh + 3 + row * 4, n++ * 3);
+    if (v === 1) {
+      box(ctx, 0, H - 6, W, 6, pad, pal.outline); // padded front edge
+      hline(ctx, 1, H - 5, W - 2, shade(pad, 0.35));
+      for (let x = 6; x < W - 4; x += 12) rect(ctx, x, H - 4, 4, 2, '#f6c42c'); // little stripes
+    }
   },
 
   /** Tea & drinks station along a side wall: kettle, tea tins, coffee pot, cups. */
