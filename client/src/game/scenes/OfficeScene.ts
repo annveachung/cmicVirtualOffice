@@ -133,13 +133,11 @@ export class OfficeScene extends Phaser.Scene {
     const dest = spot ? this.controller.goUse(here, spot) : this.controller.goTo(here, { x: wx, y: wy });
     this.marker.setVisible(!!dest);
     if (dest) this.marker.setPosition(dest.x, dest.y);
-    this.camera.follow(); // you're heading somewhere: the camera comes along
   }
 
   update(_time: number, delta: number) {
     const m = this.controller.update({ x: this.player.x, y: this.player.y }, delta);
     this.player.setPosition(m.x, m.y);
-    if (m.keyboard) this.camera.follow(); // steering with the keys brings the camera back to you
     this.camera.update(); // cheap no-op unless the zoom changed
     this.player.setMotion(m.dir, this.club.animFor(m.pose));
     this.club.update(m.pose);

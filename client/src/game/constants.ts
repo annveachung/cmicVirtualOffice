@@ -9,12 +9,12 @@ export const DEPTH = {
   nameplates: 3000,
 } as const;
 
-/** Max camera zoom when zooming in with the wheel. Minimum is "office fills the window". */
+/** Max camera zoom when zooming in with the wheel. Minimum is "the whole office fits". */
 export const MAX_ZOOM = 4;
 
 /**
- * The arrival shot starts this much closer than "fill the window" (a bigger, close-up
- * view of you at the entrance), then zooms out so the whole office is visible.
+ * The arrival shot starts this much closer than the whole-office view (a close-up of
+ * you at the entrance), then zooms out to the static whole-office view.
  */
 export const DEFAULT_ZOOM_BOOST = 1.2;
 

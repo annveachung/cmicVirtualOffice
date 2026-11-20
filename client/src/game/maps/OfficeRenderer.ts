@@ -167,7 +167,8 @@ export class OfficeRenderer {
     this.moon.setVisible(theme === 'dark');
     for (const g of this.glows) g.setVisible(theme === 'dark');
     for (const l of this.clubLights) l.setAlpha(theme === 'dark' ? 0.9 : 0.45); // club lights are always on
-    this.scene.cameras.main.setBackgroundColor(PALETTES[theme].bg);
+    // any margin around the office (when the window's shape differs) matches the outer walls
+    this.scene.cameras.main.setBackgroundColor(PALETTES[theme].wallTop);
     this.areaTags.forEach((t) => t.setTheme(theme));
     this.deskTags.forEach((t) => t.setTheme(theme));
   }

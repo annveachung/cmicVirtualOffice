@@ -18,15 +18,14 @@ interface Hooks {
 }
 
 /**
- * Map-app style camera:
- *  - "zoom factor" is relative to the zoom where the office fills the window (100%).
- *  - Drag with the mouse to look around; scroll/pinch zooms towards the cursor.
- *  - Looking around pauses following; walking (keys or a click-to-go) resumes it.
- *  - React's zoom buttons talk to it through the event bus.
+ * A STATIC camera: by default the whole office fits in the window and the
+ * view never moves when you walk. You can still zoom in (scroll / buttons) and
+ * drag to look around while zoomed; "fit" snaps back to the full office.
+ *
+ * Zoom factor 1 (= 100%) means "the whole office fits".
  */
 export class CameraRig {
   private factor = 1;
-  private following = true;
   private lastZoom = 0;
   private drag: { x: number; y: number; scrollX: number; scrollY: number; moved: boolean } | null = null;
   private introRunning = false;
@@ -55,14 +54,11 @@ export class CameraRig {
         const centre = { x: width / 2, y: (height + TOP_BAR_PX) / 2 };
         if (cmd === 'in') this.setFactor(this.factor * 1.25, centre);
         if (cmd === 'out') this.setFactor(this.factor / 1.25, centre);
-        if (cmd === 'fit') {
-          this.setFactor(1);
-          this.follow();
-        }
+        if (cmd === 'fit') this.setFactor(1);
       }),
       bus.on('camera:recenter', () => {
         this.skipIntro();
-        this.follow();
+        this.lookAtPlayer();
       }),
     );
     this.onResize();
@@ -70,25 +66,21 @@ export class CameraRig {
 
   // --------------------------------------------------------------- public API
 
-  /** Arrival shot: start close on the player, then zoom out to the whole office. */
+  /** Arrival shot: start close on the player, then zoom out to the whole office and stay there. */
   playIntro() {
     this.introRunning = true;
     this.setFactor(DEFAULT_ZOOM_BOOST);
-    this.follow();
+    this.lookAtPlayer();
     this.scene.time.delayedCall(1400, () => {
       if (!this.introRunning) return;
-      this.cam.zoomTo(this.cover(), 1800, 'Sine.easeInOut', false, (_c: unknown, p: number) => {
+      const z = this.fitZoom();
+      const c = this.fitCentre(z);
+      this.cam.pan(c.x, c.y, 1800, 'Sine.easeInOut');
+      this.cam.zoomTo(z, 1800, 'Sine.easeInOut', false, (_c: unknown, p: number) => {
         if (p >= 1) this.endIntro();
       });
     });
     this.scene.input.keyboard!.once('keydown', () => this.skipIntro());
-  }
-
-  /** Re-attach the camera to the player (after looking around). */
-  follow() {
-    this.following = true;
-    this.cam.startFollow(this.target, true, 0.12, 0.12);
-    this.emitState();
   }
 
   /** Call every frame: keeps bounds + label scales in step during zoom animations. */
@@ -96,10 +88,9 @@ export class CameraRig {
     const zoom = this.cam.zoom;
     if (zoom === this.lastZoom) return;
     this.lastZoom = zoom;
-    // bounds include a strip above the map for the top bar, so it never covers the office
-    this.cam.setBounds(0, -TOP_BAR_PX / zoom, WORLD_W, WORLD_H + TOP_BAR_PX / zoom);
     this.hooks.screenScale(1 / zoom);
-    if (!this.introRunning) this.factor = zoom / this.cover();
+    if (!this.introRunning) this.factor = zoom / this.fitZoom();
+    this.applyBounds();
     this.emitState();
   }
 
@@ -115,28 +106,44 @@ export class CameraRig {
 
   // ---------------------------------------------------------------- internals
 
-  /** Zoom at which the office fills the window under the top bar (= 100%). */
-  private cover() {
-    const { width, height } = this.scene.scale;
-    return Math.max(width / WORLD_W, (height - TOP_BAR_PX) / WORLD_H);
-  }
-
-  /** Zoom at which the ENTIRE office is visible (lowest you can zoom out). */
-  private contain() {
+  /** Zoom at which the ENTIRE office fits under the top bar (= 100%). */
+  private fitZoom() {
     const { width, height } = this.scene.scale;
     return Math.min(width / WORLD_W, (height - TOP_BAR_PX) / WORLD_H);
   }
 
+  /** Where to centre the camera so the office sits in the middle of the space under the top bar. */
+  private fitCentre(zoom: number) {
+    return { x: WORLD_W / 2, y: WORLD_H / 2 - TOP_BAR_PX / 2 / zoom };
+  }
+
+  private atFit() {
+    return this.factor <= 1.001;
+  }
+
+  /** At 100% the camera is pinned to the whole office; zoomed in, it's kept inside the map. */
+  private applyBounds() {
+    if (this.introRunning) return;
+    if (this.atFit()) {
+      this.cam.removeBounds();
+      const c = this.fitCentre(this.cam.zoom);
+      this.cam.centerOn(c.x, c.y);
+    } else {
+      const z = this.cam.zoom;
+      this.cam.setBounds(0, -TOP_BAR_PX / z, WORLD_W, WORLD_H + TOP_BAR_PX / z);
+    }
+  }
+
   /**
-   * Change zoom. With an anchor (screen point) and the camera not following,
-   * the world point under the anchor stays put — "zoom towards the cursor".
+   * Change zoom. With an anchor (screen point), the world point under the
+   * anchor stays put — "zoom towards the cursor".
    */
   private setFactor(f: number, anchor?: { x: number; y: number }) {
-    const cover = this.cover();
-    this.factor = Phaser.Math.Clamp(f, this.contain() / cover, MAX_ZOOM / cover);
+    const fit = this.fitZoom();
+    this.factor = Phaser.Math.Clamp(f, 1, Math.max(1, MAX_ZOOM / fit));
     const oldZoom = this.cam.zoom;
-    const newZoom = cover * this.factor;
-    if (anchor && !this.following) {
+    const newZoom = fit * this.factor;
+    if (anchor && !this.atFit()) {
       const { width, height } = this.scene.scale;
       // Phaser camera maths (origin 0.5): world = scroll + w/2 + (screen - w/2) / zoom
       const wx = this.cam.scrollX + width / 2 + (anchor.x - width / 2) / oldZoom;
@@ -146,19 +153,19 @@ export class CameraRig {
     } else {
       this.cam.setZoom(newZoom);
     }
+    this.lastZoom = 0; // force update() to re-sync labels/bounds
     this.update();
   }
 
-  private stopFollowing() {
-    if (!this.following) return;
-    this.following = false;
-    this.cam.stopFollow();
-    this.emitState();
+  /** One-off: move the view to the player (only matters when zoomed in). Never follows. */
+  private lookAtPlayer() {
+    this.cam.centerOn(this.target.x, this.target.y);
   }
 
   private skipIntro() {
     if (!this.introRunning) return;
     this.cam.zoomEffect.reset();
+    this.cam.panEffect.reset();
     this.endIntro();
   }
 
@@ -168,12 +175,12 @@ export class CameraRig {
   }
 
   private emitState() {
-    bus.emit('camera:state', { percent: Math.round(this.factor * 100), following: this.following });
+    bus.emit('camera:state', { percent: Math.round(this.factor * 100), following: false });
   }
 
   private onResize() {
     // room tags keep a fixed size relative to the building: readable at 100%, scale with zoom
-    this.hooks.worldScale(1 / this.cover());
+    this.hooks.worldScale(1 / this.fitZoom());
     this.setFactor(this.factor);
   }
 
@@ -188,15 +195,8 @@ export class CameraRig {
     const dx = p.x - this.drag.x;
     const dy = p.y - this.drag.y;
     if (!this.drag.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
-    if (!this.drag.moved) {
-      this.drag.moved = true;
-      this.stopFollowing();
-      this.drag.scrollX = this.cam.scrollX; // follow may have been lerping; start from where we are
-      this.drag.scrollY = this.cam.scrollY;
-      this.drag.x = p.x;
-      this.drag.y = p.y;
-      return;
-    }
+    this.drag.moved = true;
+    if (this.atFit()) return; // the whole office is already in view: nothing to pan
     this.cam.setScroll(this.drag.scrollX - dx / this.cam.zoom, this.drag.scrollY - dy / this.cam.zoom);
   }
 
@@ -212,7 +212,6 @@ export class CameraRig {
     const ev = p.event as WheelEvent | undefined;
     const lines = ev?.deltaMode === 1 ? 16 : 1; // some mice report lines, not pixels
     const step = Phaser.Math.Clamp(dy * lines, -120, 120); // tame big mouse-wheel jumps
-    this.stopFollowing(); // zoom towards the cursor, not the player
     this.setFactor(this.factor * Math.exp(-step * 0.0018), { x: p.x, y: p.y });
   }
 }
