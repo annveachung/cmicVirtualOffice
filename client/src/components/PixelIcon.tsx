@@ -1,0 +1,84 @@
+/**
+ * Tiny pixel icons as inline SVG (each <rect> is one pixel).
+ * shape-rendering="crispEdges" keeps them sharp at any size.
+ */
+const ICONS = {
+  sun: [
+    '...#....#...',
+    '....#..#....',
+    '.#..####..#.',
+    '..########..',
+    '..########..',
+    '#.########.#',
+    '..########..',
+    '..########..',
+    '.#..####..#.',
+    '....#..#....',
+    '...#....#...',
+    '............',
+  ],
+  moon: [
+    '....####....',
+    '..###.......',
+    '.###........',
+    '.##.........',
+    '###.........',
+    '###.........',
+    '###.........',
+    '####......#.',
+    '.####....##.',
+    '.#########..',
+    '...######...',
+    '............',
+  ],
+  door: [
+    '.##########.',
+    '.#........#.',
+    '.#........#.',
+    '.#........#.',
+    '.#........#.',
+    '.#......#.#.',
+    '.#........#.',
+    '.#........#.',
+    '.#........#.',
+    '.#........#.',
+    '############',
+    '............',
+  ],
+  house: [
+    '.....##.....',
+    '....####....',
+    '...######...',
+    '..########..',
+    '.##########.',
+    '############',
+    '.#........#.',
+    '.#.##..##.#.',
+    '.#.##..##.#.',
+    '.#........#.',
+    '.#...##...#.',
+    '.#...##...#.',
+  ],
+} as const;
+
+export type IconName = keyof typeof ICONS;
+
+export function PixelIcon({ name, size = 18, title }: { name: IconName; size?: number; title?: string }) {
+  const rows = ICONS[name];
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${rows[0].length} ${rows.length}`}
+      shapeRendering="crispEdges"
+      aria-hidden={title ? undefined : true}
+      role={title ? 'img' : undefined}
+      fill="currentColor"
+    >
+      {title && <title>{title}</title>}
+      {rows.flatMap((row, y) =>
+        row.split('').map((c, x) => (c === '#' ? <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} /> : null)),
+      )}
+    </svg>
+  );
+}
