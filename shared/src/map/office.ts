@@ -27,8 +27,8 @@ import type { Placement } from './furniture.js';
  *   │ Off2│   Open-plan hall: 12 desks in a  ├─────────────┤
  *   ├─────┤   trio, cluster, 2 pairs, 2 solos │             │
  *   │ Off3│                     ┌─[vanity]──┐│     Gym     │
- *   ├─────┤                     │ W   │  M  ││             │
- *   │ Off4│                     │ ▢▢▢ │ ▢▢⊓⊓││             │
+ *   ├─────┤                     │ M   │  W  ││             │
+ *   │ Off4│                     │ ▢▢⊓⊓│ ▢▢▢ ││             │
  *   └─────┴─────────[ entrance ]────┴───┴───┴┴─────────────┘
  */
 export type TileKind = '#' | 'c' | 'w' | 'k' | 'g' | 'b' | 'p';
@@ -63,8 +63,8 @@ function buildTiles(): TileKind[][] {
   // separate women's and men's rooms with cubicles.
   rect(37, 23, 46, 29, '#');
   rect(38, 24, 46, 25, 'b'); // shared vanity lobby
-  rect(38, 27, 41, 29, 'b'); // women
-  rect(43, 27, 46, 29, 'b'); // men
+  rect(38, 27, 41, 29, 'b'); // men
+  rect(43, 27, 46, 29, 'b'); // women
 
   // Doorways
   rect(13, 10, 15, 10, 'c'); // lounge
@@ -74,8 +74,8 @@ function buildTiles(): TileKind[][] {
   rect(47, 14, 47, 15, 'p'); // The Potato Club
   rect(47, 21, 47, 22, 'g'); // gym
   rect(37, 24, 37, 25, 'b'); // washroom lobby (from the hall)
-  rect(40, 26, 40, 26, 'b'); // women's room
-  rect(44, 26, 44, 26, 'b'); // men's room
+  rect(40, 26, 40, 26, 'b'); // men's room
+  rect(44, 26, 44, 26, 'b'); // women's room
   return g;
 }
 
@@ -242,19 +242,21 @@ export const PLACEMENTS: Placement[] = [
   // shared lobby: one long vanity under a wide mirror
   P('mirrorLong', 39, 23, { w: 7 }),
   P('vanity', 39, 24, { w: 7 }),
-  // women: a row of cubicles
-  P('toilet', 39, 29, { variant: 0 }),
-  P('toilet', 40, 29, { variant: 0 }),
-  P('toilet', 41, 29, { variant: 0 }),
-  // men: cubicles + urinals
-  P('toilet', 43, 29, { variant: 1 }),
-  P('toilet', 44, 29, { variant: 1 }),
-  P('urinal', 45, 29),
-  P('urinal', 46, 29),
+  // men (left room): cubicles + urinals, with a ♂ door
+  P('washroomDoor', 40, 26, { id: 'door-men', variant: 1 }),
+  P('toilet', 38, 29, { variant: 1 }),
+  P('toilet', 39, 29, { variant: 1 }),
+  P('urinal', 40, 29),
+  P('urinal', 41, 29),
+  // women (right room): a row of cubicles, with a ♀ door
+  P('washroomDoor', 44, 26, { id: 'door-women', variant: 0 }),
+  P('toilet', 44, 29, { variant: 0 }),
+  P('toilet', 45, 29, { variant: 0 }),
+  P('toilet', 46, 29, { variant: 0 }),
 
   // ---- The Potato Club: karaoke stage, dance floor, disco ball, potatoes ----
   P('potatoPoster', 48, 10, { variant: 0 }),
-  P('clubSign', 50, 10, { w: 4 }),
+  P('clubSign', 49, 10, { w: 6 }),
   P('potatoPoster', 55, 10, { variant: 1 }),
   P('potatoPoster', 57, 10, { variant: 2 }),
   P('stage', 49, 11, { w: 7, h: 2, variant: 1 }), // variant 1 = karaoke stage
@@ -292,10 +294,9 @@ export const PLACEMENTS: Placement[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Area tags — the designated place for each room's name tag is ON A WALL
-// (the window wall for the top rooms, the wall above the door otherwise).
-// Nobody can stand on a wall, and tags are drawn like a painted sign, so
-// characters always walk in front of them instead of being covered.
+// Area tags — each room's name tag sits in a BOTTOM corner, on the room's
+// bottom wall: it never blocks the skyline windows, nobody can stand on a
+// wall, and tags are drawn like a painted sign so characters pass in front.
 // ---------------------------------------------------------------------------
 
 export interface AreaLabel {
@@ -306,13 +307,13 @@ export interface AreaLabel {
 }
 
 export const AREA_LABELS: AreaLabel[] = [
-  { text: 'Lounge', tx: 5, ty: 2 },
-  { text: 'Meeting Room', tx: 26, ty: 2 },
-  { text: 'Pantry', tx: 38, ty: 2 },
-  // The Potato Club already has its neon "POTATO CLUB" sign on the wall.
-  { text: 'Gym', tx: 55, ty: 19 },
-  { text: 'Women', tx: 38, ty: 26 },
-  { text: 'Men', tx: 45, ty: 26 },
+  { text: 'Lounge', tx: 10, ty: 10 }, // bottom-right of the lounge
+  { text: 'Meeting Room', tx: 18, ty: 10 }, // bottom-left
+  { text: 'Pantry', tx: 44, ty: 10 }, // bottom-right
+  // The Potato Club is labelled by its neon sign.
+  { text: 'Gym', tx: 48, ty: 30 }, // bottom-left
+  { text: 'Men', tx: 38, ty: 30 },
+  { text: 'Women', tx: 43, ty: 30 },
 ];
 
 /** The Potato Club's floor area (inclusive tile bounds) — the client shows the club controls inside it. */
