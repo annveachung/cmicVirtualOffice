@@ -144,3 +144,18 @@ Turning the cozy cottage office into a bright tech campus was mainly **one file*
 once. The few real code changes were *new things*: glass walls (a new tile kind `'G'` that blocks
 like a wall but paints see-through), dual monitors, the neon sign, the dashboard and the snack wall.
 A test also guards privacy: no glass is allowed next to washroom tiles.
+
+## 24. Undoing a direction cleanly with `git revert`
+The "tech look" was merged to `main`, then rejected. Instead of hand-editing it back, each of its
+commits was undone with `git revert <sha>`. That creates a *new* commit that applies the exact
+opposite change, so history stays honest ("we tried this, then undid it") and features merged since
+(presenting) are untouched. This is why small, single-purpose commits matter: you can revert just the
+visual ones and keep the rest. Then the Figma colours were applied on top as one palette change.
+
+## 25. Procedural skylines with a seeded "random"
+The city behind the window wall isn't an image. It's generated from a tiny pseudo-random function
+(`rand(n) = fract(sin(n·12.9898+78.233)·43758.5453)`, a classic shader trick). Feed it the same
+number and you always get the same answer, so the skyline is random-looking but **identical every
+time and for every player**, which matters once everyone shares one office. Two layers of buildings
+(far and near), stepped sky gradient bands, a grid of windows where ~40% are lit, and a few stars. At
+night the same code runs with the dark palette: navy sky, warm lit windows.
