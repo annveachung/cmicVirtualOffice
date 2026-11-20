@@ -209,3 +209,12 @@ things attached to **people** (name tags, speech bubbles, hints) but wrong for t
   scroll so that point is still under the mouse.
 - **Smooth zoom:** `zoom *= e^(−delta·k)` works for both chunky mouse wheels and fine trackpad pinches.
 - **Follow modes:** looking around pauses following; walking resumes it; "Find me" snaps back.
+
+## 31. A crash you can't see, and a test that can
+"Opening the office…" never going away meant the game threw an error while *building* the scene,
+which showed only in the browser console. The cause: `colors[(x * 7 + y * 3) % 6]` where `x` wasn't a
+whole number, so the array lookup returned `undefined`, and turning `undefined` into a shade crashed.
+TypeScript can't catch this (`colors[i]` is typed as a colour even when `i` is 1.5).
+The fix was one `Math.floor`. The lasting fix is `art.smoke.test.ts`: it runs **every painter for
+every placement in both themes** against a fake canvas that refuses bad colours, so this whole class
+of bug now fails `npm test` in under a second instead of freezing the game.
