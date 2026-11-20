@@ -51,6 +51,13 @@ export interface EnvPalette {
   shadow: string; // rgba for soft shadows
   sky: string;
   bg: string;
+  // city skyline seen through the back window wall
+  skyTop: string;
+  skyHorizon: string;
+  cityFar: string;
+  city: string;
+  cityWindow: string;
+  cityWindowLit: string;
  // page/canvas background outside the map
 }
 
@@ -66,15 +73,15 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     wallPaperAlt: '#e9e0c5',
     wainscot: '#cfdcc3',
     trim: '#5e8a6e',
-    carpet: '#f3ecd6',
-    carpetAlt: '#eee6cd',
-    wood: '#ebe1c6',
-    woodAlt: '#e6dbbe',
-    woodSeam: '#d9cba8',
-    kitchen: '#f2ead3',
-    kitchenAlt: '#e3d8ba',
-    gym: '#cfd8c2',
-    gymAlt: '#c6d0b8',
+    carpet: '#c9996a',
+    carpetAlt: '#bf8f60',
+    wood: '#b98a5f',
+    woodAlt: '#b28259',
+    woodSeam: '#94693f',
+    kitchen: '#e0cba4',
+    kitchenAlt: '#cfb68b',
+    gym: '#8f9a80',
+    gymAlt: '#87927a',
     bath: '#eaf0e3',
     bathAlt: '#d7e1cd',
     furn: '#c98f5e',
@@ -101,6 +108,12 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(31, 58, 44, 0.14)',
     sky: '#d8ebe4',
     bg: '#b9cbb2',
+    skyTop: '#6fa4e0',
+    skyHorizon: '#cfe4f5',
+    cityFar: '#a3b6cc',
+    city: '#6e8199',
+    cityWindow: '#b9cbdc',
+    cityWindowLit: '#fff3c4',
   },
   // The same office after sunset: deep forest greens, warm wood, glowing mint screens.
   dark: {
@@ -111,13 +124,13 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     wallPaperAlt: '#28362e',
     wainscot: '#22312a',
     trim: '#3f5f4c',
-    carpet: '#2a342c',
-    carpetAlt: '#273029',
-    wood: '#33392f',
-    woodAlt: '#30362c',
-    woodSeam: '#262b23',
-    kitchen: '#2f362d',
-    kitchenAlt: '#2a3028',
+    carpet: '#3b2c22',
+    carpetAlt: '#35281f',
+    wood: '#33261d',
+    woodAlt: '#2f231b',
+    woodSeam: '#241a14',
+    kitchen: '#3a3026',
+    kitchenAlt: '#33291f',
     gym: '#232c25',
     gymAlt: '#202822',
     bath: '#2b3630',
@@ -146,5 +159,11 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(0, 8, 4, 0.36)',
     sky: '#13221b',
     bg: '#16221b',
+    skyTop: '#0a0f2e',
+    skyHorizon: '#2c2a5e',
+    cityFar: '#1d2449',
+    city: '#121833',
+    cityWindow: '#1f2850',
+    cityWindowLit: '#ffd36e',
   },
 };
