@@ -194,3 +194,18 @@ obvious place to add "broadcast this to everyone".
 **Instant vs ongoing actions** is a useful distinction in any interaction system: sitting, singing
 and dancing are *states* you're in until you leave; putting on a costume or getting a snack are
 *events* that happen once.
+
+## 29. Screen-space vs world-space labels, revisited
+Earlier, *all* labels were screen-sized (scaled by `1/zoom`), so they stay readable. That's right for
+things attached to **people** (name tags, speech bubbles, hints) but wrong for things attached to the
+**building**: room tags then seem to shrink as the room grows when you zoom in. Now room tags use a
+*fixed* world scale (`1/coverZoom`), readable at 100% and growing with the room like any furniture.
+
+## 30. Map-app camera controls
+`camera/CameraRig.ts` copies what people already know from map apps:
+- **Drag to pan:** a press only counts as a click if the pointer moves less than 6px, so you can tap
+  to walk *and* drag to look around with the same button.
+- **Zoom towards the cursor:** remember the world point under the mouse, change zoom, then shift the
+  scroll so that point is still under the mouse.
+- **Smooth zoom:** `zoom *= e^(−delta·k)` works for both chunky mouse wheels and fine trackpad pinches.
+- **Follow modes:** looking around pauses following; walking resumes it; "Find me" snaps back.
