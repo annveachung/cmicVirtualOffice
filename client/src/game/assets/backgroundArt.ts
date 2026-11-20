@@ -89,6 +89,18 @@ function paintWall(ctx: Ctx, pal: EnvPalette, tx: number, ty: number) {
     if (!isWall(tx - 1, ty)) vline(ctx, x + 1, y, TILE, pal.wallTopEdge);
     return;
   }
+  // The end of a one-tile-thick wall above a doorway (floor on both sides): draw it as a
+  // clean wall end — dark top with a thin front edge — not a squashed strip of wallpaper.
+  if (kind === 'face' && !isWall(tx - 1, ty) && !isWall(tx + 1, ty)) {
+    rect(ctx, x, y, TILE, TILE, pal.wallTop);
+    vline(ctx, x, y, TILE, pal.outline);
+    vline(ctx, x + TILE - 1, y, TILE, pal.outline);
+    vline(ctx, x + 1, y, TILE - 5, pal.wallTopEdge);
+    rect(ctx, x + 1, y + TILE - 5, TILE - 2, 4, pal.trim); // front edge of the wall end
+    hline(ctx, x, y + TILE - 6, TILE, pal.outline);
+    hline(ctx, x, y + TILE - 1, TILE, pal.outline);
+    return;
+  }
   // walls facing into the Potato Club get purple party wallpaper
   const club = TILES[ty + 1]?.[tx] === 'p';
   const stripes = (y0: number, h: number) => {
@@ -104,13 +116,16 @@ function paintWall(ctx: Ctx, pal: EnvPalette, tx: number, ty: number) {
   // face: a short divider shows its top cap first; the tall back wall doesn't
   let top = y;
   if (!isWall(tx, ty - 1)) {
-    rect(ctx, x, y, TILE, 4, pal.wallTop);
+    // thicker, darker cap so room borders read clearly
+    const CAP = 6;
+    rect(ctx, x, y, TILE, CAP, pal.wallTop);
     hline(ctx, x, y, TILE, pal.outline);
-    hline(ctx, x, y + 3, TILE, pal.outline);
-    top = y + 4;
+    hline(ctx, x, y + 1, TILE, pal.wallTopEdge);
+    hline(ctx, x, y + CAP - 1, TILE, pal.outline);
+    top = y + CAP;
   }
   const bottom = y + TILE;
-  const wainH = top === y ? 7 : 4;
+  const wainH = top === y ? 7 : 3;
   stripes(top, bottom - top - wainH - 2);
   hline(ctx, x, bottom - wainH - 2, TILE, pal.trim);
   rect(ctx, x, bottom - wainH - 1, TILE, wainH - 1, pal.wainscot);
