@@ -14,6 +14,7 @@ import { furnitureTextureKey } from '../assets/furnitureArt';
 import { PALETTES } from '../assets/palette';
 import { BEAM_KEYS, GLOW_KEYS, bgKey } from '../assets/textures';
 import { DEPTH, LABEL_PX } from '../constants';
+import { MapTag } from './MapTag';
 
 /**
  * Builds the visible office from the shared map data, and re-skins it when
@@ -26,8 +27,8 @@ export class OfficeRenderer {
   private readonly moon: Phaser.GameObjects.Image;
   private readonly furniture: { p: Placement; img: Phaser.GameObjects.Image }[] = [];
   private readonly glows: Phaser.GameObjects.Image[] = [];
-  private readonly plaques: Phaser.GameObjects.Text[] = [];
-  private readonly deskTags = new Map<number, Phaser.GameObjects.Text>();
+  private readonly areaTags: MapTag[] = [];
+  private readonly deskTags = new Map<number, MapTag>();
   private labelScale = 1;
 
   constructor(
@@ -50,10 +51,9 @@ export class OfficeRenderer {
       this.furniture.push({ p, img });
     }
 
+    // Room tags pinned just inside each room's top-left corner
     for (const l of AREA_LABELS) {
-      this.plaques.push(
-        this.makeLabel(l.tx * TILE, l.ty * TILE, l.text.toUpperCase(), LABEL_PX.plaque).setDepth(DEPTH.labels),
-      );
+      this.areaTags.push(new MapTag(scene, l.tx * TILE + 2, l.ty * TILE + 2, l.text, 'corner', LABEL_PX.plaque, DEPTH.labels));
     }
     this.applyTheme(theme);
   }
@@ -80,30 +80,22 @@ export class OfficeRenderer {
     }
   }
 
-  private makeLabel(x: number, y: number, text: string, size: number): Phaser.GameObjects.Text {
-    const t = this.scene.add
-      .text(x, y, text, { fontFamily: '"Pixelify Sans", monospace', fontSize: `${size}px`, padding: { x: 3, y: 1 } })
-      .setOrigin(0.5)
-      .setScale(this.labelScale);
-    t.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
-    return t;
-  }
-
   /** Show who owns a desk (name plate under the desk). */
   setDeskOwner(deskId: number, name: string | null): void {
     this.deskTags.get(deskId)?.destroy();
     this.deskTags.delete(deskId);
     const desk = DESKS.find((d) => d.id === deskId);
     if (!desk || !name) return;
-    const tag = this.makeLabel((desk.desk.tx + 1.5) * TILE, (desk.desk.ty + 2) * TILE + 5, name, LABEL_PX.desk).setDepth(DEPTH.labels);
+    const tag = new MapTag(this.scene, (desk.desk.tx + 1.5) * TILE, (desk.desk.ty + 2) * TILE + 5, name, 'center', LABEL_PX.desk, DEPTH.labels);
+    tag.setTheme(this.theme);
+    tag.setScale(this.labelScale);
     this.deskTags.set(deskId, tag);
-    this.styleLabels();
   }
 
   /** Labels are sized in screen pixels; the scene passes 1/zoom whenever the zoom changes. */
   setLabelScale(scale: number): void {
     this.labelScale = scale;
-    this.plaques.forEach((t) => t.setScale(scale));
+    this.areaTags.forEach((t) => t.setScale(scale));
     this.deskTags.forEach((t) => t.setScale(scale));
   }
 
@@ -115,16 +107,11 @@ export class OfficeRenderer {
     this.moon.setVisible(theme === 'dark');
     for (const g of this.glows) g.setVisible(theme === 'dark');
     this.scene.cameras.main.setBackgroundColor(PALETTES[theme].bg);
-    this.styleLabels();
+    this.areaTags.forEach((t) => t.setTheme(theme));
+    this.deskTags.forEach((t) => t.setTheme(theme));
   }
 
-  private styleLabels() {
-    const pal = PALETTES[this.theme];
-    const style = (t: Phaser.GameObjects.Text) =>
-      t.setColor(this.theme === 'light' ? '#1f3a2c' : '#e6f3c2').setBackgroundColor(this.theme === 'light' ? pal.paper : '#1a3024');
-    this.plaques.forEach(style);
-    this.deskTags.forEach(style);
-  }
+
 }
 
 /**
