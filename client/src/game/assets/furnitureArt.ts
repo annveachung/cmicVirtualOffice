@@ -626,6 +626,47 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     for (let i = 0; i < 4; i++) px(ctx, 16 + i, 10 - i, pal.paper);
   },
 
+  projectorScreen(ctx, { pal, W, H }) {
+    // pull-up presentation screen standing at the back of the stage
+    vline(ctx, 6, 22, H - 23, pal.metalDark);
+    vline(ctx, W - 7, 22, H - 23, pal.metalDark);
+    hline(ctx, 3, H - 2, 7, pal.outline);
+    hline(ctx, W - 10, H - 2, 7, pal.outline);
+    box(ctx, 2, 0, W - 4, 4, pal.metalDark, pal.outline);
+    box(ctx, 3, 3, W - 6, 20, pal.paper, pal.outline);
+    rect(ctx, 7, 6, 18, 2, pal.accents[1]); // slide title
+    for (let i = 0; i < 4; i++) rect(ctx, 8 + i * 6, 19 - (i * 2 + 3), 4, i * 2 + 3, pal.accents[(i + 2) % 6]);
+    ellipse(ctx, W - 16, 13, 5, 5, pal.accents[0]);
+    rect(ctx, W - 16, 8, 5, 5, pal.accents[2]);
+    box(ctx, 3, 21, W - 6, 3, pal.metal, pal.outline);
+  },
+
+  washBasin(ctx, { pal, H, v }) {
+    const cab = v === 0 ? pal.accents[0] : pal.accents[1]; // dusty rose / sky per room
+    box(ctx, 2, 0, 12, 11, pal.metalLight, pal.outline); // mirror
+    rect(ctx, 3, 1, 10, 9, pal.glassLight);
+    px(ctx, 5, 7, pal.paper);
+    px(ctx, 6, 6, pal.paper);
+    px(ctx, 7, 5, pal.paper);
+    box(ctx, 1, H - 16, 14, 16, cab, pal.outline); // vanity
+    vline(ctx, 8, H - 9, 7, pal.outline);
+    box(ctx, 1, H - 17, 14, 5, pal.metalLight, pal.outline); // counter top
+    ellipse(ctx, 8, H - 15, 4, 1, pal.paper); // basin
+    rect(ctx, 7, H - 19, 2, 3, pal.metalDark); // tap
+  },
+
+  toilet(ctx, { pal, H }) {
+    // stall partitions either side, toilet against the back (bottom) wall
+    const part = pal.metalLight;
+    box(ctx, 0, 0, 2, H - 4, part, pal.outline);
+    box(ctx, 14, 0, 2, H - 4, part, pal.outline);
+    ellipse(ctx, 8, H - 13, 4, 4, pal.outline);
+    ellipse(ctx, 8, H - 13, 3, 3, pal.paper);
+    ellipse(ctx, 8, H - 13, 1, 1, pal.glass);
+    box(ctx, 4, H - 9, 8, 7, pal.paper, pal.outline); // tank
+    hline(ctx, 5, H - 8, 6, pal.plastic);
+  },
+
   entrance(ctx, { pal, W }) {
     // glass sliding doors in the bottom wall, seen from above
     rect(ctx, 0, 0, W, 16, pal.metalDark);
