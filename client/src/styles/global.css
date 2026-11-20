@@ -4,48 +4,46 @@
  */
 :root,
 :root[data-theme='light'] {
-  /* bright tech campus: white surfaces, cool greys, bold blue accent */
-  --bg: #e9edf1;
-  --bg-pattern: #e2e7ec;
-  --panel: #ffffff;
-  --panel-hi: #ffffff;
-  --panel-lo: #e3e8ee;
-  --ink: #1f2933;
-  --ink-soft: #66717f;
-  --border: #2b3038;
-  --accent: #4f86ec;
-  --accent-hi: #74a1f2;
-  --accent-lo: #3466c4;
-  --accent-ink: #ffffff;
-  --wood: #4f86ec;
-  --field: #f7f9fb;
-  --danger: #d64c3f;
-  --online: #3fae64;
-  --drop: rgba(31, 41, 51, 0.22);
-  --overlay: rgba(255, 255, 255, 0.94);
+  --bg: #e8dcc4;
+  --bg-pattern: #e1d3b8;
+  --panel: #fbf4e4;
+  --panel-hi: #fffaf0;
+  --panel-lo: #e6d8bd;
+  --ink: #4a362d;
+  --ink-soft: #8a7262;
+  --border: #4a362d;
+  --accent: #8ea98a;
+  --accent-hi: #a9c2a4;
+  --accent-lo: #6f8b6b;
+  --accent-ink: #fffaf0;
+  --wood: #a8774f;
+  --field: #fffdf7;
+  --danger: #b5544a;
+  --online: #7fae6e;
+  --drop: rgba(74, 54, 45, 0.28);
+  --overlay: rgba(251, 244, 228, 0.92);
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  /* evening campus: deep navy, glowing blue accent */
-  --bg: #0f1218;
-  --bg-pattern: #141822;
-  --panel: #1a1f29;
-  --panel-hi: #252c38;
-  --panel-lo: #12161d;
-  --ink: #e6edf5;
-  --ink-soft: #8f9aaa;
-  --border: #05070a;
-  --accent: #5d95f2;
-  --accent-hi: #82aef6;
-  --accent-lo: #3f72cc;
-  --accent-ink: #0b0f16;
-  --wood: #5d95f2;
-  --field: #12161d;
-  --danger: #ef7468;
-  --online: #47b871;
-  --drop: rgba(0, 0, 0, 0.5);
-  --overlay: rgba(26, 31, 41, 0.95);
+  --bg: #14151d;
+  --bg-pattern: #191b25;
+  --panel: #262a38;
+  --panel-hi: #313649;
+  --panel-lo: #1c1f2b;
+  --ink: #f1e3c8;
+  --ink-soft: #a99c86;
+  --border: #0b0b10;
+  --accent: #d9a25a;
+  --accent-hi: #ecbc78;
+  --accent-lo: #a8773b;
+  --accent-ink: #21190f;
+  --wood: #6a4a36;
+  --field: #1c1f2b;
+  --danger: #e07b6c;
+  --online: #9ccf7e;
+  --drop: rgba(0, 0, 0, 0.45);
+  --overlay: rgba(38, 42, 56, 0.94);
   color-scheme: dark;
 }
 
