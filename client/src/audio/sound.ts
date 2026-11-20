@@ -180,7 +180,7 @@ class SoundEngine {
     if (note !== null) {
       let len = 1;
       while (slot + len < 8 && song.lead[bar][slot + len] === null) len++;
-      this.tone('square', midiToHz(note), t, eighth * len * 0.9, song.leadVolume);
+      this.tone(song.leadWave ?? 'square', midiToHz(note), t, eighth * len * 0.9, song.leadVolume);
     }
     // soft arpeggio
     this.tone('square', midiToHz(chord.triad[song.arp[slot]]), t, eighth * 0.6, 0.018);

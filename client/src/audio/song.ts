@@ -18,6 +18,8 @@ export interface Song {
   /** Synth drum kit: none, 'backbeat' (kick 1 & 3, snare 2 & 4) or 'fourOnFloor' (kick every beat). */
   drums: false | 'backbeat' | 'fourOnFloor';
   leadVolume: number;
+  /** Lead instrument: 'square' = classic chiptune, 'triangle' = soft, electric-piano-like. */
+  leadWave?: 'square' | 'triangle';
 }
 
 const ch = (bass: number, triad: [number, number, number]): Chord => ({ bass, triad });
@@ -74,30 +76,37 @@ export const CLUB_SONG: Song = {
 };
 
 /**
- * "Power Up": a heroic, upbeat training-montage tune for the gym.
- * D major, 150 BPM, punchy staccato hook, four-on-the-floor, and a big
- * climbing run at the end of each loop (the "level up" moment).
+ * "Fresh Start": a light, breezy, jazzy fitness-lobby tune for the gym —
+ * relaxed 116 BPM, soft electric-piano-style lead, smooth seventh chords
+ * (the triads below are the upper notes of maj7/m7/7 chords over the bass).
+ * An ORIGINAL composition in that easy-going workout-game style.
  */
-const gD = ch(38, [62, 66, 69]);
-const gG = ch(43, [67, 71, 74]);
-const gA = ch(45, [69, 73, 76]);
-const gBm = ch(47, [71, 74, 78]);
+const gCmaj7 = ch(48, [64, 67, 71]);
+const gAm7 = ch(45, [64, 67, 72]);
+const gDm7 = ch(50, [65, 69, 72]);
+const gG7 = ch(43, [65, 71, 74]);
+const gFmaj7 = ch(41, [64, 69, 72]);
+const gEm7 = ch(40, [67, 71, 74]);
 
 export const GYM_SONG: Song = {
-  bpm: 150,
+  bpm: 116,
   lead: [
-    [74, 74, null, 74, 78, null, 81, null], // D  — "da-da . da DA . DA"
-    [79, null, 78, null, 76, 73, 76, null], // A
-    [78, 78, null, 78, 81, null, 83, null], // Bm — same hook, higher
-    [81, null, 79, 78, 79, null, 76, null], // G
-    [74, null, 78, 81, 86, null, 81, null], // D  — leap up
-    [85, null, 81, null, 76, 78, 79, null], // A
-    [79, 81, 83, null, 79, null, 76, null], // G
-    [76, 78, 79, 81, 83, 85, 86, null], // A  — the big climb, then loop
+    [76, null, null, 79, null, 76, 74, null], // Cmaj7
+    [72, null, 76, null, 79, null, null, 81], // Am7
+    [null, 77, null, 76, 74, null, 72, null], // Dm7 — laid-back, starts off the beat
+    [71, null, 74, null, 77, 76, 74, null], // G7
+    [76, null, null, 79, null, 83, 81, null], // Cmaj7
+    [79, null, 76, null, 77, null, 81, null], // Fmaj7
+    [79, null, 76, 74, 72, null, 76, null], // Em7 → Am7
+    [74, null, 72, null, 71, null, null, null], // Dm7 → G7, back to the top
   ],
-  chords: [[gD, gD], [gA, gA], [gBm, gBm], [gG, gG], [gD, gD], [gA, gA], [gG, gG], [gA, gA]],
-  arp: [0, 1, 2, 1, 0, 1, 2, 1],
-  bass: 'pump',
-  drums: 'fourOnFloor',
-  leadVolume: 0.045,
+  chords: [
+    [gCmaj7, gCmaj7], [gAm7, gAm7], [gDm7, gDm7], [gG7, gG7],
+    [gCmaj7, gCmaj7], [gFmaj7, gFmaj7], [gEm7, gAm7], [gDm7, gG7],
+  ],
+  arp: [0, 2, 1, 2, 0, 2, 1, 2],
+  bass: 'walk',
+  drums: 'backbeat',
+  leadVolume: 0.09,
+  leadWave: 'triangle',
 };
