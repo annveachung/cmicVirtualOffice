@@ -22,13 +22,13 @@ import type { Placement } from './furniture.js';
  *   ┌──────────────┬────────────┬──────────────────────────┐
  *   │    Lounge    │  Meeting   │          Pantry          │
  *   ├─────┬────────┴────────────┴────────────┬─────────────┤
- *   │ Off1│                                  │ The Potato  │
- *   ├─────┤                                  │    Club     │
- *   │ Off2│   Open-plan hall: 12 desks in a  ├─────────────┤
- *   ├─────┤   trio, cluster, 2 pairs, 2 solos │             │
- *   │ Off3│                     ┌─[vanity]──┐│     Gym     │
- *   ├─────┤                     │ M   │  W  ││             │
- *   │ Off4│                     │ ▢▢⊓⊓│ ▢▢▢ ││             │
+ *   │     │                                  │ The Potato  │
+ *   │ Off1│                                  │    Club     │
+ *   ├─────┤   Open-plan hall: 12 desks in a  ├─────────────┤
+ *   │ Off2│   trio, cluster, 2 pairs, 2 solos │             │
+ *   ├─────┤                     ┌─[vanity]──┐│     Gym     │
+ *   │ Off3│                     │ M   │  W  ││             │
+ *   │     │                     │ ▢▢⊓⊓│ ▢▢▢ ││             │
  *   └─────┴─────────[ entrance ]────┴───┴───┴┴─────────────┘
  */
 export type TileKind = '#' | 'c' | 'w' | 'k' | 'g' | 'b' | 'p';
@@ -40,8 +40,12 @@ export const MAP_H = 31;
 // Floor plan
 // ---------------------------------------------------------------------------
 
-/** Private offices down the left side (4 rows tall each). */
-const OFFICE_ROOMS = [11, 16, 21, 26].map((y0) => ({ y0, y1: y0 + 3 }));
+/** Three roomy private offices down the left side (6, 5 and 6 tiles tall). */
+const OFFICE_ROOMS = [
+  { y0: 11, y1: 16 },
+  { y0: 18, y1: 22 },
+  { y0: 24, y1: 29 },
+];
 
 function buildTiles(): TileKind[][] {
   const g: TileKind[][] = Array.from({ length: MAP_H }, () => Array<TileKind>(MAP_W).fill('#'));
@@ -110,7 +114,8 @@ const desk = (id: number, label: string, zone: DeskDef['zone'], facing: DeskFaci
 });
 
 export const DESKS: DeskDef[] = [
-  ...OFFICE_ROOMS.map((r, i) => desk(i + 1, `Private office ${i + 1}`, 'office', 'down', 1, r.y0 + 1)),
+  // one row down from the back wall, so the tall chair doesn't cover the wall
+  ...OFFICE_ROOMS.map((r, i) => desk(i + 1, `Private office ${i + 1}`, 'office', 'down', 1, r.y0 + 2)),
   // Trio row: three desks side by side, facing the room
   desk(5, 'Trio row · left', 'open', 'down', 10, 14),
   desk(6, 'Trio row · middle', 'open', 'down', 13, 14),
@@ -149,16 +154,15 @@ const deskPlacements: Placement[] = DESKS.flatMap((d) => [
 ]);
 
 const officeDecor: Placement[] = OFFICE_ROOMS.flatMap((r, i) => [
-  P('painting', 3, r.y0 - 1, { variant: i }),
-  P('floorLamp', 1, r.y0), // fills the corner the chair would otherwise box in
-  P('bookshelf', 5, r.y0, { variant: i }),
+  P('floorLamp', 1, r.y0 + 1), // fills the spot beside the chair that would otherwise be boxed in
   P('armchair', 6, r.y1, { dir: 'left' }),
+  // a carpet covering the whole office, a different (non-green) colour per office
+  P('rug', 1, r.y0, { w: 6, h: r.y1 - r.y0 + 1, variant: 3 + i }),
 ]);
 
 export const PLACEMENTS: Placement[] = [
   // ---- Lounge (top-left, sunny) ----
-  // shelf and arcades stand flat against the side walls, keeping the window clear
-  P('bookshelf', 1, 4, { w: 1, h: 3, dir: 'right', variant: 1 }),
+  // nothing tall against the window wall, so the skyline view stays clear
   // main seating group: two sofas facing each other across a coffee table
   P('rug', 4, 4, { w: 6, h: 5, variant: 0 }),
   P('sofa', 5, 4, { dir: 'down' }),
