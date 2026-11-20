@@ -23,6 +23,8 @@ export interface MotionResult {
   y: number;
   dir: Direction;
   pose: CharacterPose;
+  /** True when the player is steering with the keyboard this frame. */
+  keyboard?: boolean;
 }
 
 /**
@@ -168,7 +170,7 @@ export class PlayerController {
       if (this.stuckTime > 0.4) this.cancelPath();
     } else this.stuckTime = 0;
 
-    return { x: next.x, y: next.y, dir: this.dir, pose: moved ? 'walk' : 'idle' };
+    return { x: next.x, y: next.y, dir: this.dir, pose: moved ? 'walk' : 'idle', keyboard: ix !== 0 || iy !== 0 };
   }
 
   // ---------------------------------------------------------------- helpers --

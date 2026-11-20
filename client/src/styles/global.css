@@ -467,7 +467,7 @@ input:not([type]) {
 .club-panel {
   position: absolute;
   left: 50%;
-  bottom: 14px;
+  bottom: 62px; /* sits above the zoom controls row */
   transform: translateX(-50%);
   padding: 8px 12px;
   display: grid;
@@ -520,4 +520,34 @@ input:not([type]) {
 .toast span {
   font-size: 13px;
   color: var(--ink-soft);
+}
+
+/* ---------------------------------------------------------- zoom controls */
+.zoom-controls {
+  position: absolute;
+  right: 10px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+}
+
+.zoom-percent {
+  font: inherit;
+  font-size: 13px;
+  min-width: 52px;
+  padding: 4px 6px;
+  background: none;
+  border: 0;
+  color: var(--ink);
+  text-align: center;
+}
+
+.zoom-percent:hover {
+  text-decoration: underline;
+}
+
+.game-host canvas:active {
+  cursor: var(--cursor-hand, grabbing) !important;
 }

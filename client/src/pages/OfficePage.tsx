@@ -6,6 +6,7 @@ import { GameCanvas } from '../game/GameCanvas';
 import { bus } from '../game/bus';
 import { AchievementToast } from '../components/AchievementToast';
 import { ClubPanel } from '../components/ClubPanel';
+import { ZoomControls } from '../components/ZoomControls';
 import { sound } from '../audio/sound';
 
 interface Props {
@@ -40,6 +41,10 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || e.metaKey || e.ctrlKey) return;
       if (e.key === 't' || e.key === 'T') onToggleTheme();
       if (e.key === '?') setShowHelp((v) => !v);
+      if (e.key === '+' || e.key === '=') bus.emit('camera:zoom', 'in');
+      if (e.key === '-' || e.key === '_') bus.emit('camera:zoom', 'out');
+      if (e.key === '0') bus.emit('camera:zoom', 'fit');
+      if (e.key === 'f' || e.key === 'F') bus.emit('camera:recenter');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -64,12 +69,14 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
       {!ready && <div className="loading pixel-panel">Opening the office…</div>}
       {zone === 'potato-club' && <ClubPanel />}
       <AchievementToast />
+      <ZoomControls />
       {showHelp && (
         <aside className="help pixel-panel">
           <button className="help-close" onClick={() => setShowHelp(false)} aria-label="Hide controls">×</button>
           <p>
             Use the arrow keys <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> to move around
           </p>
+          <p>Drag to look around · scroll or pinch to zoom</p>
         </aside>
       )}
     </div>

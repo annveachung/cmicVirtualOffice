@@ -24,6 +24,12 @@ export interface BusEvents {
   'club:react': Reaction;
   /** React -> Phaser: start a group dance. */
   'club:group': undefined;
+  /** React -> Phaser: zoom buttons. 'fit' = office fills the window (100%). */
+  'camera:zoom': 'in' | 'out' | 'fit';
+  /** React -> Phaser: "find me" — snap back to following your character. */
+  'camera:recenter': undefined;
+  /** Phaser -> React: current zoom (100% = fills the window) and whether it's following you. */
+  'camera:state': { percent: number; following: boolean };
 }
 
 const emitter = new Phaser.Events.EventEmitter();
