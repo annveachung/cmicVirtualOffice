@@ -4,7 +4,7 @@ import {
   SPAWN,
   TILE,
   buildCollisionGrid,
-  canReachSpot,
+  isInFrontOf,
   spotForTile,
   tileCenter,
   toTile,
@@ -145,14 +145,14 @@ export class OfficeScene extends Phaser.Scene {
     this.updateSpotHint(this.controller.activeSpot !== null);
   }
 
-  /** Find a usable spot next to (or under) the player and show the "E · verb" hint above it. */
+  /** Find a spot you're standing in front of and show the "E · verb" hint above it. */
   private updateSpotHint(busy: boolean) {
     this.nearbySpot = null;
     if (!busy) {
       const here = toTile({ x: this.player.x, y: this.player.y });
       let bestD = Infinity;
       for (const s of SPOTS) {
-        if (!canReachSpot(here, s)) continue;
+        if (!isInFrontOf(this.grid, here, s)) continue; // only when you're facing it, not standing behind
         const d = Math.hypot(s.pos.x - this.player.x, s.pos.y - this.player.y);
         if (d < bestD) {
           bestD = d;

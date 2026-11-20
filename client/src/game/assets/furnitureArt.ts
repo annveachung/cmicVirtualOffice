@@ -307,6 +307,16 @@ const P: Partial<Record<Placement['type'], Painter>> = {
   },
 
   counter(ctx, { pal, W, H, oh }) {
+    if (H - oh > W) {
+      // runs along a side wall: we see its long stone top, and the cabinet front only at the near end
+      box(ctx, 0, 0, W, H - 8, pal.metalLight, pal.outline);
+      vline(ctx, 1, 1, H - 10, shade(pal.metalLight, 0.4));
+      for (let y = oh + TILE; y < H - 8; y += TILE) hline(ctx, 1, y, W - 2, shade(pal.metalLight, -0.08)); // seams
+      box(ctx, 0, H - 9, W, 9, pal.furn, pal.outline);
+      box(ctx, 2, H - 7, W - 4, 6, pal.furnLight, pal.outline);
+      rect(ctx, W / 2 - 2, H - 5, 4, 1, pal.metalDark);
+      return;
+    }
     box(ctx, 0, 0, W, 11, pal.metalLight, pal.outline);
     hline(ctx, 1, 1, W - 2, shade(pal.metalLight, 0.4));
     box(ctx, 0, 10, W, H - 10, pal.furn, pal.outline);
