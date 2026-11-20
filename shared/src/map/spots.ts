@@ -16,7 +16,7 @@ import { DESKS, PLACEMENTS } from './office.js';
  * Spots are derived from furniture data, so adding a treadmill to the map
  * automatically makes it usable.
  */
-export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee';
+export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee' | 'present';
 
 export interface Spot {
   id: string;
@@ -45,6 +45,7 @@ const VERB: Record<SpotAction, string> = {
   play: 'play',
   wash: 'wash hands',
   pee: 'pee',
+  present: 'present',
 };
 
 function footprintTiles(p: Placement): TilePos[] {
@@ -111,6 +112,13 @@ function spotsFor(p: Placement): Spot[] {
     }
     case 'toilet': // sit facing out of the cubicle — you can see who's "busy" 🚽
       return [spot(p.id, 'sit', t(0, 0), 'down', { dy: 2 })];
+    case 'podium': // stand behind the lectern, facing the audience
+      return [spot(p.id, 'present', t(0, -1), 'down', { dy: 3, clickTiles: [t(0, 0), t(0, -1)], onFloor: true })];
+    case 'stage': { // centre stage, in front of the screen
+      const { w, h } = footprint(p);
+      const centre = t(Math.floor(w / 2) - 1, h - 1);
+      return [spot(`${p.id}:centre`, 'present', centre, 'down', { onFloor: true })];
+    }
     case 'urinal': // stand right up to it, facing the wall; the urinal hides your legs
       return [spot(p.id, 'pee', t(0, -1), 'down', { dy: 6, clickTiles: [t(0, 0), t(0, -1)], onFloor: true })];
     case 'vanity': // one basin every two tiles; stand in front of it

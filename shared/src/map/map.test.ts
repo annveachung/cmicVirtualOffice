@@ -159,6 +159,11 @@ describe('activity spots', () => {
     expect(SPOTS.filter((s) => s.action === 'pee').length).toBe(2);
   });
 
+  it('has places to present from on the stage', async () => {
+    const { SPOTS } = await import('./spots.js');
+    expect(SPOTS.filter((s) => s.action === 'present').length).toBe(2);
+  });
+
   it('clicking a desk or a treadmill resolves to the right spot', async () => {
     const { spotForTile } = await import('./spots.js');
     const d = DESKS[4];
