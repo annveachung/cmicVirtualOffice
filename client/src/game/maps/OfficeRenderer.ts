@@ -186,6 +186,13 @@ const TOP_SORTED = new Set<Placement['type']>(['deskChair', 'chair', 'armchair',
 
 function furnitureDepth(p: Placement, def: FurnitureDef, bottom: number): number {
   if (TOP_SORTED.has(p.type) && (p.dir ?? 'down') === 'down') return p.ty * TILE + 1;
-  if (def.onTop) return bottom + 0.5;
+  if (def.onTop) {
+    // sit just above whatever counter they're on (it may run down a wall, so its bottom can be lower)
+    const base = PLACEMENTS.find((q) => {
+      const f = footprint(q);
+      return q.type === 'counter' && p.tx >= q.tx && p.tx < q.tx + f.w && p.ty >= q.ty && p.ty < q.ty + f.h;
+    });
+    return (base ? (base.ty + footprint(base).h) * TILE : bottom) + 0.5;
+  }
   return bottom;
 }

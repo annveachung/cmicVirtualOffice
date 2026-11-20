@@ -187,3 +187,30 @@ export function approachTiles(grid: CollisionGrid, s: Spot): TilePos[] {
 export function canReachSpot(t: TilePos, s: Spot): boolean {
   return Math.max(Math.abs(t.tx - s.tile.tx), Math.abs(t.ty - s.tile.ty)) <= 1;
 }
+
+const STEP: Record<Direction, [number, number]> = { down: [0, 1], up: [0, -1], left: [-1, 0], right: [1, 0] };
+
+/**
+ * Tiles from which a spot counts as "in front of you" — used for the "E · sit"
+ * hint and the E key, so standing BEHIND a sofa (e.g. to look out of the window)
+ * doesn't nag you to sit down.
+ *
+ * - Floor spots (dance floor, yoga mat, in front of a machine): stand on the spot itself.
+ * - Otherwise the tile it faces; if that's blocked (a chair tucked under a desk),
+ *   the tiles beside it; failing that, the tile behind it (a toilet against the wall).
+ */
+export function frontTiles(grid: CollisionGrid, s: Spot): TilePos[] {
+  if (s.onFloor) return [s.tile];
+  const [dx, dy] = STEP[s.facing];
+  const at = (x: number, y: number) => ({ tx: s.tile.tx + x, ty: s.tile.ty + y });
+  const free = (t: TilePos) => !grid.isBlocked(t.tx, t.ty);
+  const front = at(dx, dy);
+  if (free(front)) return [front];
+  const sides = [at(dy, dx), at(-dy, -dx)].filter(free);
+  if (sides.length) return sides;
+  return [at(-dx, -dy)].filter(free);
+}
+
+export function isInFrontOf(grid: CollisionGrid, t: TilePos, s: Spot): boolean {
+  return frontTiles(grid, s).some((f) => f.tx === t.tx && f.ty === t.ty);
+}

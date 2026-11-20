@@ -189,6 +189,15 @@ describe('activity spots', () => {
     expect(SPOTS.some((s) => s.action === 'present' && s.id.startsWith('stage') && s.tile.tx > 47)).toBe(false);
   });
 
+  it('only offers "E · sit" when you stand in front of a seat, not behind it', async () => {
+    const { SPOTS, frontTiles, isInFrontOf } = await import('./spots.js');
+    const sofa = SPOTS.find((s) => s.id.startsWith('sofa') && s.tile.ty === 4)!; // lounge sofa under the window
+    expect(isInFrontOf(grid, { tx: sofa.tile.tx, ty: sofa.tile.ty + 1 }, sofa)).toBe(true); // in front
+    expect(isInFrontOf(grid, { tx: sofa.tile.tx, ty: sofa.tile.ty - 1 }, sofa)).toBe(false); // behind, by the window
+    // every spot can still be used from somewhere
+    for (const s of SPOTS) expect(frontTiles(grid, s).length, s.id).toBeGreaterThan(0);
+  });
+
   it('clicking a desk or a treadmill resolves to the right spot', async () => {
     const { spotForTile } = await import('./spots.js');
     const d = DESKS[4];
