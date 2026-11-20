@@ -712,7 +712,7 @@ const P: Partial<Record<Placement['type'], Painter>> = {
       ellipse(ctx, cx, 5, 4, 1, pal.paper);
       rect(ctx, cx - 1, 0, 2, 3, pal.metalDark); // tap
       if (cx + 16 < W) {
-        rect(ctx, cx + 15, 2, 2, 4, pal.accents[(cx / 32) % 6]); // soap bottle
+        rect(ctx, cx + 15, 2, 2, 4, pal.accents[Math.floor(cx / 32) % 6]); // soap bottle
         px(ctx, cx + 15, 1, pal.metalDark);
       }
     }
@@ -882,7 +882,7 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     roundBox(ctx, 0, 2, W, H - 2, mix(pal.fabricC, pal.outline, 0.2), pal.outline); // padded rim
     rect(ctx, 3, 4, W - 6, H - 9, shade(pal.fabricA, -0.3)); // inside
     for (let y = 4; y < H - 6; y += 3)
-      for (let x = 3 + ((y / 3) % 2) * 2; x < W - 4; x += 4) {
+      for (let x = 3 + (Math.floor(y / 3) % 2) * 2; x < W - 4; x += 4) { // whole numbers only: they index the colour list
         const c = colors[(x * 7 + y * 3) % colors.length];
         rect(ctx, x, y, 3, 3, c);
         px(ctx, x, y, shade(c, 0.45)); // shiny highlight
