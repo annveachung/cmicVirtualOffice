@@ -123,11 +123,11 @@ export const DESKS: DeskDef[] = [
   desk(11, 'Cluster · right', 'open', 'down', 31, 13),
   desk(12, 'Cluster · front', 'open', 'up', 29, 15),
   // Side-by-side pair near the sofa corner
-  desk(13, 'Sofa-side pair · left', 'open', 'up', 11, 24),
-  desk(14, 'Sofa-side pair · right', 'open', 'up', 14, 24),
-  // Two single desks
-  desk(15, 'Quiet corner', 'open', 'down', 42, 17),
-  desk(16, 'Solo spot', 'open', 'down', 28, 21),
+  desk(13, 'Sofa-side pair · left', 'open', 'up', 11, 26),
+  desk(14, 'Sofa-side pair · right', 'open', 'up', 14, 26),
+  // Two single desks, near each other in the middle of the hall
+  desk(15, 'Solo spot · west', 'open', 'down', 24, 21),
+  desk(16, 'Solo spot · east', 'open', 'down', 29, 21),
 ];
 
 // ---------------------------------------------------------------------------
@@ -249,10 +249,10 @@ export const PLACEMENTS: Placement[] = [
   P('coffeeTable', 11, 22),
   P('plant', 15, 20, { variant: 2 }),
   // reading nook
-  P('rug', 31, 25, { w: 5, h: 3, variant: 2 }),
-  P('beanBag', 32, 26, { variant: 0 }),
-  P('beanBag', 34, 26, { variant: 1 }),
-  P('floorLamp', 35, 25),
+  P('rug', 28, 24, { w: 5, h: 3, variant: 2 }),
+  P('beanBag', 29, 25, { variant: 0 }),
+  P('beanBag', 31, 25, { variant: 1 }),
+  P('floorLamp', 32, 24),
   // main entrance (bottom wall) — everyone arrives here
   P('entrance', 24, 30),
   P('doormat', 24, 28),
