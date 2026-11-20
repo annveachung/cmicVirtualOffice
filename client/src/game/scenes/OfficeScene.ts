@@ -18,7 +18,7 @@ import {
 import { registerEnvironmentTextures } from '../assets/textures';
 import { bus } from '../bus';
 import { Character } from '../characters/Character';
-import { DEPTH, LABEL_PX, MAX_ZOOM, TOP_BAR_PX } from '../constants';
+import { DEFAULT_ZOOM_BOOST, DEPTH, LABEL_PX, MAX_ZOOM, TOP_BAR_PX } from '../constants';
 import { OfficeRenderer } from '../maps/OfficeRenderer';
 import { PlayerController } from '../movement/PlayerController';
 
@@ -50,7 +50,7 @@ export class OfficeScene extends Phaser.Scene {
   private nearbySpot: Spot | null = null;
   private data0!: OfficeSceneData;
   /** Multiplier on top of the "cover" zoom. 1 = office fills the window. */
-  private zoomFactor = 1;
+  private zoomFactor: number = DEFAULT_ZOOM_BOOST;
   private unsubscribers: (() => void)[] = [];
 
   constructor() {
