@@ -21,6 +21,7 @@ import { Character } from '../characters/Character';
 import { DEFAULT_ZOOM_BOOST, DEPTH, LABEL_PX, MAX_ZOOM, TOP_BAR_PX } from '../constants';
 import { OfficeRenderer } from '../maps/OfficeRenderer';
 import { PlayerController } from '../movement/PlayerController';
+import { PotatoClub } from '../club/PotatoClub';
 
 export interface OfficeSceneData {
   name: string;
@@ -54,6 +55,7 @@ export class OfficeScene extends Phaser.Scene {
   private unsubscribers: (() => void)[] = [];
   /** False during the arrival camera move (skyline → you); the camera follows you afterwards. */
   private introDone = false;
+  private club!: PotatoClub;
 
   constructor() {
     super('office');
@@ -82,6 +84,7 @@ export class OfficeScene extends Phaser.Scene {
     this.marker = this.add.rectangle(0, 0, 5, 5, 0xfff3cf, 0.9).setAngle(45).setDepth(DEPTH.marker).setVisible(false);
     this.tweens.add({ targets: this.marker, scale: { from: 1, to: 0.6 }, yoyo: true, repeat: -1, duration: 420 });
     this.controller.onPathEnd = () => this.marker.setVisible(false);
+    this.club = new PotatoClub(this, this.player, this.controller, this.office);
 
     // "E · sit" / "E · run" hint shown above a spot you're standing next to
     this.spotHint = this.add
@@ -129,6 +132,7 @@ export class OfficeScene extends Phaser.Scene {
       }),
     );
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.club.destroy();
       this.unsubscribers.forEach((u) => u());
       this.scale.off(Phaser.Scale.Events.RESIZE, this.applyZoom, this);
     });
@@ -158,6 +162,7 @@ export class OfficeScene extends Phaser.Scene {
     this.player.setLabelScale(s);
     this.office.setLabelScale(s);
     this.spotHint.setScale(s);
+    this.club.setLabelScale(s);
   }
 
   /**
@@ -190,7 +195,8 @@ export class OfficeScene extends Phaser.Scene {
   update(_time: number, delta: number) {
     const m = this.controller.update({ x: this.player.x, y: this.player.y }, delta);
     this.player.setPosition(m.x, m.y);
-    this.player.setMotion(m.dir, m.pose);
+    this.player.setMotion(m.dir, this.club.animFor(m.pose));
+    this.club.update(m.pose);
     this.updateSpotHint(this.controller.activeSpot !== null);
   }
 
