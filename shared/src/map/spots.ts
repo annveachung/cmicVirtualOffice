@@ -95,8 +95,8 @@ function spotsFor(p: Placement): Spot[] {
       // Facing the camera you sit a little lower, so the desk/table in front hides your legs.
       return [spot(p.id, 'sit', t(0, 0), facing, { dy: facing === 'down' ? 2 : 0 })];
     }
-    case 'boothBench': // two seats per bench, facing the table
-      return footprintTiles(p).map((c, i) => spot(`${p.id}:${i}`, 'sit', c, p.dir ?? 'right'));
+    case 'boothBench': // one seat per bench piece, facing the table
+      return [spot(p.id, 'sit', t(0, 0), p.dir ?? 'right')];
     case 'sofa': // every cushion is its own seat
       return Array.from({ length: footprint(p).w }, (_, i) => spot(`${p.id}:${i}`, 'sit', t(i, 0), 'down', { dy: 2 }));
     case 'treadmill':

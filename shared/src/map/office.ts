@@ -207,9 +207,13 @@ export const PLACEMENTS: Placement[] = [
   P('chair', 50, 4, { dir: 'right', variant: 1 }),
   P('chair', 53, 4, { dir: 'left', variant: 1 }),
   // a cosy booth for four against the bottom wall: two benches facing across a table
-  P('boothBench', 50, 8, { id: 'booth-west', dir: 'right' }),
+  // each bench is two 1-tile pieces (back seat / front seat), so someone sitting
+  // in the front seat is drawn over the back seat, not hidden behind it
+  P('boothBench', 50, 8, { id: 'booth-west-back', dir: 'right', variant: 0 }),
+  P('boothBench', 50, 9, { id: 'booth-west-front', dir: 'right', variant: 1 }),
   P('boothTable', 51, 8),
-  P('boothBench', 53, 8, { id: 'booth-east', dir: 'left' }),
+  P('boothBench', 53, 8, { id: 'booth-east-back', dir: 'left', variant: 0 }),
+  P('boothBench', 53, 9, { id: 'booth-east-front', dir: 'left', variant: 1 }),
 
   // ---- Private offices ----
   ...officeDecor,

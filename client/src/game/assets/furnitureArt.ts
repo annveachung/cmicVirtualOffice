@@ -925,19 +925,23 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     [[5, 40], [7, 40], [6, 42], [8, 42], [7, 44]].forEach(([x, y]) => px(ctx, x, oh + y, pal.accents[3]));
   },
 
-  /** One side of a booth: tall tufted backrest on the outer side, two seat cushions. */
-  boothBench(ctx, { pal, H, oh, dir }) {
+  /**
+   * One seat of a booth bench (benches are built from a back piece + a front piece,
+   * so the person in front is layered correctly). Tufted backrest on the outer side.
+   */
+  boothBench(ctx, { pal, H, oh, dir, v }) {
     const up = pal.fabricB;
     const back = shade(up, -0.22);
     const f = (x: number, w: number) => (dir === 'left' ? 16 - x - w : x); // drawn for 'right', mirrored for 'left'
-    box(ctx, f(0, 6), 0, 6, H - 2, back, pal.outline); // tall backrest
-    for (let y = 5; y < H - 6; y += 6) px(ctx, f(3, 1), y, shade(up, -0.4)); // button tufting
-    vline(ctx, f(1, 1), 1, H - 4, shade(back, 0.2));
-    for (let i = 0; i < 2; i++) {
-      box(ctx, f(4, 11), oh + i * TILE + 2, 11, 12, up, pal.outline); // seat cushion
-      hline(ctx, f(5, 9), oh + i * TILE + 3, 9, shade(up, 0.25));
-    }
-    box(ctx, f(4, 11), H - 4, 11, 3, pal.furn, pal.outline); // wooden base
+    const front = v === 1;
+    // backrest: the back piece has the rounded top, the front piece continues it and ends on the floor
+    const top = front ? oh - 2 : 0;
+    box(ctx, f(0, 6), top, 6, H - top - (front ? 2 : 0), back, pal.outline);
+    vline(ctx, f(1, 1), top + 1, H - top - 4, shade(back, 0.2));
+    for (let y = top + 5; y < H - 4; y += 6) px(ctx, f(3, 1), y, shade(up, -0.4)); // button tufting
+    box(ctx, f(4, 11), oh + 2, 11, 12, up, pal.outline); // seat cushion
+    hline(ctx, f(5, 9), oh + 3, 9, shade(up, 0.25));
+    if (front) box(ctx, f(4, 11), H - 4, 11, 3, pal.furn, pal.outline); // wooden base at the near end
   },
 
   /** The booth's table: wooden top on a pedestal, set for four. */
