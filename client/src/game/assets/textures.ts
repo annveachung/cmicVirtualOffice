@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { PLACEMENTS, appearanceKey, type Appearance, type Theme } from '@little-office/shared';
-import { paintBackground, paintGlow, paintGrassTile, paintPavingTile, paintSunbeams } from './backgroundArt';
+import { paintBackground, paintGlow, paintSunbeams } from './backgroundArt';
 import { DIRECTIONS, FRAME_H, FRAME_W, POSES, buildCharacterSheet, frameName, type Pose } from './characterArt';
 import { furnitureTextureKey, paintFurniture } from './furnitureArt';
 import { PALETTES } from './palette';
@@ -13,8 +13,6 @@ import { PALETTES } from './palette';
 const THEMES: Theme[] = ['light', 'dark'];
 
 export const bgKey = (t: Theme) => `bg:${t}`;
-export const grassKey = (t: Theme) => `grass:${t}`;
-export const pavingKey = (t: Theme) => `paving:${t}`;
 export const GLOW_KEYS = { lamp: 'glow:lamp', screen: 'glow:screen', small: 'glow:small' } as const;
 export const BEAM_KEYS = { sun: 'beams:sun', moon: 'beams:moon' } as const;
 
@@ -23,8 +21,6 @@ export function registerEnvironmentTextures(scene: Phaser.Scene): void {
   for (const theme of THEMES) {
     const pal = PALETTES[theme];
     if (!tex.exists(bgKey(theme))) tex.addCanvas(bgKey(theme), paintBackground(pal));
-    if (!tex.exists(grassKey(theme))) tex.addCanvas(grassKey(theme), paintGrassTile(pal));
-    if (!tex.exists(pavingKey(theme))) tex.addCanvas(pavingKey(theme), paintPavingTile(pal));
     for (const p of PLACEMENTS) {
       const key = furnitureTextureKey(p, theme);
       if (!tex.exists(key)) tex.addCanvas(key, paintFurniture(p, pal));

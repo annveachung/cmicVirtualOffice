@@ -53,11 +53,9 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
       {showHelp && (
         <aside className="help pixel-panel">
           <button className="help-close" onClick={() => setShowHelp(false)} aria-label="Hide controls">×</button>
-          <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows to walk</p>
-          <p>Click the floor to walk there</p>
-          <p>Click a chair, treadmill, bike, mat… to use it</p>
-          <p><kbd>E</kbd> use / stop · <kbd>T</kbd> day/night · <kbd>?</kbd> help</p>
-          <p>Scroll to zoom (optional)</p>
+          <p>
+            Use the arrow keys <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> to move around
+          </p>
         </aside>
       )}
     </div>

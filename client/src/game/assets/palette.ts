@@ -24,6 +24,8 @@ export interface EnvPalette {
   kitchenAlt: string;
   gym: string;
   gymAlt: string;
+  bath: string;
+  bathAlt: string;
   // furniture
   furn: string;
   furnDark: string;
@@ -49,12 +51,7 @@ export interface EnvPalette {
   shadow: string; // rgba for soft shadows
   sky: string;
   bg: string;
-  // outdoors around the building
-  grass: string;
-  grassDark: string;
-  grassLight: string;
-  paving: string;
-  pavingAlt: string; // page/canvas background outside the map
+ // page/canvas background outside the map
 }
 
 export const PALETTES: Record<Theme, EnvPalette> = {
@@ -75,6 +72,8 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     kitchenAlt: '#ddd0b8',
     gym: '#a3adab',
     gymAlt: '#9aa4a2',
+    bath: '#e8eff0',
+    bathAlt: '#cddcdf',
     furn: '#a8774f',
     furnDark: '#7e5438',
     furnLight: '#c4946a',
@@ -99,11 +98,6 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(74, 54, 45, 0.16)',
     sky: '#cfe6ef',
     bg: '#e8dcc4',
-    grass: '#a3bb8b',
-    grassDark: '#8fa878',
-    grassLight: '#b9cf9f',
-    paving: '#dccfb5',
-    pavingAlt: '#cdbfa3',
   },
   dark: {
     outline: '#16141c',
@@ -122,6 +116,8 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     kitchenAlt: '#3b3a43',
     gym: '#353c41',
     gymAlt: '#31373c',
+    bath: '#3b4652',
+    bathAlt: '#323c47',
     furn: '#6a4a36',
     furnDark: '#4a3326',
     furnLight: '#835e45',
@@ -146,10 +142,5 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(5, 5, 12, 0.32)',
     sky: '#1b2440',
     bg: '#14151d',
-    grass: '#2a3a32',
-    grassDark: '#23312a',
-    grassLight: '#33463a',
-    paving: '#3e3c45',
-    pavingAlt: '#36343d',
   },
 };

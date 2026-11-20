@@ -69,6 +69,10 @@ export const FURNITURE = {
   yogaMat: { w: 1, h: 2, blocks: false, layer: 'floor' },
   punchingBag: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 18 },
   mirror: { w: 2, h: 1, blocks: false, layer: 'wall' },
+  projectorScreen: { w: 4, h: 1, blocks: true, layer: 'object', overhang: 18 },
+  // washrooms
+  washBasin: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 14 },
+  toilet: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 10 },
   // entrance
   entrance: { w: 3, h: 1, blocks: false, layer: 'wall' },
   doormat: { w: 3, h: 2, blocks: false, layer: 'floor' },
