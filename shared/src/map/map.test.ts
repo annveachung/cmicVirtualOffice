@@ -73,9 +73,10 @@ describe('office map data', () => {
     }
   });
 
-  it('has 16 desks with a reachable spot next to every chair', () => {
-    expect(DESKS).toHaveLength(16);
-    expect(new Set(DESKS.map((d) => d.id)).size).toBe(16);
+  it('has 15 desks (3 private offices + 12 open-plan) with a reachable spot next to every chair', () => {
+    expect(DESKS).toHaveLength(15);
+    expect(new Set(DESKS.map((d) => d.id)).size).toBe(15);
+    expect(DESKS.filter((d) => d.zone === 'office')).toHaveLength(3);
     const reach = reachableFromSpawn();
     for (const d of DESKS) {
       const sides = [d.chair.tx - 1, d.chair.tx + 1].map((x) => d.chair.ty * MAP_W + x);

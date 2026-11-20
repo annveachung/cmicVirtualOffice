@@ -22,13 +22,13 @@ import type { Placement } from './furniture.js';
  *   ┌──────────────┬────────────┬──────────────────────────┐
  *   │    Lounge    │  Meeting   │          Pantry          │
  *   ├─────┬────────┴────────────┴────────────┬─────────────┤
- *   │ Off1│                                  │ The Potato  │
- *   ├─────┤                                  │    Club     │
- *   │ Off2│   Open-plan hall: 12 desks in a  ├─────────────┤
- *   ├─────┤   trio, cluster, 2 pairs, 2 solos │             │
- *   │ Off3│                     ┌─[vanity]──┐│     Gym     │
- *   ├─────┤                     │ M   │  W  ││             │
- *   │ Off4│                     │ ▢▢⊓⊓│ ▢▢▢ ││             │
+ *   │     │                                  │ The Potato  │
+ *   │ Off1│                                  │    Club     │
+ *   ├─────┤   Open-plan hall: 12 desks in a  ├─────────────┤
+ *   │ Off2│   trio, cluster, 2 pairs, 2 solos │             │
+ *   ├─────┤                     ┌─[vanity]──┐│     Gym     │
+ *   │ Off3│                     │ M   │  W  ││             │
+ *   │     │                     │ ▢▢⊓⊓│ ▢▢▢ ││             │
  *   └─────┴─────────[ entrance ]────┴───┴───┴┴─────────────┘
  */
 export type TileKind = '#' | 'c' | 'w' | 'k' | 'g' | 'b' | 'p';
@@ -40,8 +40,12 @@ export const MAP_H = 31;
 // Floor plan
 // ---------------------------------------------------------------------------
 
-/** Private offices down the left side (4 rows tall each). */
-const OFFICE_ROOMS = [11, 16, 21, 26].map((y0) => ({ y0, y1: y0 + 3 }));
+/** Three roomy private offices down the left side (6, 5 and 6 tiles tall). */
+const OFFICE_ROOMS = [
+  { y0: 11, y1: 16 },
+  { y0: 18, y1: 22 },
+  { y0: 24, y1: 29 },
+];
 
 function buildTiles(): TileKind[][] {
   const g: TileKind[][] = Array.from({ length: MAP_H }, () => Array<TileKind>(MAP_W).fill('#'));
@@ -153,6 +157,7 @@ const officeDecor: Placement[] = OFFICE_ROOMS.flatMap((r, i) => [
   P('floorLamp', 1, r.y0), // fills the corner the chair would otherwise box in
   P('bookshelf', 5, r.y0, { variant: i }),
   P('armchair', 6, r.y1, { dir: 'left' }),
+  P('rug', 2, r.y0 + 3, { w: 3, h: Math.max(1, r.y1 - r.y0 - 3), variant: i }), // a little rug in the extra space
 ]);
 
 export const PLACEMENTS: Placement[] = [
