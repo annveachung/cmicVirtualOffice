@@ -123,3 +123,10 @@ We now use *cover*, and made the map's shape (59×31 ≈ 1.9:1) match a typical 
 window, so the crop is usually zero or a few pixels. When it isn't, the camera follows you within the
 map's bounds, so nothing is ever unreachable. Matching the content's shape to the screen did more
 than any camera setting could.
+
+## 20. Restyling without touching behaviour
+Turning every office chair into a gaming chair changed **one painter function** (`deskChair` in
+`furnitureArt.ts`) and switched the meeting room's chairs to that type in the map data. Sitting,
+depth sorting and seat positions didn't change at all, because they depend on the furniture's
+*type and direction*, not on how it looks. That's the payoff of separating "what it is" (data)
+from "how it's drawn" (painters): visual redesigns are cheap and can't break gameplay.
