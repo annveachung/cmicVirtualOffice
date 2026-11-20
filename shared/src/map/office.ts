@@ -186,8 +186,7 @@ export const PLACEMENTS: Placement[] = [
   P('coffeeMachine', 57, 4, { id: 'coffee-machine' }),
   P('cups', 57, 5),
   P('sink', 57, 6),
-  P('fridge', 56, 9),
-  P('waterCooler', 55, 9),
+  P('fridge', 57, 9), // a compact fridge tucked into the corner
   P('bin', 57, 8), // pantry bin, against the wall at the end of the counter
   // left wall: tea & drinks station, then the breakfast/lunch buffet
   P('beverageCounter', 32, 3, { id: 'beverage-station', w: 1, h: 3 }),
