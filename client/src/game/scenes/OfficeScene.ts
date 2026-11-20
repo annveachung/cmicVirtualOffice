@@ -12,6 +12,8 @@ import {
   type CollisionGrid,
   type Spot,
   type Theme,
+  type ZoneId,
+  zoneAt,
 } from '@little-office/shared';
 import { registerEnvironmentTextures } from '../assets/textures';
 import { bus } from '../bus';
@@ -49,6 +51,7 @@ export class OfficeScene extends Phaser.Scene {
   private unsubscribers: (() => void)[] = [];
   private club!: PotatoClub;
   private camera!: CameraRig;
+  private zone: ZoneId | null = null;
 
   constructor() {
     super('office');
@@ -141,7 +144,17 @@ export class OfficeScene extends Phaser.Scene {
     this.camera.update(); // cheap no-op unless the zoom changed
     this.player.setMotion(m.dir, this.club.animFor(m.pose));
     this.club.update(m.pose);
+    this.updateZone();
     this.updateSpotHint(this.controller.activeSpot !== null);
+  }
+
+  /** Tell the UI when you walk into or out of a special area (music, club controls…). */
+  private updateZone() {
+    const t = toTile({ x: this.player.x, y: this.player.y });
+    const zone = zoneAt(t.tx, t.ty);
+    if (zone === this.zone) return;
+    this.zone = zone;
+    bus.emit('zone:changed', zone);
   }
 
   /** Find a spot you're standing in front of and show the "E · verb" hint above it. */

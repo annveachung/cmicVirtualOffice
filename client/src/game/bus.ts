@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { Theme } from '@little-office/shared';
+import type { Theme, ZoneId } from '@little-office/shared';
 import type { DanceStyle, Reaction } from './assets/textures';
 
 /**
@@ -15,7 +15,7 @@ export interface BusEvents {
   /** Phaser -> React: scene finished building. */
   'office:ready': undefined;
   /** Phaser -> React: the player walked into / out of a special area (e.g. 'potato-club'). */
-  'zone:changed': string | null;
+  'zone:changed': ZoneId | null;
   /** Phaser -> React: a playful achievement was just unlocked. */
   'achievement': { title: string; detail: string };
   /** React -> Phaser: dance in a given style, or pick one at random. */
