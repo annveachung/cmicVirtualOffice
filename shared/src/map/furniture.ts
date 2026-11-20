@@ -24,7 +24,7 @@ export interface FurnitureDef {
 export const FURNITURE = {
   // workstations
   desk: { w: 3, h: 2, blocks: true, layer: 'object', overhang: 8 },
-  deskChair: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 6 },
+  deskChair: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 10 },
   // meeting
   meetingTable: { w: 7, h: 3, blocks: true, layer: 'object', overhang: 4 },
   chair: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 6 },
@@ -71,8 +71,10 @@ export const FURNITURE = {
   mirror: { w: 2, h: 1, blocks: false, layer: 'wall' },
   projectorScreen: { w: 4, h: 1, blocks: true, layer: 'object', overhang: 18 },
   // washrooms
-  washBasin: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 14 },
-  toilet: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 10 },
+  vanity: { w: 7, h: 1, blocks: true, layer: 'object', overhang: 4 },
+  mirrorLong: { w: 7, h: 1, blocks: false, layer: 'wall' },
+  toilet: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 14 },
+  urinal: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 10 },
   // entrance
   entrance: { w: 3, h: 1, blocks: false, layer: 'wall' },
   doormat: { w: 3, h: 2, blocks: false, layer: 'floor' },
