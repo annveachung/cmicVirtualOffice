@@ -76,7 +76,7 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
           <p>
             Use the arrow keys <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> to move around
           </p>
-          <p>Drag to look around · scroll or pinch to zoom</p>
+          <p>Scroll or pinch to zoom in · drag to look around while zoomed</p>
         </aside>
       )}
     </div>
