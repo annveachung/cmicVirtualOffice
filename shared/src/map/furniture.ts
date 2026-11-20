@@ -44,7 +44,7 @@ export const FURNITURE = {
   sink: { w: 1, h: 1, blocks: true, layer: 'object', onTop: true, overhang: 4 },
   microwave: { w: 1, h: 1, blocks: true, layer: 'object', onTop: true, overhang: 6 },
   cups: { w: 1, h: 1, blocks: true, layer: 'object', onTop: true, overhang: 4 },
-  fridge: { w: 2, h: 1, blocks: true, layer: 'object', overhang: 22 },
+  fridge: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 14 },
   roundTable: { w: 2, h: 2, blocks: true, layer: 'object' },
   upperCabinet: { w: 4, h: 2, blocks: false, layer: 'wall' },
   // shared / misc

@@ -372,15 +372,17 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     mug(ctx, pal, 8, 2, pal.accents[1]);
   },
 
+  /** Compact fridge: freezer on top, a couple of magnets and a note on the door. */
   fridge(ctx, { pal, W, H }) {
+    const split = Math.round(H * 0.38);
     box(ctx, 1, 0, W - 2, H, pal.metalLight, pal.outline);
     hline(ctx, 2, 1, W - 4, shade(pal.metalLight, 0.4));
-    hline(ctx, 1, 13, W - 2, pal.outline);
-    box(ctx, W - 7, 4, 2, 7, pal.metalDark, pal.outline);
-    box(ctx, W - 7, 16, 2, 12, pal.metalDark, pal.outline);
-    rect(ctx, 5, 17, 3, 3, pal.accents[0]);
-    rect(ctx, 10, 19, 3, 3, pal.accents[2]);
-    box(ctx, 5, 23, 8, 6, pal.paper, pal.outline);
+    hline(ctx, 1, split, W - 2, pal.outline); // freezer / fridge doors
+    box(ctx, W - 5, 3, 2, split - 5, pal.metalDark, pal.outline); // handles
+    box(ctx, W - 5, split + 3, 2, H - split - 8, pal.metalDark, pal.outline);
+    px(ctx, 4, split + 3, pal.accents[0]); // magnets
+    px(ctx, 6, split + 4, pal.accents[2]);
+    box(ctx, 3, split + 6, 6, 5, pal.paper, pal.outline); // shopping list
     box(ctx, 1, H - 3, W - 2, 3, pal.metalDark, pal.outline);
   },
 
