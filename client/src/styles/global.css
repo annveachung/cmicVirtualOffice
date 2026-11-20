@@ -4,46 +4,48 @@
  */
 :root,
 :root[data-theme='light'] {
-  --bg: #e8dcc4;
-  --bg-pattern: #e1d3b8;
-  --panel: #fbf4e4;
-  --panel-hi: #fffaf0;
-  --panel-lo: #e6d8bd;
-  --ink: #4a362d;
-  --ink-soft: #8a7262;
-  --border: #4a362d;
-  --accent: #8ea98a;
-  --accent-hi: #a9c2a4;
-  --accent-lo: #6f8b6b;
-  --accent-ink: #fffaf0;
-  --wood: #a8774f;
-  --field: #fffdf7;
+  /* matched to the Figma reference: off-white, forest green ink, lime highlight */
+  --bg: #f4f2ea;
+  --bg-pattern: #ece9dd;
+  --panel: #fbfaf5;
+  --panel-hi: #ffffff;
+  --panel-lo: #e7ead9;
+  --ink: #1f3a2c;
+  --ink-soft: #6b7c70;
+  --border: #1f3a2c;
+  --accent: #d4ef84;
+  --accent-hi: #e2f5a6;
+  --accent-lo: #b5d45e;
+  --accent-ink: #1f3a2c;
+  --wood: #1f3a2c;
+  --field: #ffffff;
   --danger: #b5544a;
-  --online: #7fae6e;
-  --drop: rgba(74, 54, 45, 0.28);
-  --overlay: rgba(251, 244, 228, 0.92);
+  --online: #4f9a5c;
+  --drop: rgba(31, 58, 44, 0.16);
+  --overlay: rgba(251, 250, 245, 0.95);
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --bg: #14151d;
-  --bg-pattern: #191b25;
-  --panel: #262a38;
-  --panel-hi: #313649;
-  --panel-lo: #1c1f2b;
-  --ink: #f1e3c8;
-  --ink-soft: #a99c86;
-  --border: #0b0b10;
-  --accent: #d9a25a;
-  --accent-hi: #ecbc78;
-  --accent-lo: #a8773b;
-  --accent-ink: #21190f;
-  --wood: #6a4a36;
-  --field: #1c1f2b;
+  /* the same palette after sunset */
+  --bg: #111a15;
+  --bg-pattern: #15201a;
+  --panel: #1a2620;
+  --panel-hi: #22302a;
+  --panel-lo: #142019;
+  --ink: #e9efe0;
+  --ink-soft: #9fb0a2;
+  --border: #060c08;
+  --accent: #c2e070;
+  --accent-hi: #d4ef84;
+  --accent-lo: #9fbd4f;
+  --accent-ink: #13221a;
+  --wood: #c2e070;
+  --field: #142019;
   --danger: #e07b6c;
-  --online: #9ccf7e;
+  --online: #8fcf6e;
   --drop: rgba(0, 0, 0, 0.45);
-  --overlay: rgba(38, 42, 56, 0.94);
+  --overlay: rgba(26, 38, 32, 0.95);
   color-scheme: dark;
 }
 
@@ -91,10 +93,7 @@ p {
 .pixel-panel {
   background: var(--panel);
   border: 2px solid var(--border);
-  box-shadow:
-    inset 2px 2px 0 var(--panel-hi),
-    inset -2px -2px 0 var(--panel-lo),
-    0 4px 0 var(--drop);
+  box-shadow: 0 3px 0 var(--drop);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
