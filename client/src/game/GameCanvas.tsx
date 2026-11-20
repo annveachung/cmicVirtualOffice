@@ -32,7 +32,7 @@ export function GameCanvas({ name, appearance, theme, deskId, onReady }: Props) 
     const start = () => {
       if (!cancelled && !game) game = createGame(host, { name, appearance, deskId, theme: themeRef.current });
     };
-    document.fonts.load('16px "Pixelify Sans"').then(start, start);
+    document.fonts.load('12px "Silkscreen"').then(start, start);
     return () => {
       cancelled = true;
       off();
