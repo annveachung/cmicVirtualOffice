@@ -1,7 +1,5 @@
 import Phaser from 'phaser';
 import {
-  MAP_H,
-  MAP_W,
   SPOTS,
   SPAWN,
   TILE,
@@ -18,10 +16,11 @@ import {
 import { registerEnvironmentTextures } from '../assets/textures';
 import { bus } from '../bus';
 import { Character } from '../characters/Character';
-import { DEFAULT_ZOOM_BOOST, DEPTH, LABEL_PX, MAX_ZOOM, TOP_BAR_PX } from '../constants';
+import { DEPTH, LABEL_PX } from '../constants';
 import { OfficeRenderer } from '../maps/OfficeRenderer';
 import { PlayerController } from '../movement/PlayerController';
 import { PotatoClub } from '../club/PotatoClub';
+import { CameraRig } from '../camera/CameraRig';
 
 export interface OfficeSceneData {
   name: string;
@@ -31,15 +30,12 @@ export interface OfficeSceneData {
   deskId: number | null;
 }
 
-const WORLD_W = MAP_W * TILE;
-const WORLD_H = MAP_H * TILE;
 
 /**
  * The one and only game scene: the shared office.
  * Lifecycle: init(data) -> create() once -> update() every frame.
  *
- * Camera: the office covers the whole window (see applyZoom). Scrolling zooms
- * in further, and the camera follows you.
+ * Camera behaviour (zoom, drag-to-look-around, following you) lives in CameraRig.
  */
 export class OfficeScene extends Phaser.Scene {
   private grid!: CollisionGrid;
@@ -50,10 +46,9 @@ export class OfficeScene extends Phaser.Scene {
   private spotHint!: Phaser.GameObjects.Text;
   private nearbySpot: Spot | null = null;
   private data0!: OfficeSceneData;
-  /** Multiplier on top of the "cover" zoom. 1 = office fills the window. */
-  private zoomFactor = 1;
   private unsubscribers: (() => void)[] = [];
   private club!: PotatoClub;
+  private camera!: CameraRig;
 
   constructor() {
     super('office');
@@ -98,29 +93,22 @@ export class OfficeScene extends Phaser.Scene {
       .setVisible(false);
     this.spotHint.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
 
-    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (!pointer.leftButtonDown()) return;
-      const here = { x: this.player.x, y: this.player.y };
-      const spot = spotForTile(toTile({ x: pointer.worldX, y: pointer.worldY }));
-      const dest = spot ? this.controller.goUse(here, spot) : this.controller.goTo(here, { x: pointer.worldX, y: pointer.worldY });
-      this.marker.setVisible(!!dest);
-      if (dest) this.marker.setPosition(dest.x, dest.y);
-    });
-
     this.input.keyboard!.on('keydown-E', () => {
       if (isTyping()) return;
       this.controller.interact({ x: this.player.x, y: this.player.y }, this.nearbySpot);
     });
 
-    // Camera
-    const cam = this.cameras.main;
-    cam.setRoundPixels(true);
-    this.scale.on(Phaser.Scale.Events.RESIZE, this.applyZoom, this);
-    this.playArrivalIntro();
-    this.input.on('wheel', (_p: unknown, _o: unknown, _dx: number, dy: number) => {
-      this.zoomFactor = dy > 0 ? this.zoomFactor / 1.15 : this.zoomFactor * 1.15;
-      this.applyZoom();
+    // Camera: map-app style (drag to look around, scroll/pinch to zoom, buttons in the UI)
+    this.camera = new CameraRig(this, this.player.sprite, {
+      screenScale: (sc) => {
+        this.player.setLabelScale(sc);
+        this.spotHint.setScale(sc);
+        this.club.setLabelScale(sc);
+      },
+      worldScale: (sc) => this.office.setLabelScale(sc),
+      onTap: (wx, wy) => this.tapAt(wx, wy),
     });
+    this.camera.playIntro();
 
     this.unsubscribers.push(
       bus.on('theme:set', (t) => {
@@ -131,87 +119,27 @@ export class OfficeScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.club.destroy();
       this.unsubscribers.forEach((u) => u());
-      this.scale.off(Phaser.Scale.Events.RESIZE, this.applyZoom, this);
+      this.camera.destroy();
     });
 
     bus.emit('office:ready');
   }
 
-  /**
-   * "Cover" zoom: the office fills the whole window under the top bar with no
-   * empty bars. The map's shape (~1.9:1) matches typical desktop windows, so
-   * usually nothing is cut off; on unusual shapes a sliver of the edge is
-   * hidden and the camera gently follows you to reveal it.
-   */
-  /** Zoom where the office fills the window (cover), times the current zoom factor. */
-  private playZoom(): number {
-    const { width, height } = this.scale;
-    const cover = Math.max(width / WORLD_W, (height - TOP_BAR_PX) / WORLD_H);
-    this.zoomFactor = Phaser.Math.Clamp(this.zoomFactor, 1, Math.max(1, MAX_ZOOM / cover));
-    return cover * this.zoomFactor;
-  }
-
-  private applyZoom() {
-    const cam = this.cameras.main;
-    cam.setZoom(this.playZoom());
-    this.syncBoundsAndLabels();
-    cam.startFollow(this.player.sprite, true, 0.12, 0.12);
-  }
-
-  /**
-   * Keep camera bounds and label sizes in step with the zoom — also every frame
-   * while a zoom animation is running.
-   *  - Bounds include a strip above the map for the top bar, so it never covers the office.
-   *  - Labels stay the same size on screen at every zoom level.
-   */
-  private lastZoom = 0;
-  private syncBoundsAndLabels() {
-    const zoom = this.cameras.main.zoom;
-    if (zoom === this.lastZoom) return;
-    this.lastZoom = zoom;
-    this.cameras.main.setBounds(0, -TOP_BAR_PX / zoom, WORLD_W, WORLD_H + TOP_BAR_PX / zoom);
-    const s = 1 / zoom;
-    this.player.setLabelScale(s);
-    this.office.setLabelScale(s);
-    this.spotHint.setScale(s);
-    this.club.setLabelScale(s);
-  }
-
-  /**
-   * Arrival shot: start close up on you at the entrance (a little bigger), then
-   * smoothly zoom out until the whole office fills the window — and stay there,
-   * so you can see where everyone is. Any key or click jumps to the zoomed-out view.
-   */
-  private playArrivalIntro() {
-    const cam = this.cameras.main;
-    this.zoomFactor = DEFAULT_ZOOM_BOOST;
-    this.applyZoom();
-    let done = false;
-    const finish = () => {
-      if (done) return;
-      done = true;
-      cam.zoomEffect.reset();
-      this.zoomFactor = 1;
-      this.applyZoom();
-    };
-    const zoomOut = this.time.delayedCall(1400, () => {
-      this.zoomFactor = 1;
-      cam.zoomTo(this.playZoom(), 1800, 'Sine.easeInOut', false, (_c: unknown, progress: number) => {
-        if (progress >= 1) finish();
-      });
-    });
-    const skip = () => {
-      zoomOut.remove();
-      finish();
-    };
-    this.input.keyboard!.once('keydown', skip);
-    this.input.once('pointerdown', skip);
+  /** A click that wasn't a drag: use the thing you clicked, or walk there. */
+  private tapAt(wx: number, wy: number) {
+    const here = { x: this.player.x, y: this.player.y };
+    const spot = spotForTile(toTile({ x: wx, y: wy }));
+    const dest = spot ? this.controller.goUse(here, spot) : this.controller.goTo(here, { x: wx, y: wy });
+    this.marker.setVisible(!!dest);
+    if (dest) this.marker.setPosition(dest.x, dest.y);
+    this.camera.follow(); // you're heading somewhere: the camera comes along
   }
 
   update(_time: number, delta: number) {
     const m = this.controller.update({ x: this.player.x, y: this.player.y }, delta);
     this.player.setPosition(m.x, m.y);
-    this.syncBoundsAndLabels(); // cheap no-op unless the zoom changed
+    if (m.keyboard) this.camera.follow(); // steering with the keys brings the camera back to you
+    this.camera.update(); // cheap no-op unless the zoom changed
     this.player.setMotion(m.dir, this.club.animFor(m.pose));
     this.club.update(m.pose);
     this.updateSpotHint(this.controller.activeSpot !== null);
