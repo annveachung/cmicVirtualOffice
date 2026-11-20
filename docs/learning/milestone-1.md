@@ -113,3 +113,13 @@ your *data* pay off fast.
 The office has one aspect ratio and monitors have many. Instead of cropping (hiding colleagues) or
 black bars, the camera fits the building and the leftover space shows a repeating garden texture
 (`TileSprite`) that extends far beyond the map. It's like a letterbox, but it looks like it belongs there.
+
+## 19. "Contain" vs "cover"
+Two ways to put a fixed-shape picture into a window of a different shape (the same words as CSS
+`object-fit`):
+- **contain** = `min(screenW/worldW, screenH/worldH)`: everything visible, but empty bars on one axis.
+- **cover** = `max(...)`: no bars, but a little gets cropped on one axis.
+We now use *cover*, and made the map's shape (59×31 ≈ 1.9:1) match a typical desktop browser
+window, so the crop is usually zero or a few pixels. When it isn't, the camera follows you within the
+map's bounds, so nothing is ever unreachable. Matching the content's shape to the screen did more
+than any camera setting could.
