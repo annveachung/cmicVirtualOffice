@@ -1,10 +1,14 @@
-import { ARP, BPM, CHORDS, LEAD } from './song';
+import { CLUB_SONG, OFFICE_SONG, type Song } from './song';
+
+export type Track = 'office' | 'club';
+const TRACKS: Record<Track, Song> = { office: OFFICE_SONG, club: CLUB_SONG };
 
 /**
  * All sound is SYNTHESISED with the Web Audio API — no audio files, no licensing.
  *
  *  - sfx: a short square-wave "blip" for clicks
- *  - music: the original chiptune in song.ts, played by a small look-ahead scheduler
+ *  - music: the original chiptunes in song.ts (a cozy office loop and a party
+ *    track for The Potato Club), played by a small look-ahead scheduler
  *
  * Browsers only allow audio after a user gesture, so the AudioContext is created
  * lazily on the first click/keypress. Preferences live in localStorage (they're
@@ -35,6 +39,8 @@ class SoundEngine {
   private timer: number | null = null;
   private nextNoteTime = 0;
   private step = 0; // eighth-note index within the loop
+  private song: Song = OFFICE_SONG;
+  private noise: AudioBuffer | null = null;
 
   get settings(): Prefs {
     return { ...this.prefs };
@@ -64,6 +70,18 @@ class SoundEngine {
   stopMusic() {
     this.musicWanted = false;
     this.stopScheduler();
+  }
+
+  /** Switch songs (e.g. entering / leaving The Potato Club). Restarts from the top with a quick fade. */
+  setTrack(track: Track) {
+    const next = TRACKS[track];
+    if (next === this.song) return;
+    this.song = next;
+    this.step = 0;
+    if (this.timer !== null) {
+      this.stopScheduler();
+      if (this.prefs.music && this.musicWanted) this.startScheduler();
+    }
   }
 
   /** Retro UI blip. */
@@ -143,31 +161,79 @@ class SoundEngine {
 
   private schedule() {
     const ctx = this.ctx!;
-    const eighth = 60 / BPM / 2;
+    const song = this.song;
+    const eighth = 60 / song.bpm / 2;
     while (this.nextNoteTime < ctx.currentTime + 0.12) {
-      this.playStep(this.step, this.nextNoteTime, eighth);
+      this.playStep(song, this.step, this.nextNoteTime, eighth);
       this.nextNoteTime += eighth;
-      this.step = (this.step + 1) % (LEAD.length * 8);
+      this.step = (this.step + 1) % (song.lead.length * 8);
     }
   }
 
-  private playStep(step: number, t: number, eighth: number) {
+  private playStep(song: Song, step: number, t: number, eighth: number) {
     const bar = Math.floor(step / 8);
     const slot = step % 8;
-    const chord = CHORDS[bar][slot < 4 ? 0 : 1];
+    const chord = song.chords[bar][slot < 4 ? 0 : 1];
 
     // lead: hold each note until the next note (rests extend it)
-    const note = LEAD[bar][slot];
+    const note = song.lead[bar][slot];
     if (note !== null) {
       let len = 1;
-      while (slot + len < 8 && LEAD[bar][slot + len] === null) len++;
-      this.tone('square', midiToHz(note), t, eighth * len * 0.9, 0.05);
+      while (slot + len < 8 && song.lead[bar][slot + len] === null) len++;
+      this.tone('square', midiToHz(note), t, eighth * len * 0.9, song.leadVolume);
     }
     // soft arpeggio
-    this.tone('square', midiToHz(chord.triad[ARP[slot]]), t, eighth * 0.6, 0.018);
-    // bass on beats 1 and 3, an octave hop on the off-beats
-    if (slot % 4 === 0) this.tone('triangle', midiToHz(chord.bass), t, eighth * 1.8, 0.16);
-    if (slot % 4 === 2) this.tone('triangle', midiToHz(chord.bass + 12), t, eighth * 0.8, 0.09);
+    this.tone('square', midiToHz(chord.triad[song.arp[slot]]), t, eighth * 0.6, 0.018);
+    // bass
+    if (song.bass === 'walk') {
+      if (slot % 4 === 0) this.tone('triangle', midiToHz(chord.bass), t, eighth * 1.8, 0.16);
+      if (slot % 4 === 2) this.tone('triangle', midiToHz(chord.bass + 12), t, eighth * 0.8, 0.09);
+    } else {
+      // 'pump': driving eighths, octave up on the off-beats — makes you want to dance
+      this.tone('triangle', midiToHz(chord.bass + (slot % 2 ? 12 : 0)), t, eighth * 0.7, 0.15);
+    }
+    // drums: kick on beats 1 & 3, snare on 2 & 4, hi-hat on every off-beat
+    if (song.drums) {
+      if (slot === 0 || slot === 4) this.kick(t);
+      if (slot === 2 || slot === 6) this.noiseHit(t, 0.14, 1800, 0.09); // snare
+      if (slot % 2 === 1) this.noiseHit(t, 0.04, 7000, 0.035); // hi-hat
+    }
+  }
+
+  /** Kick drum: a sine wave that drops quickly in pitch. */
+  private kick(t: number) {
+    const ctx = this.ctx!;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, t);
+    osc.frequency.exponentialRampToValueAtTime(45, t + 0.12);
+    g.gain.setValueAtTime(0.35, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+    osc.connect(g).connect(this.musicBus);
+    osc.start(t);
+    osc.stop(t + 0.18);
+  }
+
+  /** Snare / hi-hat: a burst of white noise through a high-pass filter. */
+  private noiseHit(t: number, dur: number, cutoff: number, vol: number) {
+    const ctx = this.ctx!;
+    if (!this.noise) {
+      this.noise = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+      const d = this.noise.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = this.noise;
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = cutoff;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(hp).connect(g).connect(this.musicBus);
+    src.start(t);
+    src.stop(t + dur + 0.02);
   }
 
   private tone(type: OscillatorType, hz: number, t: number, dur: number, vol: number) {
