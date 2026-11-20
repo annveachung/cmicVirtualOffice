@@ -1,7 +1,7 @@
 /**
  * Tiny pixel-art toolkit on top of the Canvas 2D API.
  *
- * All art in The Little Office is generated in code at startup instead of
+ * All art in CMiCity is generated in code at startup instead of
  * being loaded from PNG files. Benefits: original art (no licensing worries),
  * one consistent style, and themes/colour variations are just palette swaps.
  * Everything is drawn at 1 pixel = 1 art pixel; Phaser scales it up with

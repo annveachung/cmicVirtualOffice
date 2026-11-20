@@ -1,5 +1,5 @@
 /**
- * "Little Office Waltz"... well, it's in 4/4 — an ORIGINAL cozy chiptune loop
+ * "CMiCity Theme" — an ORIGINAL cozy chiptune loop
  * written for this project (not taken from any game). 8 bars in F major at a
  * relaxed 92 BPM, I–vi–IV–V style progression.
  *

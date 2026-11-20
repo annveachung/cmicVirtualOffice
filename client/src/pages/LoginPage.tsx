@@ -39,7 +39,7 @@ export function LoginPage({ theme, onToggleTheme, onEnter }: Props) {
         <header className="login-header">
           <span className="logo-mark"><PixelIcon name="house" size={28} /></span>
           <div>
-            <h1>The Little Office</h1>
+            <h1>CMiCity</h1>
             <p className="muted">A cozy corner for the team.</p>
           </div>
         </header>

@@ -18,7 +18,7 @@ export function TopBar({ theme, onlineCount, onToggleTheme, onToggleHelp, onLeav
     <header className="topbar pixel-panel">
       <div className="brand">
         <span className="logo-mark"><PixelIcon name="house" size={20} /></span>
-        <span className="brand-name">The Little Office</span>
+        <span className="brand-name">CMiCity</span>
       </div>
       <Clock />
       <div className="topbar-actions">
