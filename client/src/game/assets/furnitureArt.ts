@@ -181,22 +181,22 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     }
   },
 
-  meetingTable(ctx, { pal, oh, W }) {
-    const y0 = oh;
-    legs(ctx, pal, [3, W - 6], y0 + 36, 12);
-    box(ctx, 0, 0, W, y0 + 38, pal.furnLight, pal.outline);
+  meetingTable(ctx, { pal, W, H }) {
+    legs(ctx, pal, [3, W - 6], H - 10, 10);
+    box(ctx, 0, 0, W, H - 6, pal.furnLight, pal.outline);
     hline(ctx, 1, 1, W - 2, shade(pal.furnLight, 0.18));
-    for (let i = 0; i < 6; i++) hline(ctx, 6 + ((i * 37) % (W - 30)), 6 + i * 5, 14, shade(pal.furnLight, -0.07));
-    box(ctx, 0, y0 + 36, W, 6, pal.furn, pal.outline);
+    for (let i = 0; i < 5; i++) hline(ctx, 6 + ((i * 37) % (W - 30)), 5 + i * ((H - 16) / 5), 14, shade(pal.furnLight, -0.07));
+    box(ctx, 0, H - 10, W, 6, pal.furn, pal.outline);
     // papers, laptop, little plant
-    box(ctx, 14, 10, 9, 11, pal.paper, pal.outline);
-    hline(ctx, 16, 13, 5, pal.metal);
-    hline(ctx, 16, 15, 4, pal.metal);
-    box(ctx, 78, 14, 16, 10, pal.metalDark, pal.outline);
-    rect(ctx, 79, 15, 14, 7, pal.screenOn);
-    box(ctx, 76, 23, 20, 3, pal.metal, pal.outline);
-    box(ctx, 52, 18, 8, 7, pal.pot, pal.outline);
-    leafCluster(ctx, pal, 56, 15, 4);
+    const mid = Math.floor((H - 10) / 2);
+    box(ctx, 10, mid - 5, 9, 11, pal.paper, pal.outline);
+    hline(ctx, 12, mid - 2, 5, pal.metal);
+    hline(ctx, 12, mid, 4, pal.metal);
+    box(ctx, W - 30, mid - 6, 16, 10, pal.metalDark, pal.outline);
+    rect(ctx, W - 29, mid - 5, 14, 7, pal.screenOn);
+    box(ctx, W - 32, mid + 3, 20, 3, pal.metal, pal.outline);
+    box(ctx, W / 2 - 4, mid - 2, 8, 7, pal.pot, pal.outline);
+    leafCluster(ctx, pal, W / 2, mid - 5, 4);
   },
 
   whiteboard(ctx, { pal, W }) {

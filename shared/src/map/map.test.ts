@@ -87,8 +87,8 @@ describe('collision', () => {
   });
 
   it('slides along a wall instead of stopping dead', () => {
-    // stand just below the top wall of the meeting room, push up-right
-    const start = { x: 3 * 16 + 8, y: 3 * 16 + 3 };
+    // stand just below the back wall, push up-right
+    const start = { x: 11 * 16 + 8, y: 3 * 16 + 3 }; // clear floor right under the lounge's back wall
     const next = moveWithCollision(grid, start, 2, -2);
     expect(next.x).toBe(start.x + 2); // x movement still applied
     expect(next.y).toBe(start.y); // y blocked by wall
@@ -151,11 +151,12 @@ describe('activity spots', () => {
     for (const s of SPOTS) expect(grid.isBlocked(s.tile.tx, s.tile.ty), s.id).toBe(!s.onFloor);
   });
 
-  it('lets you sit on every toilet and wash at every basin', async () => {
+  it('lets you sit on every toilet, use every urinal and wash at every basin', async () => {
     const { SPOTS } = await import('./spots.js');
     expect(SPOTS.filter((s) => s.id.startsWith('toilet')).every((s) => s.action === 'sit')).toBe(true);
     expect(SPOTS.filter((s) => s.id.startsWith('toilet')).length).toBe(5);
     expect(SPOTS.filter((s) => s.action === 'wash').length).toBe(4);
+    expect(SPOTS.filter((s) => s.action === 'pee').length).toBe(2);
   });
 
   it('clicking a desk or a treadmill resolves to the right spot', async () => {
