@@ -16,7 +16,7 @@ import { DESKS, PLACEMENTS } from './office.js';
  * Spots are derived from furniture data, so adding a treadmill to the map
  * automatically makes it usable.
  */
-export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee' | 'present' | 'sing' | 'dance' | 'costume' | 'vend' | 'mascot';
+export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee' | 'present' | 'sing' | 'dance' | 'costume' | 'vend' | 'mascot' | 'ballpit';
 
 /** Actions that happen once (a toggle, a snack, a poke) instead of putting you in a pose. */
 export const INSTANT_ACTIONS: ReadonlySet<SpotAction> = new Set(['costume', 'vend', 'mascot']);
@@ -54,6 +54,7 @@ const VERB: Record<SpotAction, string> = {
   costume: 'potato suit',
   vend: 'get a snack',
   mascot: 'poke Mr. Potato',
+  ballpit: 'bounce',
 };
 
 function footprintTiles(p: Placement): TilePos[] {
@@ -144,8 +145,12 @@ function spotsFor(p: Placement): Spot[] {
       return Array.from({ length: Math.ceil(footprint(p).w / 2) }, (_, i) =>
         spot(`${p.id}:${i}`, 'wash', t(i * 2, 1), 'up', { clickTiles: [t(i * 2, 0), t(i * 2, 1)], onFloor: true }),
       );
-    case 'arcade':
+    case 'arcade': // against a side wall (dir = way the screen faces) or the back wall
+      if (p.dir === 'left') return [spot(p.id, 'play', t(-1, 0), 'right', { clickTiles: [t(0, 0), t(-1, 0)], onFloor: true })];
+      if (p.dir === 'right') return [spot(p.id, 'play', t(1, 0), 'left', { clickTiles: [t(0, 0), t(1, 0)], onFloor: true })];
       return [spot(p.id, 'play', t(0, 1), 'up', { clickTiles: [t(0, 0), t(0, 1)], onFloor: true })];
+    case 'ballPit': // every tile of the pit is a place to bounce
+      return footprintTiles(p).map((c, i) => spot(`${p.id}:${i}`, 'ballpit', c, 'down', { dy: 2, onFloor: true }));
     default:
       return [];
   }

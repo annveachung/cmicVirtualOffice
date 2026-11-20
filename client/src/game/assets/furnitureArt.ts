@@ -265,7 +265,8 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     hline(ctx, 18, 5, 7, pal.paper);
   },
 
-  bookshelf(ctx, { pal, W, H, v }) {
+  bookshelf(ctx, { pal, W, H, v, dir, oh }) {
+    if (dir === 'right' || dir === 'left') return sideBookshelf(ctx, pal, W, H, oh, v, dir);
     box(ctx, 0, 0, W, H, pal.furn, pal.outline);
     const shelfH = 10;
     for (let s = 0; s < 3; s++) {
@@ -508,7 +509,8 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     px(ctx, 24, 4, pal.accents[0]);
   },
 
-  arcade(ctx, { pal, H, v }) {
+  arcade(ctx, { pal, H, v, dir }) {
+    if (dir === 'left' || dir === 'right') return sideArcade(ctx, pal, H, v, dir);
     const body = [pal.accents[3], pal.accents[1], pal.accents[0]][v % 3];
     box(ctx, 1, 0, 14, H, body, pal.outline);
     box(ctx, 1, 0, 14, 5, shade(body, -0.25), pal.outline);
@@ -710,7 +712,7 @@ const P: Partial<Record<Placement['type'], Painter>> = {
       ellipse(ctx, cx, 5, 4, 1, pal.paper);
       rect(ctx, cx - 1, 0, 2, 3, pal.metalDark); // tap
       if (cx + 16 < W) {
-        rect(ctx, cx + 15, 2, 2, 4, pal.accents[(cx / 32) % 6]); // soap bottle
+        rect(ctx, cx + 15, 2, 2, 4, pal.accents[Math.floor(cx / 32) % 6]); // soap bottle
         px(ctx, cx + 15, 1, pal.metalDark);
       }
     }
@@ -874,6 +876,55 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     else { hline(ctx, 6, 4, 5, pal.neonAmber); px(ctx, 8, 3, pal.neonAmber); } // crown
   },
 
+  /** A colourful ball pit: low padded rim, heaps of balls. Characters inside are hidden from the waist down. */
+  ballPit(ctx, { pal, W, H }) {
+    const colors = [pal.accents[0], pal.accents[1], pal.accents[2], pal.accents[5], '#ff7aa8', '#7ad1ff'];
+    roundBox(ctx, 0, 2, W, H - 2, mix(pal.fabricC, pal.outline, 0.2), pal.outline); // padded rim
+    rect(ctx, 3, 4, W - 6, H - 9, shade(pal.fabricA, -0.3)); // inside
+    for (let y = 4; y < H - 6; y += 3)
+      for (let x = 3 + (Math.floor(y / 3) % 2) * 2; x < W - 4; x += 4) { // whole numbers only: they index the colour list
+        const c = colors[(x * 7 + y * 3) % colors.length];
+        rect(ctx, x, y, 3, 3, c);
+        px(ctx, x, y, shade(c, 0.45)); // shiny highlight
+      }
+    rect(ctx, 0, H - 6, W, 5, pal.fabricC); // front padding (hides wading legs)
+    hline(ctx, 1, H - 6, W - 2, shade(pal.fabricC, 0.35));
+    hline(ctx, 0, H - 1, W, pal.outline);
+  },
+
+  /** Tea & drinks station along a side wall: kettle, tea tins, coffee pot, cups. */
+  beverageCounter(ctx, { pal, W, H, oh }) {
+    sideCounterBase(ctx, pal, W, H, oh);
+    box(ctx, 3, oh + 2, 8, 9, pal.metal, pal.outline); // kettle
+    rect(ctx, 11, oh + 5, 2, 2, pal.metal);
+    hline(ctx, 5, oh + 1, 4, pal.outline);
+    for (let i = 0; i < 3; i++) box(ctx, 3 + i * 4, oh + 17, 4, 6, pal.accents[i], pal.outline); // tea tins
+    box(ctx, 4, oh + 27, 8, 8, pal.screenOff, pal.outline); // coffee pot
+    rect(ctx, 5, oh + 31, 6, 3, pal.furnDark);
+    for (let i = 0; i < 2; i++) mug(ctx, pal, 3 + i * 6, oh + 38, pal.accents[(i + 3) % 6]);
+  },
+
+  /** Breakfast / lunch buffet along a side wall: fruit bowls, bread basket, cereal jars. */
+  buffetCounter(ctx, { pal, W, H, oh }) {
+    sideCounterBase(ctx, pal, W, H, oh);
+    // fruit bowl: apples, oranges, a banana
+    ellipse(ctx, 8, oh + 7, 6, 4, pal.outline);
+    ellipse(ctx, 8, oh + 7, 5, 3, pal.paper);
+    rect(ctx, 4, oh + 5, 3, 3, '#e2544e');
+    rect(ctx, 8, oh + 4, 3, 3, '#f2a33a');
+    rect(ctx, 6, oh + 8, 5, 2, '#f4d35e');
+    // bread basket
+    box(ctx, 2, oh + 17, 12, 7, pal.furn, pal.outline);
+    rect(ctx, 4, oh + 18, 4, 3, pal.potatoLight);
+    rect(ctx, 9, oh + 18, 4, 3, pal.potatoLight);
+    // cereal jars + grapes
+    box(ctx, 3, oh + 29, 4, 7, pal.glassLight, pal.outline);
+    rect(ctx, 4, oh + 32, 2, 3, pal.fabricC);
+    box(ctx, 9, oh + 29, 4, 7, pal.glassLight, pal.outline);
+    rect(ctx, 10, oh + 32, 2, 3, pal.accents[2]);
+    [[5, 40], [7, 40], [6, 42], [8, 42], [7, 44]].forEach(([x, y]) => px(ctx, x, oh + y, pal.accents[3]));
+  },
+
   rug(ctx, { pal, W, H, v }) {
     const base = [pal.fabricC, pal.accents[3], pal.accents[1]][v % 3];
     roundBox(ctx, 0, 0, W, H, mix(base, pal.outline, 0.25), mix(base, pal.outline, 0.45));
@@ -930,6 +981,44 @@ const PICTO = {
   women: ['..#..', '.###.', '..#..', '.###.', '#####', '.#.#.', '.#.#.'],
   men: ['..#..', '.###.', '#####', '.###.', '.###.', '.#.#.', '.#.#.'],
 };
+
+// ------------------------------------------------------- side-wall helpers --
+
+/** A counter running along a side wall: long stone top, cabinet front at the near end. */
+function sideCounterBase(ctx: Ctx, pal: EnvPalette, W: number, H: number, oh: number) {
+  box(ctx, 0, 0, W, H - 8, pal.metalLight, pal.outline);
+  vline(ctx, W - 2, 1, H - 10, shade(pal.metalLight, 0.4));
+  for (let y = oh + TILE; y < H - 8; y += TILE) hline(ctx, 1, y, W - 2, shade(pal.metalLight, -0.08));
+  box(ctx, 0, H - 9, W, 9, pal.furn, pal.outline);
+  box(ctx, 2, H - 7, W - 4, 6, pal.furnLight, pal.outline);
+  rect(ctx, W / 2 - 2, H - 5, 4, 1, pal.metalDark);
+}
+
+/** A bookshelf standing against a side wall: we see its top and the book spines along its open side. */
+function sideBookshelf(ctx: Ctx, pal: EnvPalette, W: number, H: number, oh: number, v: number, dir: 'left' | 'right') {
+  const open = dir === 'right' ? W - 6 : 1; // the side facing into the room
+  box(ctx, 0, oh - 6, W, H - oh + 6, pal.furn, pal.outline);
+  rect(ctx, 1, oh - 5, W - 2, 3, shade(pal.furn, 0.15)); // top board
+  for (let y = oh, i = v; y < H - 4; y += 3, i++) {
+    rect(ctx, open, y, 5, 2, accent(pal, i));
+    px(ctx, open + (dir === 'right' ? 4 : 0), y, shade(accent(pal, i), 0.3));
+  }
+  box(ctx, 0, H - 4, W, 4, pal.furnDark, pal.outline);
+}
+
+/** An arcade cabinet against a side wall, screen facing into the room. */
+function sideArcade(ctx: Ctx, pal: EnvPalette, H: number, v: number, dir: 'left' | 'right') {
+  const body = [pal.accents[3], pal.accents[1], pal.accents[0]][v % 3];
+  const flip = (x: number, w: number) => (dir === 'left' ? x : 16 - x - w);
+  box(ctx, flip(4, 11), 0, 11, H, body, pal.outline); // cabinet side panel
+  rect(ctx, flip(6, 7), 3, 7, 2, shade(body, 0.25)); // side stripe
+  box(ctx, flip(1, 6), 6, 6, 10, pal.outline, pal.outline); // screen bezel facing the room
+  rect(ctx, flip(2, 4), 7, 4, 8, pal.screenOn);
+  px(ctx, flip(3, 1), 9, pal.accents[(v + 2) % 6]);
+  box(ctx, flip(0, 7), 16, 7, 4, shade(body, -0.15), pal.outline); // control panel sticking out
+  px(ctx, flip(2, 1), 17, pal.accents[0]);
+  rect(ctx, flip(6, 8), H - 3, 8, 2, shade(body, -0.3));
+}
 
 /** Render one placement to its own canvas. */
 export function paintFurniture(p: Placement, pal: EnvPalette): HTMLCanvasElement {

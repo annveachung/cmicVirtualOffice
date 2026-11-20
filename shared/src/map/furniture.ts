@@ -88,6 +88,10 @@ export const FURNITURE = {
   discoBall: { w: 2, h: 2, blocks: false, layer: 'ceiling' },
   clubSign: { w: 4, h: 1, blocks: false, layer: 'wall' },
   potatoPoster: { w: 1, h: 1, blocks: false, layer: 'wall' },
+  // lounge + pantry extras
+  ballPit: { w: 4, h: 1, blocks: false, layer: 'object', overhang: 6 }, // walk in; the balls hide your legs
+  beverageCounter: { w: 1, h: 3, blocks: true, layer: 'object', overhang: 4 },
+  buffetCounter: { w: 1, h: 3, blocks: true, layer: 'object', overhang: 4 },
   // entrance
   entrance: { w: 3, h: 1, blocks: false, layer: 'wall' },
   doormat: { w: 3, h: 2, blocks: false, layer: 'floor' },
