@@ -71,6 +71,7 @@ export class OfficeRenderer {
         break;
       case 'stage': glow(GLOW_KEYS.lamp, x + (footprint(p).w * TILE) / 2, p.ty * TILE + 20); break;
       case 'treadmill': glow(GLOW_KEYS.screen, x + 8, top + 3); break;
+      case 'mirrorLong': glow(GLOW_KEYS.lamp, x + (footprint(p).w * TILE) / 2, p.ty * TILE + 12); break;
       case 'projectorScreen': glow(GLOW_KEYS.lamp, x + (footprint(p).w * TILE) / 2, top + 12); break;
       case 'floorLamp': glow(GLOW_KEYS.lamp, x + 8, top + 9); break;
       case 'arcade': glow(GLOW_KEYS.screen, x + 8, top + 11); break;
