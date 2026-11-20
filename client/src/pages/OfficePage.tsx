@@ -3,6 +3,9 @@ import type { Theme } from '@little-office/shared';
 import type { Profile } from '../App';
 import { TopBar } from '../components/TopBar';
 import { GameCanvas } from '../game/GameCanvas';
+import { bus } from '../game/bus';
+import { AchievementToast } from '../components/AchievementToast';
+import { ClubPanel } from '../components/ClubPanel';
 import { sound } from '../audio/sound';
 
 interface Props {
@@ -15,6 +18,8 @@ interface Props {
 export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
   const [ready, setReady] = useState(false);
   const [showHelp, setShowHelp] = useState(true);
+  const [zone, setZone] = useState<string | null>(null);
+  useEffect(() => bus.on('zone:changed', setZone), []);
 
   // Cozy background music while you're in the office (if not switched off).
   useEffect(() => {
@@ -57,6 +62,8 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
         onLeave={onLeave}
       />
       {!ready && <div className="loading pixel-panel">Opening the office…</div>}
+      {zone === 'potato-club' && <ClubPanel />}
+      <AchievementToast />
       {showHelp && (
         <aside className="help pixel-panel">
           <button className="help-close" onClick={() => setShowHelp(false)} aria-label="Hide controls">×</button>
