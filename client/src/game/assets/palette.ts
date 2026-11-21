@@ -51,6 +51,8 @@ export interface EnvPalette {
   shadow: string; // rgba for soft shadows
   sky: string;
   bg: string;
+  /** Private-office carpets: soft, desaturated Y2K / classic-game tones (no greens). */
+  officeCarpets: [string, string, string];
   // The Potato Club: purple party room, neon lights, potatoes
   clubFloor: string;
   clubFloorAlt: string;
@@ -119,6 +121,7 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(31, 58, 44, 0.14)',
     sky: '#d8ebe4',
     bg: '#b9cbb2',
+    officeCarpets: ['#a7a1bd', '#9fb0c4', '#b89aa6'], // dusty lilac, powder blue-grey, muted mauve
     clubFloor: '#3d2754',
     clubFloorAlt: '#36224c',
     clubWall: '#5a3680',
@@ -180,6 +183,7 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(0, 8, 4, 0.36)',
     sky: '#13221b',
     bg: '#16221b',
+    officeCarpets: ['#5e5a72', '#55627a', '#6d5560'], // the same carpets after dark
     clubFloor: '#2a1a3c',
     clubFloorAlt: '#251735',
     clubWall: '#3b2358',
