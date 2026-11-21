@@ -4,13 +4,13 @@
  * Light-hearted on purpose: this is not attendance tracking.
  */
 export const STATUSES = [
-  { id: 'available', label: 'Available', emoji: '💬' },
-  { id: 'working', label: 'Working', emoji: '💻' },
-  { id: 'slacking', label: 'Slacking', emoji: '🛋️' },
-  { id: 'break', label: 'On a break', emoji: '☕' },
-  { id: 'eating', label: 'Eating', emoji: '🍜' },
-  { id: 'away', label: 'Away', emoji: '💤' },
-  { id: 'dnd', label: 'Do not disturb', emoji: '🔕' },
+  { id: 'available', label: 'Available' },
+  { id: 'working', label: 'Working' },
+  { id: 'slacking', label: 'Slacking' },
+  { id: 'break', label: 'On a break' },
+  { id: 'eating', label: 'Eating' },
+  { id: 'away', label: 'Away' },
+  { id: 'dnd', label: 'Do not disturb' },
 ] as const;
 
 export type StatusId = (typeof STATUSES)[number]['id'];

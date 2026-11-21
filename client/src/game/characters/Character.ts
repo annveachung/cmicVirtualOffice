@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
-import { statusInfo, type Appearance, type Direction, type StatusId, type Theme } from '@little-office/shared';
+import type { Appearance, Direction, StatusId, Theme } from '@little-office/shared';
 import { FEET_ROW, FRAME_H } from '../assets/characterArt';
-import { COSTUME_KEY, REACTION_KEYS, animKey, ensureCharacter, type AnimName, type Reaction } from '../assets/textures';
+import { COSTUME_KEY, REACTION_KEYS, animKey, ensureCharacter, statusKey, type AnimName, type Reaction } from '../assets/textures';
 import { CHARACTER_SCALE, DEPTH, GAME_FONT, LABEL_PX, NIGHT_TINT, TEXT_RESOLUTION, TOP_BAR_PX } from '../constants';
 import { SpeechBubble } from './SpeechBubble';
 
@@ -24,6 +24,7 @@ export class Character {
   private readonly nameTag: Phaser.GameObjects.Text;
   private readonly bubble: SpeechBubble;
   private readonly costume: Phaser.GameObjects.Image;
+  private statusIcon: Phaser.GameObjects.Image | null = null;
   private sayTimer: Phaser.Time.TimerEvent | null = null;
   private labelScale = 1;
   private dir: Direction = 'down';
@@ -34,7 +35,7 @@ export class Character {
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly appearance: Appearance,
-    private readonly name: string,
+    name: string,
     opts: { isLocal: boolean },
   ) {
     const texKey = ensureCharacter(scene, appearance);
@@ -70,6 +71,7 @@ export class Character {
     this.shadow.setPosition(rx, ry).setDepth(DEPTH.world + y - 0.5);
     const tagY = ry - (SEATED.has(this.pose) ? 19 : 21) * CHARACTER_SCALE;
     this.nameTag.setPosition(rx, tagY);
+    this.placeStatusIcon();
     // bubble floats just above the name tag (both measured in screen px, scaled by 1/zoom)
     // Speech bubble goes above the name tag — unless that would run off the top of the
     // screen (e.g. on the meeting-room stage), then it sits to the character's right.
@@ -118,10 +120,19 @@ export class Character {
     this.sprite.play(animKey(this.appearance, `${this.pose}-${this.dir}`), true);
   }
 
-  /** Show a status icon at the front of the name tag, e.g. "💻 Annvea". */
+  /** Show a small pixel status dot just left of the name tag. */
   setStatus(id: StatusId): void {
-    this.nameTag.setText(`${statusInfo(id).emoji} ${this.name}`);
-    this.nameTag.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    if (!this.statusIcon) this.statusIcon = this.scene.add.image(0, 0, statusKey(id)).setDepth(DEPTH.nameplates + 0.5);
+    else this.statusIcon.setTexture(statusKey(id));
+    this.placeStatusIcon();
+  }
+
+  private placeStatusIcon() {
+    if (!this.statusIcon) return;
+    const s = this.labelScale * 1.5; // ~13px on screen, matching the name text
+    this.statusIcon
+      .setScale(s)
+      .setPosition(this.nameTag.x - this.nameTag.displayWidth / 2 - (9 * s) / 2 - 1 * this.labelScale, this.nameTag.y - this.nameTag.displayHeight / 2);
   }
 
   /** Show a message in the speech bubble for a few seconds. */
@@ -163,6 +174,7 @@ export class Character {
   destroy(): void {
     this.sayTimer?.remove();
     this.costume.destroy();
+    this.statusIcon?.destroy();
     this.sprite.destroy();
     this.shadow.destroy();
     this.nameTag.destroy();
