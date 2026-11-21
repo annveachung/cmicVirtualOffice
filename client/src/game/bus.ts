@@ -24,8 +24,6 @@ export interface BusEvents {
   'club:dance': DanceStyle | 'random';
   /** React -> Phaser: float a reaction above your character. */
   'club:react': Reaction;
-  /** React -> Phaser: start a group dance. */
-  'club:group': undefined;
   /** Phaser -> React: the player used the coffee & tea machine — ask which. */
   'pantry:prompt': undefined;
   /** React -> Phaser: the drink they picked. */

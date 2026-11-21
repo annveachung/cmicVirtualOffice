@@ -5,7 +5,7 @@ import { CharacterCreator } from '../components/CharacterCreator';
 import { PixelIcon } from '../components/PixelIcon';
 import { ThemeToggle } from '../components/ThemeToggle';
 
-const NAME_RE = /^[A-Za-z0-9 _-]{2,16}$/;
+const NAME_RE = /^[A-Za-z0-9 _-]{1,12}$/;
 
 interface Props {
   theme: Theme;
@@ -20,13 +20,16 @@ interface Props {
 export function LoginPage({ theme, onToggleTheme, onEnter }: Props) {
   const [name, setName] = useState('');
   const [appearance, setAppearance] = useState<Appearance>(DEFAULT_APPEARANCE);
-  const [touched, setTouched] = useState(false);
+  // Only complain after the user tries to enter, or types something invalid —
+  // never just because they clicked the character options first.
+  const [attempted, setAttempted] = useState(false);
   const trimmed = name.trim();
   const valid = NAME_RE.test(trimmed);
+  const showError = !valid && (attempted || trimmed.length > 0);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    setTouched(true);
+    setAttempted(true);
     if (valid) onEnter({ name: trimmed, appearance });
   };
 
@@ -49,15 +52,14 @@ export function LoginPage({ theme, onToggleTheme, onEnter }: Props) {
           <input
             className="pixel-input"
             value={name}
-            maxLength={16}
+            maxLength={12}
             autoFocus
             autoComplete="off"
             placeholder="e.g. Mochi"
             onChange={(e) => setName(e.target.value)}
-            onBlur={() => setTouched(true)}
-            aria-invalid={touched && !valid}
+            aria-invalid={showError}
           />
-          {touched && !valid && <small className="field-error">2–16 letters, numbers, spaces, _ or -</small>}
+          {showError && <small className="field-error">1–12 letters, numbers, spaces, _ or -</small>}
         </label>
 
         <CharacterCreator value={appearance} onChange={setAppearance} />

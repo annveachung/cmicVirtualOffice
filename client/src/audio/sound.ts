@@ -131,6 +131,19 @@ class SoundEngine {
       this.musicBus.gain.value = 0.55;
       this.musicBus.connect(lowpass).connect(ctx.destination);
       this.ctx = ctx;
+      // Refreshing/closing the page cuts the audio mid-wave, which crackles.
+      // Fade everything out very quickly as the page goes away.
+      const fadeOut = () => {
+        const t = ctx.currentTime;
+        for (const bus of [this.sfxBus, this.musicBus]) {
+          bus.gain.cancelScheduledValues(t);
+          bus.gain.setValueAtTime(bus.gain.value, t);
+          bus.gain.linearRampToValueAtTime(0, t + 0.03);
+        }
+        window.setTimeout(() => void ctx.suspend(), 40);
+      };
+      window.addEventListener('pagehide', fadeOut);
+      window.addEventListener('beforeunload', fadeOut);
     }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
     return this.ctx;
