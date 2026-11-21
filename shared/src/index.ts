@@ -6,3 +6,4 @@ export * from './map/office.js';
 export * from './map/collision.js';
 export * from './map/pathfinding.js';
 export * from './map/spots.js';
+export * from './status.js';

@@ -14,6 +14,7 @@ import {
   type Theme,
   type ZoneId,
   zoneAt,
+  DEFAULT_STATUS,
 } from '@little-office/shared';
 import { registerEnvironmentTextures } from '../assets/textures';
 import { bus, type PantryItem } from '../bus';
@@ -75,6 +76,7 @@ export class OfficeScene extends Phaser.Scene {
     this.player.setPosition(spawn.x, spawn.y);
     this.player.setMotion('up', 'idle');
     this.player.setTheme(theme);
+    this.player.setStatus(DEFAULT_STATUS);
     this.controller = new PlayerController(this, this.grid);
 
     // Click-to-move target marker (a small pulsing diamond on the floor)
@@ -122,6 +124,7 @@ export class OfficeScene extends Phaser.Scene {
 
     this.unsubscribers.push(
       bus.on('pantry:choose', (item) => this.player.say(pantryLine(item))),
+      bus.on('status:set', (id) => this.player.setStatus(id)),
       bus.on('theme:set', (t) => {
         this.office.applyTheme(t);
         this.player.setTheme(t);
