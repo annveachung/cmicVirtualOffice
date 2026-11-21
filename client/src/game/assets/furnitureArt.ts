@@ -868,9 +868,18 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     else { hline(ctx, 6, 4, 5, pal.neonAmber); px(ctx, 8, 3, pal.neonAmber); } // crown
   },
 
-  /** Long counter along the pantry's side wall (the items on it are separate objects). */
+  /**
+   * Long cupboard along the pantry's side wall (the items on it are separate objects).
+   * A wooden cabinet edge with door lines runs down its open side, so the whole
+   * length reads as a cupboard, not just its far end.
+   */
   pantryCounter(ctx, { pal, W, H, oh }) {
     sideCounterBase(ctx, pal, W, H, oh);
+    const edge = W - 5;
+    rect(ctx, edge, 1, 4, H - 10, pal.furn); // cabinet side, all the way down
+    vline(ctx, edge, 1, H - 10, pal.outline);
+    for (let y = oh + TILE; y < H - 9; y += TILE) hline(ctx, edge, y, 4, pal.furnDark); // door joins
+    for (let y = oh + TILE / 2; y < H - 9; y += TILE) rect(ctx, edge + 1, y - 1, 1, 3, pal.metalDark); // handles
   },
 
   /** Coffee & tea machine: chunky body, a display, a cup under the spout. */
