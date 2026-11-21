@@ -7,6 +7,7 @@ import { bus } from '../game/bus';
 import { AchievementToast } from '../components/AchievementToast';
 import { ClubPanel } from '../components/ClubPanel';
 import { ZoomControls } from '../components/ZoomControls';
+import { DrinkPrompt } from '../components/DrinkPrompt';
 import { sound } from '../audio/sound';
 
 interface Props {
@@ -75,6 +76,7 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
       {zone === 'potato-club' && <ClubPanel />}
       <AchievementToast />
       <ZoomControls />
+      <DrinkPrompt />
       {showHelp && (
         <aside className="help pixel-panel">
           <button className="help-close" onClick={() => setShowHelp(false)} aria-label="Hide controls">×</button>

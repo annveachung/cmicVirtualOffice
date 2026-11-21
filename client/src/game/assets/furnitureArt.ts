@@ -893,13 +893,23 @@ const P: Partial<Record<Placement['type'], Painter>> = {
   /** Tea & drinks station along a side wall: kettle, tea tins, coffee pot, cups. */
   beverageCounter(ctx, { pal, W, H, oh }) {
     sideCounterBase(ctx, pal, W, H, oh);
-    box(ctx, 3, oh + 2, 8, 9, pal.metal, pal.outline); // kettle
-    rect(ctx, 11, oh + 5, 2, 2, pal.metal);
-    hline(ctx, 5, oh + 1, 4, pal.outline);
-    for (let i = 0; i < 3; i++) box(ctx, 3 + i * 4, oh + 17, 4, 6, pal.accents[i], pal.outline); // tea tins
-    box(ctx, 4, oh + 27, 8, 8, pal.screenOff, pal.outline); // coffee pot
-    rect(ctx, 5, oh + 31, 6, 3, pal.furnDark);
-    for (let i = 0; i < 2; i++) mug(ctx, pal, 3 + i * 6, oh + 38, pal.accents[(i + 3) % 6]);
+    // espresso machine (top)
+    box(ctx, 2, oh - 2, 12, 12, pal.metalDark, pal.outline);
+    rect(ctx, 3, oh - 1, 10, 2, pal.metal);
+    rect(ctx, 4, oh + 3, 3, 2, pal.screenOn); // little display
+    px(ctx, 10, oh + 3, pal.accents[0]);
+    rect(ctx, 6, oh + 6, 4, 2, pal.outline); // portafilter
+    mug(ctx, pal, 5, oh + 8, pal.paper);
+    // tea tins + kettle (middle)
+    for (let i = 0; i < 3; i++) box(ctx, 2 + i * 4, oh + 18, 4, 6, pal.accents[i], pal.outline);
+    box(ctx, 4, oh + 26, 7, 5, pal.metal, pal.outline);
+    hline(ctx, 5, oh + 25, 4, pal.outline);
+    // water fountain (bottom): blue bottle on a dispenser with a tap
+    ellipse(ctx, 8, oh + 34, 4, 4, pal.outline);
+    ellipse(ctx, 8, oh + 34, 3, 3, '#8fc4e8');
+    px(ctx, 7, oh + 33, '#e4f3fb');
+    box(ctx, 4, oh + 37, 8, 6, pal.plastic, pal.outline);
+    rect(ctx, 6, oh + 39, 2, 2, '#4f8fc9'); // cold tap
   },
 
   /** Breakfast / lunch buffet along a side wall: fruit bowls, bread basket, cereal jars. */

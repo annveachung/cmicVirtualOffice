@@ -16,10 +16,10 @@ import { DESKS, PLACEMENTS } from './office.js';
  * Spots are derived from furniture data, so adding a treadmill to the map
  * automatically makes it usable.
  */
-export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee' | 'present' | 'sing' | 'dance' | 'costume' | 'vend' | 'mascot';
+export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee' | 'present' | 'sing' | 'dance' | 'costume' | 'vend' | 'mascot' | 'drink';
 
 /** Actions that happen once (a toggle, a snack, a poke) instead of putting you in a pose. */
-export const INSTANT_ACTIONS: ReadonlySet<SpotAction> = new Set(['costume', 'vend', 'mascot']);
+export const INSTANT_ACTIONS: ReadonlySet<SpotAction> = new Set(['costume', 'vend', 'mascot', 'drink']);
 
 export interface Spot {
   id: string;
@@ -54,6 +54,7 @@ const VERB: Record<SpotAction, string> = {
   costume: 'potato suit',
   vend: 'get a snack',
   mascot: 'poke Mr. Potato',
+  drink: 'get a drink',
 };
 
 function footprintTiles(p: Placement): TilePos[] {
@@ -130,6 +131,8 @@ function spotsFor(p: Placement): Spot[] {
       return [spot(p.id, 'sing', t(0, 0), 'down', { dy: 2, onFloor: true })];
     case 'danceFloor': // every tile of the dance floor is a place to dance
       return footprintTiles(p).map((c, i) => spot(`${p.id}:${i}`, 'dance', c, 'down', { onFloor: true }));
+    case 'beverageCounter': // stand in front of the drinks station, facing the wall
+      return [spot(p.id, 'drink', t(1, 1), 'left', { clickTiles: [...footprintTiles(p), t(1, 1)], onFloor: true })];
     case 'potatoVending':
       return [spot(p.id, 'vend', t(0, 1), 'up', { clickTiles: [t(0, 0), t(0, 1)], onFloor: true })];
     case 'costumeRack':
