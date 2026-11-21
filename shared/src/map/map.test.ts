@@ -221,6 +221,12 @@ describe('activity spots', () => {
     expect(zoneAt(SPAWN.tx, SPAWN.ty)).toBeNull();
   });
 
+  it('has a drinks station you can use in the pantry', async () => {
+    const { SPOTS, INSTANT_ACTIONS } = await import('./spots.js');
+    expect(SPOTS.filter((s) => s.action === 'drink')).toHaveLength(1);
+    expect(INSTANT_ACTIONS.has('drink')).toBe(true);
+  });
+
   it('has a booth for four in the pantry', async () => {
     const { SPOTS } = await import('./spots.js');
     expect(SPOTS.filter((s) => s.id.startsWith('booth-')).length).toBe(4);
