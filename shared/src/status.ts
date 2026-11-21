@@ -4,12 +4,11 @@
  * Light-hearted on purpose: this is not attendance tracking.
  */
 export const STATUSES = [
-  { id: 'available', label: 'Available to chat', emoji: '💬' },
+  { id: 'available', label: 'Available', emoji: '💬' },
   { id: 'working', label: 'Working', emoji: '💻' },
-  { id: 'daydreaming', label: 'Daydreaming', emoji: '☁️' },
-  { id: 'coffee', label: 'Coffee break', emoji: '☕' },
-  { id: 'lunch', label: 'Lunch', emoji: '🍜' },
-  { id: 'playing', label: 'Playing', emoji: '🎮' },
+  { id: 'slacking', label: 'Slacking', emoji: '🛋️' },
+  { id: 'break', label: 'On a break', emoji: '☕' },
+  { id: 'eating', label: 'Eating', emoji: '🍜' },
   { id: 'away', label: 'Away', emoji: '💤' },
   { id: 'dnd', label: 'Do not disturb', emoji: '🔕' },
 ] as const;
