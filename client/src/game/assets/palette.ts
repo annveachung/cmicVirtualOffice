@@ -48,6 +48,8 @@ export interface EnvPalette {
   glassLight: string;
   accents: string[]; // dusty pastels for books, cups, rugs, paintings
   lampLight: string;
+  /** Lamp shades: a light, pale yellow on every lamp. */
+  lampShade: string;
   shadow: string; // rgba for soft shadows
   sky: string;
   bg: string;
@@ -118,6 +120,7 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     glassLight: '#eef6ee',
     accents: ['#a99bd6', '#c8e07a', '#e0a46a', '#6e9c82', '#d98a7a', '#8fbfd9'],
     lampLight: '#fff0c4',
+    lampShade: '#f6ecb4',
     shadow: 'rgba(31, 58, 44, 0.14)',
     sky: '#d8ebe4',
     bg: '#b9cbb2',
@@ -180,6 +183,7 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     glassLight: '#34523f',
     accents: ['#7e72ad', '#93ab4f', '#b07b4a', '#4f7a63', '#a8665a', '#5f8ea6'],
     lampLight: '#ffd896',
+    lampShade: '#c9bd84',
     shadow: 'rgba(0, 8, 4, 0.36)',
     sky: '#13221b',
     bg: '#16221b',
