@@ -117,6 +117,8 @@ export interface Placement {
   dir?: Direction;
   /** Cosmetic variant (plant species, painting, rug colour...). */
   variant?: number;
+  /** Cosmetic vertical nudge in pixels (drawing only — collision and spots stay on the tile grid). */
+  dy?: number;
 }
 
 export function footprint(p: Placement): { w: number; h: number } {

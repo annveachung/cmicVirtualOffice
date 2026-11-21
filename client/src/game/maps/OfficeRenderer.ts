@@ -49,7 +49,7 @@ export class OfficeRenderer {
       if (p.type === 'danceFloor') this.addDanceFloorLights(p);
       if (def.layer !== 'object') continue;
       const bottom = (p.ty + h) * TILE;
-      const img = add.image(p.tx * TILE, bottom, furnitureTextureKey(p, theme)).setOrigin(0, 1);
+      const img = add.image(p.tx * TILE, bottom + (p.dy ?? 0), furnitureTextureKey(p, theme)).setOrigin(0, 1);
       img.setDepth(DEPTH.world + furnitureDepth(p, def, bottom));
       this.furniture.push({ p, img });
     }
