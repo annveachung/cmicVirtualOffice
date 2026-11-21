@@ -196,11 +196,12 @@ export const PLACEMENTS: Placement[] = [
   // left wall: tea & drinks station, then the breakfast/lunch buffet
   // left wall: one long cupboard; items keep clear of both ends
   P('pantryCounter', 32, 3, { id: 'pantry-counter', w: 1, h: 7 }),
-  // evenly spaced (20px apart) between the clear ends; dy nudges the drawing, not the grid
-  P('coffeeTeaMachine', 32, 4, { id: 'pantry-machine', dy: 2 }),
-  P('appleBasket', 32, 5, { id: 'pantry-apples', dy: 6 }),
-  P('breadBasket', 32, 7, { id: 'pantry-bread', dy: -6 }),
-  P('mealBoxes', 32, 8, { id: 'pantry-boxes', dy: -2 }), // breakfast 10:00, lunch 12:00
+  // dy nudges the drawing (pixels), not the grid: machine a bit higher, apples & bread
+  // a bit higher, meal boxes a bit lower
+  P('coffeeTeaMachine', 32, 4, { id: 'pantry-machine', dy: -4 }),
+  P('appleBasket', 32, 5, { id: 'pantry-apples', dy: 2 }),
+  P('breadBasket', 32, 7, { id: 'pantry-bread', dy: -10 }),
+  P('mealBoxes', 32, 8, { id: 'pantry-boxes', dy: 4 }), // breakfast 10:00, lunch 12:00
   // the big communal table sits in the middle, well away from the entrance
   P('diningTable', 42, 5, { w: 6, h: 2 }),
   ...[43, 44, 45, 46].map((x) => P('chair', x, 4, { dir: 'down', variant: 1 })),
