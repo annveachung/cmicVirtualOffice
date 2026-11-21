@@ -221,10 +221,10 @@ describe('activity spots', () => {
     expect(zoneAt(SPAWN.tx, SPAWN.ty)).toBeNull();
   });
 
-  it('has a drinks station you can use in the pantry', async () => {
+  it('offers food & drinks at both left-wall pantry counters', async () => {
     const { SPOTS, INSTANT_ACTIONS } = await import('./spots.js');
-    expect(SPOTS.filter((s) => s.action === 'drink')).toHaveLength(1);
-    expect(INSTANT_ACTIONS.has('drink')).toBe(true);
+    expect(SPOTS.filter((s) => s.action === 'pantry')).toHaveLength(2);
+    expect(INSTANT_ACTIONS.has('pantry')).toBe(true);
   });
 
   it('has a booth for four in the pantry', async () => {
