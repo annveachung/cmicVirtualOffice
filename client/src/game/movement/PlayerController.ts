@@ -5,6 +5,8 @@ import {
   findPath,
   INSTANT_ACTIONS,
   canReachSpot,
+  frontTiles,
+  isInFrontOf,
   moveWithCollision,
   nearestWalkable,
   smoothPath,
@@ -80,18 +82,23 @@ export class PlayerController {
     if (this.using?.spot.id === spot.id) return null;
     const from = this.standUp(pos);
     const here = toTile(from);
-    if (canReachSpot(here, spot)) {
+    // One-off things (food, machines, the mat…): a click only walks you over; you take
+    // the item with E (or a second click once you're standing in front of it).
+    const instant = INSTANT_ACTIONS.has(spot.action);
+    if (instant ? isInFrontOf(this.grid, here, spot) : canReachSpot(here, spot)) {
       this.use(spot, here);
       return null;
     }
     // try each tile next to the spot; take the one with the shortest walk
     let best: { tile: TilePos; len: number } | null = null;
-    for (const t of approachTiles(this.grid, spot)) {
+    // for one-off things, stop where the hint shows (in front); otherwise any tile next to it
+    for (const t of instant ? frontTiles(this.grid, spot) : approachTiles(this.grid, spot)) {
       const path = findPath(this.grid, here, t);
       if (path && (!best || path.length < best.len)) best = { tile: t, len: path.length };
     }
     if (!best) return null;
     const dest = this.planPath(from, best.tile);
+    if (instant) return dest; // walk over and stop; the "E · …" hint appears there
     this.pending = { spot, standTile: best.tile };
     if (!dest) this.use(spot, best.tile); // already standing on the approach tile
     return dest;
