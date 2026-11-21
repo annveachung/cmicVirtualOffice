@@ -956,8 +956,8 @@ const P: Partial<Record<Placement['type'], Painter>> = {
   },
 
   rug(ctx, { pal, W, H, v }) {
-    // 0-2: lounge/hall rugs; 3-6: office carpets in lavender, apricot, rose, sky (no greens)
-    const base = [pal.fabricC, pal.accents[3], pal.accents[1], pal.accents[0], pal.accents[2], pal.accents[4], pal.accents[5]][v % 7];
+    if (v >= 3) return officeCarpet(ctx, pal.officeCarpets[(v - 3) % 3], W, H);
+    const base = [pal.fabricC, pal.accents[3], pal.accents[1]][v % 3];
     roundBox(ctx, 0, 0, W, H, mix(base, pal.outline, 0.25), mix(base, pal.outline, 0.45));
     roundBox(ctx, 2, 2, W - 4, H - 4, base, shade(base, 0.25));
     rect(ctx, 4, 4, W - 8, H - 8, base);
@@ -1039,6 +1039,29 @@ function sideArcade(ctx: Ctx, pal: EnvPalette, H: number, v: number, dir: 'left'
   box(ctx, flip(0, 7), 16, 7, 4, shade(body, -0.15), pal.outline); // control panel sticking out
   px(ctx, flip(2, 1), 17, pal.accents[0]);
   rect(ctx, flip(6, 8), H - 3, 8, 2, shade(body, -0.3));
+}
+
+/**
+ * Classic-game office carpet: a soft, desaturated base, a darker border band
+ * with a thin inner line, and a small repeating diamond motif.
+ */
+function officeCarpet(ctx: Ctx, base: string, W: number, H: number) {
+  const dark = shade(base, -0.22);
+  const light = shade(base, 0.18);
+  rect(ctx, 0, 0, W, H, dark); // border band
+  rect(ctx, 3, 3, W - 6, H - 6, base);
+  hline(ctx, 4, 4, W - 8, light); // thin inner line
+  hline(ctx, 4, H - 5, W - 8, light);
+  vline(ctx, 4, 4, H - 8, light);
+  vline(ctx, W - 5, 4, H - 8, light);
+  for (let y = 10; y < H - 6; y += 8)
+    for (let x = 10 + (((y - 10) / 8) % 2) * 4; x < W - 6; x += 8) {
+      px(ctx, x, y - 1, dark); // little diamond
+      px(ctx, x - 1, y, dark);
+      px(ctx, x + 1, y, dark);
+      px(ctx, x, y + 1, dark);
+      px(ctx, x, y, light);
+    }
 }
 
 /** True if a furniture type has its own painter (otherwise it would render as a placeholder). */
