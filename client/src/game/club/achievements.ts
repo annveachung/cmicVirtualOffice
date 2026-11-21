@@ -11,7 +11,6 @@ export const ACHIEVEMENTS = {
   certifiedPotato: { title: 'Certified Potato', detail: 'Wore the potato suit' },
   snackAttack: { title: 'Snack Attack', detail: 'Got 3 snacks from the potato machine' },
   mascotFriend: { title: 'Friend of Mr. Potato', detail: 'Said hi to Mr. Potato' },
-  groupGroove: { title: 'Group Groove', detail: 'Started a group dance' },
   cheerleader: { title: 'Cheerleader', detail: 'Sent 5 reactions' },
 } as const;
 

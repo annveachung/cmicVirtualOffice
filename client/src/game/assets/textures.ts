@@ -25,7 +25,7 @@ export const GLOW_KEYS = {
 export const BEAM_KEYS = { sun: 'beams:sun', moon: 'beams:moon' } as const;
 
 export const COSTUME_KEY = 'costume:potato';
-export const REACTION_KEYS = { clap: 'react:clap', heart: 'react:heart', laugh: 'react:laugh' } as const;
+export const REACTION_KEYS = { heart: 'react:heart', laugh: 'react:laugh' } as const;
 export type Reaction = keyof typeof REACTION_KEYS;
 export const DISCO_KEY = 'disco-ball';
 
@@ -45,7 +45,6 @@ function registerClubTextures(scene: Phaser.Scene) {
     tex.addCanvas(key, canvas);
   };
   icon(REACTION_KEYS.heart, ['.OO.OO...', 'OHHOHHO..', 'OHHHHHO..', 'OHHHHHO..', '.OHHHO...', '..OHO....', '...O.....'], { O: '#5a1630', H: '#ff5fa0' });
-  icon(REACTION_KEYS.clap, ['..O...O..', '.OYO.OYO.', '.OYYOYYO.', '.OYYYYYO.', '..OYYYO..', '..OYYYO..', '...OOO...'], { O: '#5a3a14', Y: '#ffd27a' });
   icon(REACTION_KEYS.laugh, ['..OOOOO..', '.OYYYYYO.', 'OYOYYYOYO', 'OYYYYYYYO', 'OYOOOOOYO', '.OYRRRYO.', '..OOOOO..'], { O: '#5a3a14', Y: '#ffd24a', R: '#e2544e' });
   if (!tex.exists(DISCO_KEY)) {
     // 4 frames side by side; the sparkle pattern shifts each frame so it looks like it's turning

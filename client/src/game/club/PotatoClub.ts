@@ -36,7 +36,6 @@ export class PotatoClub {
     this.unsubscribers.push(
       bus.on('club:dance', (style) => this.dance(style === 'random' ? pickDance() : style)),
       bus.on('club:react', (kind) => this.react(kind)),
-      bus.on('club:group', () => this.groupDance()),
     );
   }
 
@@ -84,14 +83,6 @@ export class PotatoClub {
   private react(kind: Reaction) {
     this.player.react(kind);
     if (bump('reactions') >= 5) this.achieve('cheerleader');
-  }
-
-  private groupDance() {
-    const style = pickDance();
-    this.dance(style);
-    this.mascotDance(8000);
-    this.player.say('Group dance! Everybody move! 🥔', 3500);
-    this.achieve('groupGroove');
   }
 
   /** Handle the club's one-off actions (costume, snacks, Mr. Potato). */

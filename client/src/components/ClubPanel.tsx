@@ -9,7 +9,6 @@ const DANCES: { style: DanceStyle; label: string }[] = [
 ];
 
 const REACTIONS: { kind: Reaction; label: string; emoji: string }[] = [
-  { kind: 'clap', label: 'Applause', emoji: '👏' },
   { kind: 'heart', label: 'Heart', emoji: '❤️' },
   { kind: 'laugh', label: 'Laugh', emoji: '😂' },
 ];
@@ -31,9 +30,6 @@ export function ClubPanel() {
         ))}
         <button className="pixel-btn small primary" onClick={() => bus.emit('club:dance', 'random')}>
           🎲 Random
-        </button>
-        <button className="pixel-btn small" onClick={() => bus.emit('club:group')}>
-          Group dance
         </button>
       </div>
       <div className="club-row">
