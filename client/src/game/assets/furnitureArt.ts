@@ -57,23 +57,20 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     box(ctx, 1, 1, 11, 5, accent(pal, v + 2), pal.outline);
     hline(ctx, 3, 6, 7, pal.lampLight);
     if (dir === 'up') {
-      // the colleague sits below with their back to us, so we see the screen
+      // chair BELOW the desk: monitor at the back edge facing the sitter (we see the screen)
       box(ctx, 15, 0, 18, 12, pal.outline, pal.outline);
       rect(ctx, 16, 1, 16, 9, pal.screenOn);
       for (let i = 0; i < 4; i++)
         hline(ctx, 18 + (i % 2) * 2, 2 + i * 2, 5 + ((i * 5 + v) % 7), shade(pal.screenOn, -0.35));
+      box(ctx, 21, 11, 6, 4, pal.metalDark, pal.outline);
+      box(ctx, 18, 14, 12, 3, pal.metal, pal.outline);
     } else {
-      // we see the monitor's back — the screen faces the seated colleague
-      box(ctx, 15, 0, 18, 12, pal.metalDark, pal.outline);
-      hline(ctx, 16, 1, 16, mix(pal.metalDark, pal.screenOn, 0.45));
-      rect(ctx, 23, 5, 2, 2, pal.metal);
+      // chair ABOVE the desk: the monitor stands with its back towards the camera
+      box(ctx, 21, y0 + 13, 6, 3, pal.metalDark, pal.outline); // stand foot
+      box(ctx, 15, y0 + 4, 18, 11, pal.metalDark, pal.outline); // monitor back
+      hline(ctx, 16, y0 + 5, 16, mix(pal.metalDark, pal.screenOn, 0.45)); // screen glow over the top
+      rect(ctx, 23, y0 + 9, 2, 2, pal.metal);
     }
-    box(ctx, 21, 11, 6, 4, pal.metalDark, pal.outline);
-    box(ctx, 18, 14, 12, 3, pal.metal, pal.outline);
-    // keyboard + mouse
-    box(ctx, 16, y0 + 11, 15, 5, pal.plastic, pal.outline);
-    for (let i = 0; i < 6; i++) px(ctx, 18 + i * 2, y0 + 13, pal.metalDark);
-    roundBox(ctx, 33, y0 + 11, 4, 5, pal.plastic, pal.outline);
     // mug
     mug(ctx, pal, 9, y0 + 9, accent(pal, v));
     // right-hand clutter varies per desk
