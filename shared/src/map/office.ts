@@ -196,8 +196,13 @@ export const PLACEMENTS: Placement[] = [
   P('fridge', 57, 9), // a compact fridge tucked into the corner
   P('bin', 57, 8), // pantry bin, against the wall at the end of the counter
   // left wall: tea & drinks station, then the breakfast/lunch buffet
-  P('beverageCounter', 32, 3, { id: 'beverage-station', w: 1, h: 3 }),
-  P('buffetCounter', 32, 6, { id: 'buffet', w: 1, h: 3 }),
+  // left wall: one long counter, five clear slots (the 5th is left free for later)
+  P('pantryCounter', 32, 3, { id: 'pantry-counter', w: 1, h: 7 }),
+  P('coffeeTeaMachine', 32, 3, { id: 'pantry-machine' }),
+  P('appleBasket', 32, 4, { id: 'pantry-apples' }),
+  P('breadBasket', 32, 5, { id: 'pantry-bread' }),
+  P('mealBoxes', 32, 6, { id: 'pantry-boxes' }), // breakfast 10:00, lunch 12:00
+  // (32, 7): spare slot for a future item
   // the big communal table sits in the middle, well away from the entrance
   P('diningTable', 42, 5, { w: 6, h: 2 }),
   ...[43, 44, 45, 46].map((x) => P('chair', x, 4, { dir: 'down', variant: 1 })),

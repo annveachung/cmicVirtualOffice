@@ -91,8 +91,11 @@ export const FURNITURE = {
   // lounge + pantry extras
   boothBench: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 10 }, // one seat; variant 0 = back piece, 1 = front piece
   boothTable: { w: 2, h: 2, blocks: true, layer: 'object', overhang: 2 },
-  beverageCounter: { w: 1, h: 3, blocks: true, layer: 'object', overhang: 4 },
-  buffetCounter: { w: 1, h: 3, blocks: true, layer: 'object', overhang: 4 },
+  pantryCounter: { w: 1, h: 7, blocks: true, layer: 'object', overhang: 4 }, // long counter along a side wall
+  coffeeTeaMachine: { w: 1, h: 1, blocks: true, layer: 'object', onTop: true, overhang: 8 },
+  appleBasket: { w: 1, h: 1, blocks: true, layer: 'object', onTop: true, overhang: 4 },
+  breadBasket: { w: 1, h: 1, blocks: true, layer: 'object', onTop: true, overhang: 4 },
+  mealBoxes: { w: 1, h: 1, blocks: true, layer: 'object', onTop: true, overhang: 8 },
   // entrance
   entrance: { w: 3, h: 1, blocks: false, layer: 'wall' },
   doormat: { w: 3, h: 2, blocks: false, layer: 'floor' },
