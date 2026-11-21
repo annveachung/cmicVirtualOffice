@@ -56,25 +56,16 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     rect(ctx, 2, 0, 9, 1, pal.outline);
     box(ctx, 1, 1, 11, 5, accent(pal, v + 2), pal.outline);
     hline(ctx, 3, 6, 7, pal.lampLight);
-    const keyboard = (ky: number) => {
-      box(ctx, 16, ky, 15, 5, pal.plastic, pal.outline);
-      for (let i = 0; i < 6; i++) px(ctx, 18 + i * 2, ky + 2, pal.metalDark);
-      roundBox(ctx, 33, ky, 4, 5, pal.plastic, pal.outline); // mouse
-    };
     if (dir === 'up') {
-      // chair BELOW the desk: monitor at the back edge facing the sitter (we see the screen),
-      // keyboard in front of it — between the screen and the chair
+      // chair BELOW the desk: monitor at the back edge facing the sitter (we see the screen)
       box(ctx, 15, 0, 18, 12, pal.outline, pal.outline);
       rect(ctx, 16, 1, 16, 9, pal.screenOn);
       for (let i = 0; i < 4; i++)
         hline(ctx, 18 + (i % 2) * 2, 2 + i * 2, 5 + ((i * 5 + v) % 7), shade(pal.screenOn, -0.35));
       box(ctx, 21, 11, 6, 4, pal.metalDark, pal.outline);
       box(ctx, 18, 14, 12, 3, pal.metal, pal.outline);
-      keyboard(y0 + 11);
     } else {
-      // chair ABOVE the desk: the keyboard sits at the back edge right in front of the sitter,
-      // and the monitor stands nearer us with its back towards the camera
-      keyboard(y0 + 1);
+      // chair ABOVE the desk: the monitor stands with its back towards the camera
       box(ctx, 21, y0 + 13, 6, 3, pal.metalDark, pal.outline); // stand foot
       box(ctx, 15, y0 + 4, 18, 11, pal.metalDark, pal.outline); // monitor back
       hline(ctx, 16, y0 + 5, 16, mix(pal.metalDark, pal.screenOn, 0.45)); // screen glow over the top
