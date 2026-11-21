@@ -5,8 +5,11 @@
  */
 export const TILE = 16; // pixels per tile (art is authored at 1x)
 
-/** Walking speed in world pixels per second (~5.25 tiles/s). */
-export const WALK_SPEED = 84;
+/**
+ * Walking speed in world pixels per second (6 tiles/s). Used for BOTH arrow-key
+ * movement and click-to-move, so they always feel the same.
+ */
+export const WALK_SPEED = 96;
 
 /**
  * Collision box around a character's feet. Position (x, y) of a character
