@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { Appearance, Direction, Theme } from '@little-office/shared';
 import { FEET_ROW, FRAME_H } from '../assets/characterArt';
 import { COSTUME_KEY, REACTION_KEYS, animKey, ensureCharacter, type AnimName, type Reaction } from '../assets/textures';
-import { CHARACTER_SCALE, DEPTH, GAME_FONT, LABEL_PX, NIGHT_TINT, TEXT_RESOLUTION } from '../constants';
+import { CHARACTER_SCALE, DEPTH, GAME_FONT, LABEL_PX, NIGHT_TINT, TEXT_RESOLUTION, TOP_BAR_PX } from '../constants';
 import { SpeechBubble } from './SpeechBubble';
 
 /** Which animation is playing: idle, walk, sit, run, pedal, lift... (see ANIMS). */
@@ -71,7 +71,18 @@ export class Character {
     const tagY = ry - (SEATED.has(this.pose) ? 19 : 21) * CHARACTER_SCALE;
     this.nameTag.setPosition(rx, tagY);
     // bubble floats just above the name tag (both measured in screen px, scaled by 1/zoom)
-    this.bubble.setPosition(rx, tagY - this.nameTag.displayHeight - 2 * this.labelScale);
+    // Speech bubble goes above the name tag — unless that would run off the top of the
+    // screen (e.g. on the meeting-room stage), then it sits to the character's right.
+    const aboveY = tagY - this.nameTag.displayHeight - 2 * this.labelScale;
+    const cam = this.scene.cameras.main;
+    const bubbleTopOnScreen = (aboveY - cam.worldView.y) * cam.zoom - this.bubble.heightPx;
+    if (bubbleTopOnScreen < TOP_BAR_PX + 6) {
+      this.bubble.setSide('right');
+      this.bubble.setPosition(rx + 7 * CHARACTER_SCALE, ry - 12 * CHARACTER_SCALE);
+    } else {
+      this.bubble.setSide('above');
+      this.bubble.setPosition(rx, aboveY);
+    }
   }
 
   /** Update facing + pose; only restarts the animation when something changed. */

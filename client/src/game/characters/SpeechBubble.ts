@@ -75,7 +75,27 @@ export class SpeechBubble {
   }
 
   /** Redraw the bubble around the text: rounded box with a hard pixel outline and a little tail. */
+  private text = '';
+  private side: 'above' | 'right' = 'above';
+
+  /** Height of the bubble in screen px (for deciding whether it fits above). */
+  get heightPx(): number {
+    return Math.ceil(this.label.height) + 8 + 5;
+  }
+
+  /**
+   * 'above' = over the character's head (tail pointing down);
+   * 'right' = beside them (tail pointing left) — used when there's no room above.
+   */
+  setSide(side: 'above' | 'right'): void {
+    if (side === this.side) return;
+    this.side = side;
+    if (this.text) this.setText(this.text);
+  }
+
+  /** Redraw the bubble around the text: rounded box with a hard pixel outline and a little tail. */
   private setText(text: string) {
+    this.text = text;
     this.label.setText(text);
     this.label.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
     // Keep a stable width for the dots so the bubble doesn't jitter while animating.
@@ -83,12 +103,27 @@ export class SpeechBubble {
     const h = Math.ceil(this.label.height) + 8;
     const tail = 5;
     const g = this.box.clear();
-    const x = -w / 2;
-    const y = -h - tail;
-    g.fillStyle(0x33262a).fillRect(x - 1, y, w + 2, h).fillRect(x, y - 1, w, h + 2);
-    g.fillStyle(0xfffaf0).fillRect(x + 1, y + 1, w - 2, h - 2);
-    g.fillStyle(0x33262a).fillTriangle(-4, -tail - 1, 4, -tail - 1, 0, 1);
-    g.fillStyle(0xfffaf0).fillTriangle(-2, -tail - 1, 2, -tail - 1, 0, -2);
-    this.label.setPosition(0, -tail - 4);
+    const INK = 0x33262a;
+    const PAPER = 0xfffaf0;
+    let x: number;
+    let y: number;
+    if (this.side === 'above') {
+      x = -w / 2;
+      y = -h - tail;
+    } else {
+      x = tail;
+      y = -h / 2;
+    }
+    g.fillStyle(INK).fillRect(x - 1, y, w + 2, h).fillRect(x, y - 1, w, h + 2);
+    g.fillStyle(PAPER).fillRect(x + 1, y + 1, w - 2, h - 2);
+    if (this.side === 'above') {
+      g.fillStyle(INK).fillTriangle(-4, -tail - 1, 4, -tail - 1, 0, 1);
+      g.fillStyle(PAPER).fillTriangle(-2, -tail - 1, 2, -tail - 1, 0, -2);
+    } else {
+      g.fillStyle(INK).fillTriangle(tail + 1, -4, tail + 1, 4, -1, 0);
+      g.fillStyle(PAPER).fillTriangle(tail + 1, -2, tail + 1, 2, 2, 0);
+    }
+    this.label.setOrigin(0.5, 0.5).setPosition(x + w / 2, y + h / 2);
   }
+
 }
