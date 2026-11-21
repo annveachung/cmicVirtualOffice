@@ -238,7 +238,7 @@ export const PLACEMENTS: Placement[] = [
   P('coffeeTable', 11, 22),
   // reading nook
   P('rug', 28, 24, { w: 5, h: 3, variant: 2 }),
-  P('beanBag', 29, 25, { variant: 0 }),
+  P('beanBag', 29, 25, { variant: 5 }), // lavender (was lime green)
   P('beanBag', 31, 25, { variant: 1 }),
   P('floorLamp', 32, 24),
   // main entrance (bottom wall) — everyone arrives here
