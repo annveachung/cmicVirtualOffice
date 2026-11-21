@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { Appearance, Direction, Theme } from '@little-office/shared';
+import { statusInfo, type Appearance, type Direction, type StatusId, type Theme } from '@little-office/shared';
 import { FEET_ROW, FRAME_H } from '../assets/characterArt';
 import { COSTUME_KEY, REACTION_KEYS, animKey, ensureCharacter, type AnimName, type Reaction } from '../assets/textures';
 import { CHARACTER_SCALE, DEPTH, GAME_FONT, LABEL_PX, NIGHT_TINT, TEXT_RESOLUTION, TOP_BAR_PX } from '../constants';
@@ -34,7 +34,7 @@ export class Character {
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly appearance: Appearance,
-    name: string,
+    private readonly name: string,
     opts: { isLocal: boolean },
   ) {
     const texKey = ensureCharacter(scene, appearance);
@@ -116,6 +116,12 @@ export class Character {
 
   private playAnim(): void {
     this.sprite.play(animKey(this.appearance, `${this.pose}-${this.dir}`), true);
+  }
+
+  /** Show a status icon at the front of the name tag, e.g. "💻 Annvea". */
+  setStatus(id: StatusId): void {
+    this.nameTag.setText(`${statusInfo(id).emoji} ${this.name}`);
+    this.nameTag.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
   }
 
   /** Show a message in the speech bubble for a few seconds. */

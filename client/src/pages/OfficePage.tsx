@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { Theme, ZoneId } from '@little-office/shared';
+import { DEFAULT_STATUS, type StatusId, type Theme, type ZoneId } from '@little-office/shared';
 import type { Profile } from '../App';
 import { TopBar } from '../components/TopBar';
 import { GameCanvas } from '../game/GameCanvas';
@@ -21,6 +21,9 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
   const [ready, setReady] = useState(false);
   const [showHelp, setShowHelp] = useState(true);
   const [zone, setZone] = useState<ZoneId | null>(null);
+  const [status, setStatus] = useState<StatusId>(DEFAULT_STATUS);
+  // tell the game whenever the status changes (and once it's ready)
+  useEffect(() => bus.emit('status:set', status), [status, ready]);
   useEffect(() => bus.on('zone:changed', setZone), []);
   // each special area has its own soundtrack; the cozy office tune plays everywhere else
   useEffect(() => sound.setTrack(zone === 'potato-club' ? 'club' : zone === 'gym' ? 'gym' : 'office'), [zone]);
@@ -68,6 +71,8 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
       <TopBar
         theme={theme}
         onlineCount={1}
+        status={status}
+        onStatusChange={setStatus}
         onToggleTheme={onToggleTheme}
         onToggleHelp={() => setShowHelp((v) => !v)}
         onLeave={onLeave}

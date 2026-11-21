@@ -1,18 +1,21 @@
-import type { Theme } from '@little-office/shared';
+import type { StatusId, Theme } from '@little-office/shared';
 import { Clock } from './Clock';
 import { PixelIcon } from './PixelIcon';
 import { ThemeToggle } from './ThemeToggle';
+import { StatusPicker } from './StatusPicker';
 import { useSound } from '../hooks/useSound';
 
 interface Props {
   theme: Theme;
   onlineCount: number;
+  status: StatusId;
+  onStatusChange: (s: StatusId) => void;
   onToggleTheme: () => void;
   onToggleHelp: () => void;
   onLeave: () => void;
 }
 
-export function TopBar({ theme, onlineCount, onToggleTheme, onToggleHelp, onLeave }: Props) {
+export function TopBar({ theme, onlineCount, status, onStatusChange, onToggleTheme, onToggleHelp, onLeave }: Props) {
   const { sfx, music, toggleSfx, toggleMusic } = useSound();
   return (
     <header className="topbar pixel-panel">
@@ -22,6 +25,7 @@ export function TopBar({ theme, onlineCount, onToggleTheme, onToggleHelp, onLeav
       </div>
       <Clock />
       <div className="topbar-actions">
+        <StatusPicker status={status} onChange={onStatusChange} />
         <span className="online-pill" title="Colleagues online">
           <span className="dot" /> {onlineCount} online
         </span>

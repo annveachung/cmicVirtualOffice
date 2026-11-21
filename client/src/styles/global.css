@@ -606,3 +606,35 @@ input:not([type]) {
   color: var(--ink-soft);
   text-decoration: underline;
 }
+
+/* ---------------------------------------------------------- status picker */
+.status-picker {
+  position: relative;
+}
+
+.status-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  min-width: 200px;
+  z-index: 10;
+  animation: fade-in 0.12s ease;
+}
+
+.status-option {
+  font: inherit;
+  width: 100%;
+  text-align: left;
+  padding: 5px 8px;
+  background: none;
+  border: 0;
+  color: var(--ink);
+}
+
+.status-option:hover,
+.status-option.selected {
+  background: var(--panel-lo);
+}
