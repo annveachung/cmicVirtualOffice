@@ -199,7 +199,8 @@ export class OfficeScene extends Phaser.Scene {
       this.spotHint.setText(label); // only re-render the text texture when it changes
       this.spotHint.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
     }
-    this.spotHint.setPosition(s.pos.x, s.tile.ty * TILE - 6);
+    const at = s.hintAt ?? { x: s.pos.x, y: s.tile.ty * TILE - 6 };
+    this.spotHint.setPosition(at.x, at.y);
   }
 }
 

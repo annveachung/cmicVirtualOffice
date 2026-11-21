@@ -235,6 +235,14 @@ describe('activity spots', () => {
     expect(leave[0].tile).not.toEqual(SPAWN);
   });
 
+  it('offers the pantry items from right in front or one step back, but not from the next row', async () => {
+    const { SPOTS, isInFrontOf } = await import('./spots.js');
+    const apple = SPOTS.find((s) => s.id === 'pantry-apples')!;
+    expect(isInFrontOf(grid, apple.tile, apple)).toBe(true);
+    expect(isInFrontOf(grid, { tx: apple.tile.tx + 1, ty: apple.tile.ty }, apple)).toBe(true);
+    expect(isInFrontOf(grid, { tx: apple.tile.tx, ty: apple.tile.ty + 1 }, apple)).toBe(false);
+  });
+
   it('has a booth for four in the pantry', async () => {
     const { SPOTS } = await import('./spots.js');
     expect(SPOTS.filter((s) => s.id.startsWith('booth-')).length).toBe(4);

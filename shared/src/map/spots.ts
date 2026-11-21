@@ -35,6 +35,10 @@ export interface Spot {
   clickTiles: TilePos[];
   /** True when the spot is ordinary walkable floor (yoga mat, in front of the rack). */
   onFloor: boolean;
+  /** Floor spots only: how many tiles back from the spot still count as "in front" (default 1). */
+  reach: number;
+  /** Where to show the "E · ___" hint (defaults to just above the spot's tile). */
+  hintAt?: Vec2;
 }
 
 const VERB: Record<SpotAction, string> = {
@@ -70,7 +74,7 @@ function spot(
   action: SpotAction,
   tile: TilePos,
   facing: Direction,
-  opts: { dy?: number; clickTiles?: TilePos[]; onFloor?: boolean } = {},
+  opts: { dy?: number; clickTiles?: TilePos[]; onFloor?: boolean; reach?: number; hintAt?: Vec2 } = {},
 ): Spot {
   return {
     id,
@@ -81,6 +85,8 @@ function spot(
     pos: { x: tile.tx * TILE + TILE / 2, y: tile.ty * TILE + TILE / 2 + (opts.dy ?? 0) },
     clickTiles: opts.clickTiles ?? [tile],
     onFloor: opts.onFloor ?? false,
+    reach: opts.reach ?? 1,
+    hintAt: opts.hintAt,
   };
 }
 
@@ -136,7 +142,14 @@ function spotsFor(p: Placement): Spot[] {
     case 'appleBasket':
     case 'breadBasket':
     case 'mealBoxes':
-      return [spot(p.id, 'pantry', t(1, 0), 'left', { clickTiles: [t(0, 0), t(1, 0)], onFloor: true })];
+      return [
+        spot(p.id, 'pantry', t(1, 0), 'left', {
+          clickTiles: [t(0, 0), t(1, 0), t(2, 0)],
+          onFloor: true,
+          reach: 2, // right in front, or one step back, both count
+          hintAt: { x: p.tx * TILE + TILE / 2, y: p.ty * TILE + (p.dy ?? 0) - 2 }, // right above the item
+        }),
+      ];
     case 'doormat': // the welcome mat by the entrance: step on it to finish for the day
       return [spot(p.id, 'leave', t(1, 0), 'down', { clickTiles: footprintTiles(p), onFloor: true })];
     case 'potatoVending':
@@ -215,8 +228,16 @@ const STEP: Record<Direction, [number, number]> = { down: [0, 1], up: [0, -1], l
  *   the tiles beside it; failing that, the tile behind it (a toilet against the wall).
  */
 export function frontTiles(grid: CollisionGrid, s: Spot): TilePos[] {
-  if (s.onFloor) return [s.tile];
   const [dx, dy] = STEP[s.facing];
+  if (s.onFloor) {
+    // the spot itself, plus (for reach > 1) the tiles further back, away from what it faces
+    const out: TilePos[] = [];
+    for (let k = 0; k < s.reach; k++) {
+      const t = { tx: s.tile.tx - dx * k, ty: s.tile.ty - dy * k };
+      if (!grid.isBlocked(t.tx, t.ty)) out.push(t);
+    }
+    return out;
+  }
   const at = (x: number, y: number) => ({ tx: s.tile.tx + x, ty: s.tile.ty + y });
   const free = (t: TilePos) => !grid.isBlocked(t.tx, t.ty);
   const front = at(dx, dy);
