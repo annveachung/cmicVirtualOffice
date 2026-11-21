@@ -568,3 +568,35 @@ input:not([type]) {
 .game-host canvas:active {
   cursor: var(--cursor-hand, grabbing) !important;
 }
+
+/* ---------------------------------------------------------- drink prompt */
+.drink-prompt {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 14px 16px;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  animation: fade-in 0.15s ease;
+}
+
+.drink-title {
+  font-family: 'Silkscreen', ui-monospace, monospace;
+  font-size: 14px;
+}
+
+.drink-options {
+  display: flex;
+  gap: 8px;
+}
+
+.drink-cancel {
+  font: inherit;
+  font-size: 15px;
+  background: none;
+  border: 0;
+  color: var(--ink-soft);
+  text-decoration: underline;
+}

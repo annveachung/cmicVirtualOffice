@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import type { Theme, ZoneId } from '@little-office/shared';
 import type { DanceStyle, Reaction } from './assets/textures';
 
+export type Drink = 'coffee' | 'tea' | 'water';
+
 /**
  * React <-> Phaser bridge.
  *
@@ -24,6 +26,10 @@ export interface BusEvents {
   'club:react': Reaction;
   /** React -> Phaser: start a group dance. */
   'club:group': undefined;
+  /** Phaser -> React: the player used the drinks station — ask what they'd like. */
+  'drink:prompt': undefined;
+  /** React -> Phaser: the drink they picked. */
+  'drink:choose': Drink;
   /** React -> Phaser: zoom buttons. 'fit' = office fills the window (100%). */
   'camera:zoom': 'in' | 'out' | 'fit';
   /** React -> Phaser: "find me" — snap back to following your character. */

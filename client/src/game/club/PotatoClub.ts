@@ -33,7 +33,6 @@ export class PotatoClub {
     private readonly office: OfficeRenderer,
   ) {
     this.mascotBubble = new SpeechBubble(scene);
-    controller.onInstant = (spot) => this.onInstant(spot);
     this.unsubscribers.push(
       bus.on('club:dance', (style) => this.dance(style === 'random' ? pickDance() : style)),
       bus.on('club:react', (kind) => this.react(kind)),
@@ -95,7 +94,8 @@ export class PotatoClub {
     this.achieve('groupGroove');
   }
 
-  private onInstant(spot: Spot) {
+  /** Handle the club's one-off actions (costume, snacks, Mr. Potato). */
+  onInstant(spot: Spot) {
     switch (spot.action) {
       case 'costume': {
         const on = !this.player.wearingCostume;
