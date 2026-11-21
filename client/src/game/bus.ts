@@ -16,6 +16,8 @@ export interface BusEvents {
   'theme:set': Theme;
   /** Phaser -> React: scene finished building. */
   'office:ready': undefined;
+  /** Phaser -> React: the player used the entrance mat — ask if they're done for the day. */
+  'leave:prompt': undefined;
   /** React -> Phaser: the player picked a status in the top bar. */
   'status:set': StatusId;
   /** Phaser -> React: the player walked into / out of a special area (e.g. 'potato-club'). */

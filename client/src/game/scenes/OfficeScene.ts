@@ -87,6 +87,7 @@ export class OfficeScene extends Phaser.Scene {
     // one-off actions: the pantry counters ask what you'd like; everything else is the club's
     this.controller.onInstant = (spot) => {
       if (spot.action === 'pantry') this.usePantry(spot.id);
+      else if (spot.action === 'leave') bus.emit('leave:prompt');
       else this.club.onInstant(spot);
     };
 
