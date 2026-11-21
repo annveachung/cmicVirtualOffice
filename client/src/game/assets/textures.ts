@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { PLACEMENTS, appearanceKey, type Appearance, type Theme } from '@little-office/shared';
+import { PLACEMENTS, STATUSES, appearanceKey, type Appearance, type StatusId, type Theme } from '@little-office/shared';
+import { STATUS_ICON_SIZE, statusPixels } from '../../ui/statusIcons';
 import { paintBackground, paintGlow, paintSunbeams } from './backgroundArt';
 import { DIRECTIONS, FRAME_H, FRAME_W, POSES, buildCharacterSheet, drawPotatoSuit, frameName, type Pose } from './characterArt';
 import { drawTemplate, makeCanvas, vline } from './pixel';
@@ -68,8 +69,24 @@ function registerClubTextures(scene: Phaser.Scene) {
   }
 }
 
+export const statusKey = (id: StatusId) => `status:${id}`;
+
+/** Pixel status dots, one small texture per status (same pixels as the React menu). */
+function registerStatusTextures(scene: Phaser.Scene) {
+  for (const s of STATUSES) {
+    if (scene.textures.exists(statusKey(s.id))) continue;
+    const { canvas, ctx } = makeCanvas(STATUS_ICON_SIZE, STATUS_ICON_SIZE);
+    for (const p of statusPixels(s.id)) {
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, 1, 1);
+    }
+    scene.textures.addCanvas(statusKey(s.id), canvas);
+  }
+}
+
 export function registerEnvironmentTextures(scene: Phaser.Scene): void {
   registerClubTextures(scene);
+  registerStatusTextures(scene);
   const tex = scene.textures;
   for (const theme of THEMES) {
     const pal = PALETTES[theme];

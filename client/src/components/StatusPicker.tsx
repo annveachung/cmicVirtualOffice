@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { STATUSES, statusInfo, type StatusId } from '@little-office/shared';
+import { StatusIcon } from './StatusIcon';
 
 interface Props {
   status: StatusId;
   onChange: (s: StatusId) => void;
 }
 
-/** Top-bar status dropdown: "💻 Working ▾" → pick from the list. Shown on your name tag. */
+/** Top-bar status dropdown: "● Working ▾" → pick from the list. Shown next to your name tag. */
 export function StatusPicker({ status, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -38,7 +39,7 @@ export function StatusPicker({ status, onChange }: Props) {
         aria-expanded={open}
         title="Set your status"
       >
-        <span aria-hidden>{current.emoji}</span>
+        <StatusIcon status={status} />
         <span className="btn-label">{current.label}</span>
         <span aria-hidden>▾</span>
       </button>
@@ -55,7 +56,7 @@ export function StatusPicker({ status, onChange }: Props) {
                   setOpen(false);
                 }}
               >
-                <span aria-hidden>{s.emoji}</span> {s.label}
+                <StatusIcon status={s.id} /> {s.label}
               </button>
             </li>
           ))}
