@@ -339,17 +339,6 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     }
   },
 
-  coffeeMachine(ctx, { pal }) {
-    box(ctx, 2, 0, 12, 14, pal.metalDark, pal.outline);
-    box(ctx, 2, 0, 12, 4, pal.outline, pal.outline);
-    rect(ctx, 3, 1, 10, 2, pal.metal);
-    rect(ctx, 4, 5, 4, 2, pal.screenOn);
-    px(ctx, 10, 5, pal.accents[0]);
-    px(ctx, 11, 5, pal.accents[4]);
-    rect(ctx, 5, 8, 6, 5, pal.outline);
-    rect(ctx, 7, 8, 2, 1, pal.metalLight);
-    box(ctx, 6, 10, 4, 3, pal.paper, pal.outline);
-  },
 
   sink(ctx, { pal }) {
     vline(ctx, 7, 0, 4, pal.metalDark);
@@ -359,18 +348,7 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     hline(ctx, 3, 5, 10, shade(pal.metalDark, -0.2));
   },
 
-  microwave(ctx, { pal }) {
-    box(ctx, 0, 1, 16, 9, pal.plastic, pal.outline);
-    rect(ctx, 2, 3, 9, 5, pal.screenOff);
-    px(ctx, 13, 3, pal.accents[0]);
-    px(ctx, 13, 5, pal.metalDark);
-    px(ctx, 13, 7, pal.metalDark);
-  },
 
-  cups(ctx, { pal }) {
-    mug(ctx, pal, 1, 1, pal.accents[0]);
-    mug(ctx, pal, 8, 2, pal.accents[1]);
-  },
 
   /** Compact fridge: freezer on top, a couple of magnets and a note on the door. */
   fridge(ctx, { pal, W, H }) {

@@ -135,7 +135,6 @@ export class OfficeRenderer {
       case 'projectorScreen': glow(GLOW_KEYS.lamp, x + (footprint(p).w * TILE) / 2, top + 12); break;
       case 'floorLamp': glow(GLOW_KEYS.lamp, x + 8, top + 9); break;
       case 'arcade': glow(GLOW_KEYS.screen, x + 8, top + 11); break;
-      case 'coffeeMachine': glow(GLOW_KEYS.small, x + 6, top + 6); break;
       case 'waterCooler': glow(GLOW_KEYS.screen, x + 8, top + 6); break;
     }
   }

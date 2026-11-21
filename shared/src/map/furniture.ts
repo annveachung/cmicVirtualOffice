@@ -40,10 +40,7 @@ export const FURNITURE = {
   rug: { w: 4, h: 3, blocks: false, layer: 'floor' },
   // coffee corner
   counter: { w: 4, h: 1, blocks: true, layer: 'object', overhang: 4 },
-  coffeeMachine: { w: 1, h: 1, blocks: true, layer: 'object', onTop: true, overhang: 10 },
   sink: { w: 1, h: 1, blocks: true, layer: 'object', onTop: true, overhang: 4 },
-  microwave: { w: 1, h: 1, blocks: true, layer: 'object', onTop: true, overhang: 6 },
-  cups: { w: 1, h: 1, blocks: true, layer: 'object', onTop: true, overhang: 4 },
   fridge: { w: 1, h: 1, blocks: true, layer: 'object', overhang: 14 },
   roundTable: { w: 2, h: 2, blocks: true, layer: 'object' },
   upperCabinet: { w: 4, h: 2, blocks: false, layer: 'wall' },
