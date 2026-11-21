@@ -869,17 +869,42 @@ const P: Partial<Record<Placement['type'], Painter>> = {
   },
 
   /**
-   * Long cupboard along the pantry's side wall (the items on it are separate objects).
-   * A wooden cabinet edge with door lines runs down its open side, so the whole
-   * length reads as a cupboard, not just its far end.
+   * One seat of a booth bench (benches are built from a back piece + a front piece,
+   * so the person in front is layered correctly). Tufted backrest on the outer side.
    */
-  pantryCounter(ctx, { pal, W, H, oh }) {
-    sideCounterBase(ctx, pal, W, H, oh);
-    const edge = W - 5;
-    rect(ctx, edge, 1, 4, H - 10, pal.furn); // cabinet side, all the way down
-    vline(ctx, edge, 1, H - 10, pal.outline);
-    for (let y = oh + TILE; y < H - 9; y += TILE) hline(ctx, edge, y, 4, pal.furnDark); // door joins
-    for (let y = oh + TILE / 2; y < H - 9; y += TILE) rect(ctx, edge + 1, y - 1, 1, 3, pal.metalDark); // handles
+  boothBench(ctx, { pal, H, oh, dir, v }) {
+    const up = pal.fabricB;
+    const back = shade(up, -0.22);
+    const f = (x: number, w: number) => (dir === 'left' ? 16 - x - w : x); // drawn for 'right', mirrored for 'left'
+    const front = v === 1;
+    // backrest: the back piece has the rounded top, the front piece continues it and ends on the floor
+    const top = front ? oh - 2 : 0;
+    box(ctx, f(0, 6), top, 6, H - top - (front ? 2 : 0), back, pal.outline);
+    vline(ctx, f(1, 1), top + 1, H - top - 4, shade(back, 0.2));
+    for (let y = top + 5; y < H - 4; y += 6) px(ctx, f(3, 1), y, shade(up, -0.4)); // button tufting
+    box(ctx, f(4, 11), oh + 2, 11, 12, up, pal.outline); // seat cushion
+    hline(ctx, f(5, 9), oh + 3, 9, shade(up, 0.25));
+    if (front) box(ctx, f(4, 11), H - 4, 11, 3, pal.furn, pal.outline); // wooden base at the near end
+  },
+
+  /** The booth's table: wooden top on a pedestal, set for four. */
+  boothTable(ctx, { pal, W, H }) {
+    rect(ctx, W / 2 - 2, H - 8, 4, 6, pal.furnDark); // pedestal
+    ellipse(ctx, W / 2, H - 2, 6, 1, pal.outline);
+    box(ctx, 0, 1, W, H - 9, pal.furnLight, pal.outline);
+    hline(ctx, 1, 2, W - 2, shade(pal.furnLight, 0.2));
+    box(ctx, 0, H - 9, W, 3, pal.furn, pal.outline);
+    ellipse(ctx, 7, 8, 3, 2, pal.paper); // plates for each side
+    ellipse(ctx, W - 8, 8, 3, 2, pal.paper);
+    ellipse(ctx, 7, 18, 3, 2, pal.paper);
+    ellipse(ctx, W - 8, 18, 3, 2, pal.paper);
+    mug(ctx, pal, W / 2 - 3, 10, pal.accents[0]);
+  },
+  /** Long stone counter along the pantry's side wall — clean, no wood, so the items on it stand out. */
+  pantryCounter(ctx, { pal, W, H }) {
+    box(ctx, 0, 0, W, H - 3, pal.metalLight, pal.outline); // stone top, full length
+    vline(ctx, W - 2, 1, H - 5, shade(pal.metalLight, 0.4)); // highlight along the open edge
+    box(ctx, 0, H - 4, W, 4, shade(pal.metalLight, -0.15), pal.outline); // stone front at the near end
   },
 
   /** Coffee & tea machine: chunky body, a display, a cup under the spout. */
@@ -990,16 +1015,6 @@ const PICTO = {
 
 // ------------------------------------------------------- side-wall helpers --
 
-/** A counter running along a side wall: long stone top, cabinet front at the near end. */
-function sideCounterBase(ctx: Ctx, pal: EnvPalette, W: number, H: number, oh: number) {
-  box(ctx, 0, 0, W, H - 8, pal.metalLight, pal.outline);
-  vline(ctx, W - 2, 1, H - 10, shade(pal.metalLight, 0.4));
-  for (let y = oh + TILE; y < H - 8; y += TILE) hline(ctx, 1, y, W - 2, shade(pal.metalLight, -0.08));
-  box(ctx, 0, H - 9, W, 9, pal.furn, pal.outline);
-  box(ctx, 2, H - 7, W - 4, 6, pal.furnLight, pal.outline);
-  rect(ctx, W / 2 - 2, H - 5, 4, 1, pal.metalDark);
-}
-
 /** A bookshelf standing against a side wall: we see its top and the book spines along its open side. */
 function sideBookshelf(ctx: Ctx, pal: EnvPalette, W: number, H: number, oh: number, v: number, dir: 'left' | 'right') {
   const open = dir === 'right' ? W - 6 : 1; // the side facing into the room
@@ -1025,6 +1040,9 @@ function sideArcade(ctx: Ctx, pal: EnvPalette, H: number, v: number, dir: 'left'
   px(ctx, flip(2, 1), 17, pal.accents[0]);
   rect(ctx, flip(6, 8), H - 3, 8, 2, shade(body, -0.3));
 }
+
+/** True if a furniture type has its own painter (otherwise it would render as a placeholder). */
+export const hasPainter = (type: Placement['type']): boolean => Boolean(P[type]);
 
 /** Render one placement to its own canvas. */
 export function paintFurniture(p: Placement, pal: EnvPalette): HTMLCanvasElement {
