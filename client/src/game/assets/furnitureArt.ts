@@ -912,26 +912,31 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     rect(ctx, 6, oh + 39, 2, 2, '#4f8fc9'); // cold tap
   },
 
-  /** Breakfast / lunch buffet along a side wall: fruit bowls, bread basket, cereal jars. */
+  /** Breakfast / lunch buffet along a side wall: one clear item per section — fruit, pastries, sandwiches. */
   buffetCounter(ctx, { pal, W, H, oh }) {
     sideCounterBase(ctx, pal, W, H, oh);
-    // fruit bowl: apples, oranges, a banana
-    ellipse(ctx, 8, oh + 7, 6, 4, pal.outline);
-    ellipse(ctx, 8, oh + 7, 5, 3, pal.paper);
-    rect(ctx, 4, oh + 5, 3, 3, '#e2544e');
-    rect(ctx, 8, oh + 4, 3, 3, '#f2a33a');
-    rect(ctx, 6, oh + 8, 5, 2, '#f4d35e');
-    // bread basket
-    box(ctx, 2, oh + 17, 12, 7, pal.furn, pal.outline);
-    rect(ctx, 4, oh + 18, 4, 3, pal.potatoLight);
-    rect(ctx, 9, oh + 18, 4, 3, pal.potatoLight);
-    // cereal jars + grapes
-    box(ctx, 3, oh + 29, 4, 7, pal.glassLight, pal.outline);
-    rect(ctx, 4, oh + 32, 2, 3, pal.fabricC);
-    box(ctx, 9, oh + 29, 4, 7, pal.glassLight, pal.outline);
-    rect(ctx, 10, oh + 32, 2, 3, pal.accents[2]);
-    [[5, 40], [7, 40], [6, 42], [8, 42], [7, 44]].forEach(([x, y]) => px(ctx, x, oh + y, pal.accents[3]));
+    const cx = W / 2;
+    // 1) fruit bowl: three round fruits
+    ellipse(ctx, cx, oh + 8, 6, 3, pal.outline);
+    ellipse(ctx, cx, oh + 8, 5, 2, pal.paper);
+    ellipse(ctx, cx - 3, oh + 5, 2, 2, '#e2544e');
+    ellipse(ctx, cx + 1, oh + 4, 2, 2, '#f2a33a');
+    ellipse(ctx, cx + 4, oh + 6, 2, 2, '#e2544e');
+    // 2) pastry stand under a glass dome
+    ellipse(ctx, cx, oh + 25, 6, 2, pal.metal);
+    ellipse(ctx, cx, oh + 21, 5, 5, pal.glassLight);
+    rect(ctx, cx - 3, oh + 21, 6, 3, '#d9a25a'); // croissant
+    px(ctx, cx - 2, oh + 21, '#f0c27a');
+    px(ctx, cx + 1, oh + 21, '#f0c27a');
+    // 3) sandwich platter: two neat triangles
+    ellipse(ctx, cx, oh + 40, 6, 2, pal.paper);
+    for (let r = 0; r < 4; r++) {
+      hline(ctx, cx - 5 + r, oh + 36 + r, 4 - r, '#f4e2b8');
+      hline(ctx, cx + 1, oh + 36 + r, 4 - r, '#f4e2b8');
+    }
+    hline(ctx, cx - 5, oh + 37, 4, pal.leafLight); // lettuce peeking out
   },
+
 
   /**
    * One seat of a booth bench (benches are built from a back piece + a front piece,

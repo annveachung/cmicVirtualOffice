@@ -569,8 +569,8 @@ input:not([type]) {
   cursor: var(--cursor-hand, grabbing) !important;
 }
 
-/* ---------------------------------------------------------- drink prompt */
-.drink-prompt {
+/* --------------------------------------------------------- pantry prompt */
+.pantry-prompt {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -582,17 +582,23 @@ input:not([type]) {
   animation: fade-in 0.15s ease;
 }
 
-.drink-title {
+.pantry-title {
   font-family: 'Silkscreen', ui-monospace, monospace;
   font-size: 14px;
 }
 
-.drink-options {
+.pantry-row {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.drink-cancel {
+.pantry-label {
+  min-width: 52px;
+  color: var(--ink-soft);
+}
+
+.pantry-cancel {
   font: inherit;
   font-size: 15px;
   background: none;

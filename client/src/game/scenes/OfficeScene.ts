@@ -16,7 +16,7 @@ import {
   zoneAt,
 } from '@little-office/shared';
 import { registerEnvironmentTextures } from '../assets/textures';
-import { bus, type Drink } from '../bus';
+import { bus, type PantryItem } from '../bus';
 import { Character } from '../characters/Character';
 import { DEPTH, GAME_FONT, LABEL_PX, TEXT_RESOLUTION } from '../constants';
 import { OfficeRenderer } from '../maps/OfficeRenderer';
@@ -81,9 +81,9 @@ export class OfficeScene extends Phaser.Scene {
     this.tweens.add({ targets: this.marker, scale: { from: 1, to: 0.6 }, yoyo: true, repeat: -1, duration: 420 });
     this.controller.onPathEnd = () => this.marker.setVisible(false);
     this.club = new PotatoClub(this, this.player, this.controller, this.office);
-    // one-off actions: the drinks station asks what you'd like; everything else is the club's
+    // one-off actions: the pantry counters ask what you'd like; everything else is the club's
     this.controller.onInstant = (spot) => {
-      if (spot.action === 'drink') bus.emit('drink:prompt');
+      if (spot.action === 'pantry') bus.emit('pantry:prompt');
       else this.club.onInstant(spot);
     };
 
@@ -120,7 +120,7 @@ export class OfficeScene extends Phaser.Scene {
     this.camera.playIntro();
 
     this.unsubscribers.push(
-      bus.on('drink:choose', (drink) => this.player.say(drinkLine(drink))),
+      bus.on('pantry:choose', (item) => this.player.say(pantryLine(item))),
       bus.on('theme:set', (t) => {
         this.office.applyTheme(t);
         this.player.setTheme(t);
@@ -190,13 +190,16 @@ export class OfficeScene extends Phaser.Scene {
   }
 }
 
-const DRINK_LINES: Record<Drink, string[]> = {
+const PANTRY_LINES: Record<PantryItem, string[]> = {
   coffee: ['☕ Fresh coffee. Productivity +10!', '☕ Espresso shot! Let\'s go.', '☕ Flat white, just how I like it.'],
   tea: ['🍵 A calm cup of tea.', '🍵 Green tea — zen mode on.', '🍵 Chamomile. Very relaxing.'],
   water: ['💧 Hydration check ✓', '💧 Ice-cold water. Refreshing!', '💧 Stay hydrated, friends.'],
+  fruit: ['🍎 A crunchy apple. Healthy choice!', '🍊 Fresh orange slices.', '🍌 Banana break.'],
+  pastry: ['🥐 Warm croissant. Flaky!', '🧁 A little cupcake treat.', '🥐 Pain au chocolat, yum.'],
+  sandwich: ['🥪 Club sandwich — lunch sorted.', '🥪 Egg mayo sandwich.', '🥪 Veggie wrap, nice.'],
 };
 
-const drinkLine = (d: Drink) => DRINK_LINES[d][Math.floor(Math.random() * DRINK_LINES[d].length)];
+const pantryLine = (i: PantryItem) => PANTRY_LINES[i][Math.floor(Math.random() * PANTRY_LINES[i].length)];
 
 function isTyping(): boolean {
   const el = document.activeElement;
