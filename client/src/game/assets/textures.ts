@@ -95,7 +95,7 @@ export function registerEnvironmentTextures(scene: Phaser.Scene): void {
  */
 export const ANIMS = {
   idle: { frames: ['idle', 'breathe'], fps: 1.6 },
-  walk: { frames: ['walkA', 'idle', 'walkB', 'idle'], fps: 9.5 }, // matched to WALK_SPEED so feet don't slide
+  walk: { frames: ['walkA', 'idle', 'walkB', 'idle'], fps: 11 }, // matched to WALK_SPEED so feet don't slide
   sit: { frames: ['sit'], fps: 1 },
   run: { frames: ['walkA', 'breathe', 'walkB', 'breathe'], fps: 14 },
   pedal: { frames: ['pedalA', 'pedalB'], fps: 6 },
