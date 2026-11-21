@@ -890,85 +890,57 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     else { hline(ctx, 6, 4, 5, pal.neonAmber); px(ctx, 8, 3, pal.neonAmber); } // crown
   },
 
-  /** Tea & drinks station along a side wall: kettle, tea tins, coffee pot, cups. */
-  beverageCounter(ctx, { pal, W, H, oh }) {
+  /** Long counter along the pantry's side wall (the items on it are separate objects). */
+  pantryCounter(ctx, { pal, W, H, oh }) {
     sideCounterBase(ctx, pal, W, H, oh);
-    // espresso machine (top)
-    box(ctx, 2, oh - 2, 12, 12, pal.metalDark, pal.outline);
-    rect(ctx, 3, oh - 1, 10, 2, pal.metal);
-    rect(ctx, 4, oh + 3, 3, 2, pal.screenOn); // little display
-    px(ctx, 10, oh + 3, pal.accents[0]);
-    rect(ctx, 6, oh + 6, 4, 2, pal.outline); // portafilter
-    mug(ctx, pal, 5, oh + 8, pal.paper);
-    // tea tins + kettle (middle)
-    for (let i = 0; i < 3; i++) box(ctx, 2 + i * 4, oh + 18, 4, 6, pal.accents[i], pal.outline);
-    box(ctx, 4, oh + 26, 7, 5, pal.metal, pal.outline);
-    hline(ctx, 5, oh + 25, 4, pal.outline);
-    // water fountain (bottom): blue bottle on a dispenser with a tap
-    ellipse(ctx, 8, oh + 34, 4, 4, pal.outline);
-    ellipse(ctx, 8, oh + 34, 3, 3, '#8fc4e8');
-    px(ctx, 7, oh + 33, '#e4f3fb');
-    box(ctx, 4, oh + 37, 8, 6, pal.plastic, pal.outline);
-    rect(ctx, 6, oh + 39, 2, 2, '#4f8fc9'); // cold tap
   },
 
-  /** Breakfast / lunch buffet along a side wall: one clear item per section — fruit, pastries, sandwiches. */
-  buffetCounter(ctx, { pal, W, H, oh }) {
-    sideCounterBase(ctx, pal, W, H, oh);
-    const cx = W / 2;
-    // 1) fruit bowl: three round fruits
-    ellipse(ctx, cx, oh + 8, 6, 3, pal.outline);
-    ellipse(ctx, cx, oh + 8, 5, 2, pal.paper);
-    ellipse(ctx, cx - 3, oh + 5, 2, 2, '#e2544e');
-    ellipse(ctx, cx + 1, oh + 4, 2, 2, '#f2a33a');
-    ellipse(ctx, cx + 4, oh + 6, 2, 2, '#e2544e');
-    // 2) pastry stand under a glass dome
-    ellipse(ctx, cx, oh + 25, 6, 2, pal.metal);
-    ellipse(ctx, cx, oh + 21, 5, 5, pal.glassLight);
-    rect(ctx, cx - 3, oh + 21, 6, 3, '#d9a25a'); // croissant
-    px(ctx, cx - 2, oh + 21, '#f0c27a');
-    px(ctx, cx + 1, oh + 21, '#f0c27a');
-    // 3) sandwich platter: two neat triangles
-    ellipse(ctx, cx, oh + 40, 6, 2, pal.paper);
-    for (let r = 0; r < 4; r++) {
-      hline(ctx, cx - 5 + r, oh + 36 + r, 4 - r, '#f4e2b8');
-      hline(ctx, cx + 1, oh + 36 + r, 4 - r, '#f4e2b8');
+  /** Coffee & tea machine: chunky body, a display, a cup under the spout. */
+  coffeeTeaMachine(ctx, { pal, H }) {
+    box(ctx, 2, 0, 12, H - 6, '#3a3f4a', pal.outline);
+    rect(ctx, 3, 1, 10, 2, '#5b6270');
+    rect(ctx, 4, 5, 5, 3, pal.screenOn); // display
+    px(ctx, 11, 5, '#e2544e'); // coffee button
+    px(ctx, 11, 7, '#5fae6a'); // tea button
+    rect(ctx, 6, 10, 4, 2, pal.outline); // spout
+    box(ctx, 5, H - 8, 6, 6, '#ffffff', pal.outline); // cup
+    rect(ctx, 6, H - 7, 4, 1, '#7a4a2a'); // coffee in the cup
+  },
+
+  /** A basket of big red apples. */
+  appleBasket(ctx, { pal, H }) {
+    const red = '#e2443a';
+    for (const [x, y] of [[5, H - 9], [11, H - 9], [8, H - 12]] as const) {
+      ellipse(ctx, x, y, 3, 3, shade(red, -0.35));
+      ellipse(ctx, x, y, 2, 2, red);
+      px(ctx, x - 1, y - 1, '#ff9a8a'); // shine
+      px(ctx, x, y - 3, '#5a3a1a'); // stem
+      px(ctx, x + 1, y - 3, '#5fae6a'); // leaf
     }
-    hline(ctx, cx - 5, oh + 37, 4, pal.leafLight); // lettuce peeking out
+    box(ctx, 1, H - 7, 14, 6, '#b07a45', pal.outline); // basket
+    for (let x = 3; x < 14; x += 3) vline(ctx, x, H - 6, 4, '#8a5a30');
   },
 
-
-  /**
-   * One seat of a booth bench (benches are built from a back piece + a front piece,
-   * so the person in front is layered correctly). Tufted backrest on the outer side.
-   */
-  boothBench(ctx, { pal, H, oh, dir, v }) {
-    const up = pal.fabricB;
-    const back = shade(up, -0.22);
-    const f = (x: number, w: number) => (dir === 'left' ? 16 - x - w : x); // drawn for 'right', mirrored for 'left'
-    const front = v === 1;
-    // backrest: the back piece has the rounded top, the front piece continues it and ends on the floor
-    const top = front ? oh - 2 : 0;
-    box(ctx, f(0, 6), top, 6, H - top - (front ? 2 : 0), back, pal.outline);
-    vline(ctx, f(1, 1), top + 1, H - top - 4, shade(back, 0.2));
-    for (let y = top + 5; y < H - 4; y += 6) px(ctx, f(3, 1), y, shade(up, -0.4)); // button tufting
-    box(ctx, f(4, 11), oh + 2, 11, 12, up, pal.outline); // seat cushion
-    hline(ctx, f(5, 9), oh + 3, 9, shade(up, 0.25));
-    if (front) box(ctx, f(4, 11), H - 4, 11, 3, pal.furn, pal.outline); // wooden base at the near end
+  /** A basket of bread: a baguette and a round loaf. */
+  breadBasket(ctx, { pal, H }) {
+    const crust = '#d9993f';
+    ellipse(ctx, 6, H - 9, 4, 3, shade(crust, -0.3)); // round loaf
+    ellipse(ctx, 6, H - 9, 3, 2, crust);
+    hline(ctx, 4, H - 10, 4, '#f2c57a');
+    for (let i = 0; i < 9; i++) rect(ctx, 6 + i, H - 12 + Math.floor(i / 3), 2, 3, i % 3 === 0 ? '#f2c57a' : crust); // baguette
+    box(ctx, 1, H - 7, 14, 6, '#b07a45', pal.outline); // basket
+    for (let x = 3; x < 14; x += 3) vline(ctx, x, H - 6, 4, '#8a5a30');
   },
 
-  /** The booth's table: wooden top on a pedestal, set for four. */
-  boothTable(ctx, { pal, W, H }) {
-    rect(ctx, W / 2 - 2, H - 8, 4, 6, pal.furnDark); // pedestal
-    ellipse(ctx, W / 2, H - 2, 6, 1, pal.outline);
-    box(ctx, 0, 1, W, H - 9, pal.furnLight, pal.outline);
-    hline(ctx, 1, 2, W - 2, shade(pal.furnLight, 0.2));
-    box(ctx, 0, H - 9, W, 3, pal.furn, pal.outline);
-    ellipse(ctx, 7, 8, 3, 2, pal.paper); // plates for each side
-    ellipse(ctx, W - 8, 8, 3, 2, pal.paper);
-    ellipse(ctx, 7, 18, 3, 2, pal.paper);
-    ellipse(ctx, W - 8, 18, 3, 2, pal.paper);
-    mug(ctx, pal, W / 2 - 3, 10, pal.accents[0]);
+  /** A neat stack of breakfast / lunch boxes with coloured lids and a ribbon. */
+  mealBoxes(ctx, { pal, H }) {
+    const lids = ['#e2544e', '#4f8fc9', '#f2b53a'];
+    for (let i = 0; i < 3; i++) {
+      const y = H - 7 - i * 6;
+      box(ctx, 2, y, 12, 6, '#f4ede0', pal.outline); // box
+      rect(ctx, 3, y + 1, 10, 2, lids[i]); // lid
+      vline(ctx, 8, y + 1, 4, '#ffffff'); // ribbon
+    }
   },
 
   rug(ctx, { pal, W, H, v }) {

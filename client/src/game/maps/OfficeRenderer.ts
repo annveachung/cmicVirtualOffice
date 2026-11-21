@@ -191,7 +191,7 @@ function furnitureDepth(p: Placement, def: FurnitureDef, bottom: number): number
     // sit just above whatever counter they're on (it may run down a wall, so its bottom can be lower)
     const base = PLACEMENTS.find((q) => {
       const f = footprint(q);
-      return q.type === 'counter' && p.tx >= q.tx && p.tx < q.tx + f.w && p.ty >= q.ty && p.ty < q.ty + f.h;
+      return (q.type === 'counter' || q.type === 'pantryCounter') && p.tx >= q.tx && p.tx < q.tx + f.w && p.ty >= q.ty && p.ty < q.ty + f.h;
     });
     return (base ? (base.ty + footprint(base).h) * TILE : bottom) + 0.5;
   }

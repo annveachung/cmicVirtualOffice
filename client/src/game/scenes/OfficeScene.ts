@@ -23,6 +23,7 @@ import { OfficeRenderer } from '../maps/OfficeRenderer';
 import { PlayerController } from '../movement/PlayerController';
 import { PotatoClub } from '../club/PotatoClub';
 import { CameraRig } from '../camera/CameraRig';
+import { mealBoxMessage } from '../mealBoxes';
 
 export interface OfficeSceneData {
   name: string;
@@ -83,7 +84,7 @@ export class OfficeScene extends Phaser.Scene {
     this.club = new PotatoClub(this, this.player, this.controller, this.office);
     // one-off actions: the pantry counters ask what you'd like; everything else is the club's
     this.controller.onInstant = (spot) => {
-      if (spot.action === 'pantry') bus.emit('pantry:prompt');
+      if (spot.action === 'pantry') this.usePantry(spot.id);
       else this.club.onInstant(spot);
     };
 
@@ -154,6 +155,14 @@ export class OfficeScene extends Phaser.Scene {
     this.updateSpotHint(this.controller.activeSpot !== null);
   }
 
+  /** The pantry counter: machine asks coffee or tea; apples/bread are instant; meal boxes only at 10:00 & 12:00. */
+  private usePantry(id: string) {
+    if (id === 'pantry-machine') bus.emit('pantry:prompt');
+    else if (id === 'pantry-apples') this.player.say(pick(APPLE_LINES));
+    else if (id === 'pantry-bread') this.player.say(pick(BREAD_LINES));
+    else if (id === 'pantry-boxes') this.player.say(mealBoxMessage(new Date()), 5000);
+  }
+
   /** Tell the UI when you walk into or out of a special area (music, club controls…). */
   private updateZone() {
     const t = toTile({ x: this.player.x, y: this.player.y });
@@ -190,16 +199,16 @@ export class OfficeScene extends Phaser.Scene {
   }
 }
 
+const pick = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
+
 const PANTRY_LINES: Record<PantryItem, string[]> = {
   coffee: ['☕ Fresh coffee. Productivity +10!', '☕ Espresso shot! Let\'s go.', '☕ Flat white, just how I like it.'],
   tea: ['🍵 A calm cup of tea.', '🍵 Green tea — zen mode on.', '🍵 Chamomile. Very relaxing.'],
-  water: ['💧 Hydration check ✓', '💧 Ice-cold water. Refreshing!', '💧 Stay hydrated, friends.'],
-  fruit: ['🍎 A crunchy apple. Healthy choice!', '🍊 Fresh orange slices.', '🍌 Banana break.'],
-  pastry: ['🥐 Warm croissant. Flaky!', '🧁 A little cupcake treat.', '🥐 Pain au chocolat, yum.'],
-  sandwich: ['🥪 Club sandwich — lunch sorted.', '🥪 Egg mayo sandwich.', '🥪 Veggie wrap, nice.'],
 };
+const APPLE_LINES = ['🍎 A crunchy apple. Healthy choice!', '🍎 An apple a day…', '🍎 Shiny red apple, yum.'];
+const BREAD_LINES = ['🍞 A slice of fresh bread.', '🥖 Tore off a bit of baguette.', '🍞 Warm bread — cozy.'];
 
-const pantryLine = (i: PantryItem) => PANTRY_LINES[i][Math.floor(Math.random() * PANTRY_LINES[i].length)];
+const pantryLine = (i: PantryItem) => pick(PANTRY_LINES[i]);
 
 function isTyping(): boolean {
   const el = document.activeElement;
