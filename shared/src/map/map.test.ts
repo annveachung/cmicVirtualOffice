@@ -228,6 +228,13 @@ describe('activity spots', () => {
     expect(INSTANT_ACTIONS.has('pantry')).toBe(true);
   });
 
+  it('lets you head home from the entrance mat (not right where you arrive)', async () => {
+    const { SPOTS } = await import('./spots.js');
+    const leave = SPOTS.filter((s) => s.action === 'leave');
+    expect(leave).toHaveLength(1);
+    expect(leave[0].tile).not.toEqual(SPAWN);
+  });
+
   it('has a booth for four in the pantry', async () => {
     const { SPOTS } = await import('./spots.js');
     expect(SPOTS.filter((s) => s.id.startsWith('booth-')).length).toBe(4);
