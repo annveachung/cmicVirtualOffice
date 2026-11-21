@@ -16,10 +16,10 @@ import { DESKS, PLACEMENTS } from './office.js';
  * Spots are derived from furniture data, so adding a treadmill to the map
  * automatically makes it usable.
  */
-export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee' | 'present' | 'sing' | 'dance' | 'costume' | 'vend' | 'mascot' | 'pantry';
+export type SpotAction = 'sit' | 'run' | 'pedal' | 'lift' | 'benchPress' | 'stretch' | 'punch' | 'play' | 'wash' | 'pee' | 'present' | 'sing' | 'dance' | 'costume' | 'vend' | 'mascot' | 'pantry' | 'leave';
 
 /** Actions that happen once (a toggle, a snack, a poke) instead of putting you in a pose. */
-export const INSTANT_ACTIONS: ReadonlySet<SpotAction> = new Set(['costume', 'vend', 'mascot', 'pantry']);
+export const INSTANT_ACTIONS: ReadonlySet<SpotAction> = new Set(['costume', 'vend', 'mascot', 'pantry', 'leave']);
 
 export interface Spot {
   id: string;
@@ -55,6 +55,7 @@ const VERB: Record<SpotAction, string> = {
   vend: 'get a snack',
   mascot: 'poke Mr. Potato',
   pantry: 'help yourself',
+  leave: 'head home',
 };
 
 function footprintTiles(p: Placement): TilePos[] {
@@ -136,6 +137,8 @@ function spotsFor(p: Placement): Spot[] {
     case 'breadBasket':
     case 'mealBoxes':
       return [spot(p.id, 'pantry', t(1, 0), 'left', { clickTiles: [t(0, 0), t(1, 0)], onFloor: true })];
+    case 'doormat': // the welcome mat by the entrance: step on it to finish for the day
+      return [spot(p.id, 'leave', t(1, 0), 'down', { clickTiles: footprintTiles(p), onFloor: true })];
     case 'potatoVending':
       return [spot(p.id, 'vend', t(0, 1), 'up', { clickTiles: [t(0, 0), t(0, 1)], onFloor: true })];
     case 'costumeRack':
