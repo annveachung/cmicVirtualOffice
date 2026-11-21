@@ -339,17 +339,6 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     }
   },
 
-  coffeeMachine(ctx, { pal }) {
-    box(ctx, 2, 0, 12, 14, pal.metalDark, pal.outline);
-    box(ctx, 2, 0, 12, 4, pal.outline, pal.outline);
-    rect(ctx, 3, 1, 10, 2, pal.metal);
-    rect(ctx, 4, 5, 4, 2, pal.screenOn);
-    px(ctx, 10, 5, pal.accents[0]);
-    px(ctx, 11, 5, pal.accents[4]);
-    rect(ctx, 5, 8, 6, 5, pal.outline);
-    rect(ctx, 7, 8, 2, 1, pal.metalLight);
-    box(ctx, 6, 10, 4, 3, pal.paper, pal.outline);
-  },
 
   sink(ctx, { pal }) {
     vline(ctx, 7, 0, 4, pal.metalDark);
@@ -359,18 +348,7 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     hline(ctx, 3, 5, 10, shade(pal.metalDark, -0.2));
   },
 
-  microwave(ctx, { pal }) {
-    box(ctx, 0, 1, 16, 9, pal.plastic, pal.outline);
-    rect(ctx, 2, 3, 9, 5, pal.screenOff);
-    px(ctx, 13, 3, pal.accents[0]);
-    px(ctx, 13, 5, pal.metalDark);
-    px(ctx, 13, 7, pal.metalDark);
-  },
 
-  cups(ctx, { pal }) {
-    mug(ctx, pal, 1, 1, pal.accents[0]);
-    mug(ctx, pal, 8, 2, pal.accents[1]);
-  },
 
   /** Compact fridge: freezer on top, a couple of magnets and a note on the door. */
   fridge(ctx, { pal, W, H }) {
@@ -890,54 +868,6 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     else { hline(ctx, 6, 4, 5, pal.neonAmber); px(ctx, 8, 3, pal.neonAmber); } // crown
   },
 
-  /** Tea & drinks station along a side wall: kettle, tea tins, coffee pot, cups. */
-  beverageCounter(ctx, { pal, W, H, oh }) {
-    sideCounterBase(ctx, pal, W, H, oh);
-    // espresso machine (top)
-    box(ctx, 2, oh - 2, 12, 12, pal.metalDark, pal.outline);
-    rect(ctx, 3, oh - 1, 10, 2, pal.metal);
-    rect(ctx, 4, oh + 3, 3, 2, pal.screenOn); // little display
-    px(ctx, 10, oh + 3, pal.accents[0]);
-    rect(ctx, 6, oh + 6, 4, 2, pal.outline); // portafilter
-    mug(ctx, pal, 5, oh + 8, pal.paper);
-    // tea tins + kettle (middle)
-    for (let i = 0; i < 3; i++) box(ctx, 2 + i * 4, oh + 18, 4, 6, pal.accents[i], pal.outline);
-    box(ctx, 4, oh + 26, 7, 5, pal.metal, pal.outline);
-    hline(ctx, 5, oh + 25, 4, pal.outline);
-    // water fountain (bottom): blue bottle on a dispenser with a tap
-    ellipse(ctx, 8, oh + 34, 4, 4, pal.outline);
-    ellipse(ctx, 8, oh + 34, 3, 3, '#8fc4e8');
-    px(ctx, 7, oh + 33, '#e4f3fb');
-    box(ctx, 4, oh + 37, 8, 6, pal.plastic, pal.outline);
-    rect(ctx, 6, oh + 39, 2, 2, '#4f8fc9'); // cold tap
-  },
-
-  /** Breakfast / lunch buffet along a side wall: one clear item per section — fruit, pastries, sandwiches. */
-  buffetCounter(ctx, { pal, W, H, oh }) {
-    sideCounterBase(ctx, pal, W, H, oh);
-    const cx = W / 2;
-    // 1) fruit bowl: three round fruits
-    ellipse(ctx, cx, oh + 8, 6, 3, pal.outline);
-    ellipse(ctx, cx, oh + 8, 5, 2, pal.paper);
-    ellipse(ctx, cx - 3, oh + 5, 2, 2, '#e2544e');
-    ellipse(ctx, cx + 1, oh + 4, 2, 2, '#f2a33a');
-    ellipse(ctx, cx + 4, oh + 6, 2, 2, '#e2544e');
-    // 2) pastry stand under a glass dome
-    ellipse(ctx, cx, oh + 25, 6, 2, pal.metal);
-    ellipse(ctx, cx, oh + 21, 5, 5, pal.glassLight);
-    rect(ctx, cx - 3, oh + 21, 6, 3, '#d9a25a'); // croissant
-    px(ctx, cx - 2, oh + 21, '#f0c27a');
-    px(ctx, cx + 1, oh + 21, '#f0c27a');
-    // 3) sandwich platter: two neat triangles
-    ellipse(ctx, cx, oh + 40, 6, 2, pal.paper);
-    for (let r = 0; r < 4; r++) {
-      hline(ctx, cx - 5 + r, oh + 36 + r, 4 - r, '#f4e2b8');
-      hline(ctx, cx + 1, oh + 36 + r, 4 - r, '#f4e2b8');
-    }
-    hline(ctx, cx - 5, oh + 37, 4, pal.leafLight); // lettuce peeking out
-  },
-
-
   /**
    * One seat of a booth bench (benches are built from a back piece + a front piece,
    * so the person in front is layered correctly). Tufted backrest on the outer side.
@@ -969,6 +899,60 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     ellipse(ctx, 7, 18, 3, 2, pal.paper);
     ellipse(ctx, W - 8, 18, 3, 2, pal.paper);
     mug(ctx, pal, W / 2 - 3, 10, pal.accents[0]);
+  },
+  /** Long stone counter along the pantry's side wall — clean, no wood, so the items on it stand out. */
+  pantryCounter(ctx, { pal, W, H }) {
+    box(ctx, 0, 0, W, H - 3, pal.metalLight, pal.outline); // stone top, full length
+    vline(ctx, W - 2, 1, H - 5, shade(pal.metalLight, 0.4)); // highlight along the open edge
+    box(ctx, 0, H - 4, W, 4, shade(pal.metalLight, -0.15), pal.outline); // stone front at the near end
+  },
+
+  /** Coffee & tea machine: chunky body, a display, a cup under the spout. */
+  coffeeTeaMachine(ctx, { pal, H }) {
+    box(ctx, 2, 0, 12, H - 6, '#3a3f4a', pal.outline);
+    rect(ctx, 3, 1, 10, 2, '#5b6270');
+    rect(ctx, 4, 5, 5, 3, pal.screenOn); // display
+    px(ctx, 11, 5, '#e2544e'); // coffee button
+    px(ctx, 11, 7, '#5fae6a'); // tea button
+    rect(ctx, 6, 10, 4, 2, pal.outline); // spout
+    box(ctx, 5, H - 8, 6, 6, '#ffffff', pal.outline); // cup
+    rect(ctx, 6, H - 7, 4, 1, '#7a4a2a'); // coffee in the cup
+  },
+
+  /** A basket of big red apples. */
+  appleBasket(ctx, { pal, H }) {
+    const red = '#e2443a';
+    for (const [x, y] of [[5, H - 9], [11, H - 9], [8, H - 12]] as const) {
+      ellipse(ctx, x, y, 3, 3, shade(red, -0.35));
+      ellipse(ctx, x, y, 2, 2, red);
+      px(ctx, x - 1, y - 1, '#ff9a8a'); // shine
+      px(ctx, x, y - 3, '#5a3a1a'); // stem
+      px(ctx, x + 1, y - 3, '#5fae6a'); // leaf
+    }
+    box(ctx, 1, H - 7, 14, 6, '#b07a45', pal.outline); // basket
+    for (let x = 3; x < 14; x += 3) vline(ctx, x, H - 6, 4, '#8a5a30');
+  },
+
+  /** A basket of bread: a baguette and a round loaf. */
+  breadBasket(ctx, { pal, H }) {
+    const crust = '#d9993f';
+    ellipse(ctx, 6, H - 9, 4, 3, shade(crust, -0.3)); // round loaf
+    ellipse(ctx, 6, H - 9, 3, 2, crust);
+    hline(ctx, 4, H - 10, 4, '#f2c57a');
+    for (let i = 0; i < 9; i++) rect(ctx, 6 + i, H - 12 + Math.floor(i / 3), 2, 3, i % 3 === 0 ? '#f2c57a' : crust); // baguette
+    box(ctx, 1, H - 7, 14, 6, '#b07a45', pal.outline); // basket
+    for (let x = 3; x < 14; x += 3) vline(ctx, x, H - 6, 4, '#8a5a30');
+  },
+
+  /** A neat stack of breakfast / lunch boxes with coloured lids and a ribbon. */
+  mealBoxes(ctx, { pal, H }) {
+    const lids = ['#e2544e', '#4f8fc9', '#f2b53a'];
+    for (let i = 0; i < 3; i++) {
+      const y = H - 7 - i * 6;
+      box(ctx, 2, y, 12, 6, '#f4ede0', pal.outline); // box
+      rect(ctx, 3, y + 1, 10, 2, lids[i]); // lid
+      vline(ctx, 8, y + 1, 4, '#ffffff'); // ribbon
+    }
   },
 
   rug(ctx, { pal, W, H, v }) {
@@ -1031,16 +1015,6 @@ const PICTO = {
 
 // ------------------------------------------------------- side-wall helpers --
 
-/** A counter running along a side wall: long stone top, cabinet front at the near end. */
-function sideCounterBase(ctx: Ctx, pal: EnvPalette, W: number, H: number, oh: number) {
-  box(ctx, 0, 0, W, H - 8, pal.metalLight, pal.outline);
-  vline(ctx, W - 2, 1, H - 10, shade(pal.metalLight, 0.4));
-  for (let y = oh + TILE; y < H - 8; y += TILE) hline(ctx, 1, y, W - 2, shade(pal.metalLight, -0.08));
-  box(ctx, 0, H - 9, W, 9, pal.furn, pal.outline);
-  box(ctx, 2, H - 7, W - 4, 6, pal.furnLight, pal.outline);
-  rect(ctx, W / 2 - 2, H - 5, 4, 1, pal.metalDark);
-}
-
 /** A bookshelf standing against a side wall: we see its top and the book spines along its open side. */
 function sideBookshelf(ctx: Ctx, pal: EnvPalette, W: number, H: number, oh: number, v: number, dir: 'left' | 'right') {
   const open = dir === 'right' ? W - 6 : 1; // the side facing into the room
@@ -1066,6 +1040,9 @@ function sideArcade(ctx: Ctx, pal: EnvPalette, H: number, v: number, dir: 'left'
   px(ctx, flip(2, 1), 17, pal.accents[0]);
   rect(ctx, flip(6, 8), H - 3, 8, 2, shade(body, -0.3));
 }
+
+/** True if a furniture type has its own painter (otherwise it would render as a placeholder). */
+export const hasPainter = (type: Placement['type']): boolean => Boolean(P[type]);
 
 /** Render one placement to its own canvas. */
 export function paintFurniture(p: Placement, pal: EnvPalette): HTMLCanvasElement {

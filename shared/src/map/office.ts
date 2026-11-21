@@ -189,15 +189,18 @@ export const PLACEMENTS: Placement[] = [
   // ---- Pantry ----
   // the kitchen runs along the RIGHT wall, so the skyline window stays clear
   P('counter', 57, 3, { w: 1, h: 5 }),
-  P('microwave', 57, 3),
-  P('coffeeMachine', 57, 4, { id: 'coffee-machine' }),
-  P('cups', 57, 5),
-  P('sink', 57, 6),
+  P('sink', 57, 4), // just two sinks, side by side, on the right-hand counter
+  P('sink', 57, 5),
   P('fridge', 57, 9), // a compact fridge tucked into the corner
   P('bin', 57, 8), // pantry bin, against the wall at the end of the counter
   // left wall: tea & drinks station, then the breakfast/lunch buffet
-  P('beverageCounter', 32, 3, { id: 'beverage-station', w: 1, h: 3 }),
-  P('buffetCounter', 32, 6, { id: 'buffet', w: 1, h: 3 }),
+  // left wall: one long cupboard; items keep clear of both ends
+  P('pantryCounter', 32, 3, { id: 'pantry-counter', w: 1, h: 7 }),
+  // evenly spaced (20px apart) between the clear ends; dy nudges the drawing, not the grid
+  P('coffeeTeaMachine', 32, 4, { id: 'pantry-machine', dy: 2 }),
+  P('appleBasket', 32, 5, { id: 'pantry-apples', dy: 6 }),
+  P('breadBasket', 32, 7, { id: 'pantry-bread', dy: -6 }),
+  P('mealBoxes', 32, 8, { id: 'pantry-boxes', dy: -2 }), // breakfast 10:00, lunch 12:00
   // the big communal table sits in the middle, well away from the entrance
   P('diningTable', 42, 5, { w: 6, h: 2 }),
   ...[43, 44, 45, 46].map((x) => P('chair', x, 4, { dir: 'down', variant: 1 })),

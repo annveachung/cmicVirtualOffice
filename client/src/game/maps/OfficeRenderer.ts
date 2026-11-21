@@ -49,7 +49,7 @@ export class OfficeRenderer {
       if (p.type === 'danceFloor') this.addDanceFloorLights(p);
       if (def.layer !== 'object') continue;
       const bottom = (p.ty + h) * TILE;
-      const img = add.image(p.tx * TILE, bottom, furnitureTextureKey(p, theme)).setOrigin(0, 1);
+      const img = add.image(p.tx * TILE, bottom + (p.dy ?? 0), furnitureTextureKey(p, theme)).setOrigin(0, 1);
       img.setDepth(DEPTH.world + furnitureDepth(p, def, bottom));
       this.furniture.push({ p, img });
     }
@@ -135,7 +135,6 @@ export class OfficeRenderer {
       case 'projectorScreen': glow(GLOW_KEYS.lamp, x + (footprint(p).w * TILE) / 2, top + 12); break;
       case 'floorLamp': glow(GLOW_KEYS.lamp, x + 8, top + 9); break;
       case 'arcade': glow(GLOW_KEYS.screen, x + 8, top + 11); break;
-      case 'coffeeMachine': glow(GLOW_KEYS.small, x + 6, top + 6); break;
       case 'waterCooler': glow(GLOW_KEYS.screen, x + 8, top + 6); break;
     }
   }
@@ -191,7 +190,7 @@ function furnitureDepth(p: Placement, def: FurnitureDef, bottom: number): number
     // sit just above whatever counter they're on (it may run down a wall, so its bottom can be lower)
     const base = PLACEMENTS.find((q) => {
       const f = footprint(q);
-      return q.type === 'counter' && p.tx >= q.tx && p.tx < q.tx + f.w && p.ty >= q.ty && p.ty < q.ty + f.h;
+      return (q.type === 'counter' || q.type === 'pantryCounter') && p.tx >= q.tx && p.tx < q.tx + f.w && p.ty >= q.ty && p.ty < q.ty + f.h;
     });
     return (base ? (base.ty + footprint(base).h) * TILE : bottom) + 0.5;
   }

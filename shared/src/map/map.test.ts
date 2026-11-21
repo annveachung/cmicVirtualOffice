@@ -221,9 +221,10 @@ describe('activity spots', () => {
     expect(zoneAt(SPAWN.tx, SPAWN.ty)).toBeNull();
   });
 
-  it('offers food & drinks at both left-wall pantry counters', async () => {
+  it('has four usable items on the pantry counter (machine, apples, bread, meal boxes)', async () => {
     const { SPOTS, INSTANT_ACTIONS } = await import('./spots.js');
-    expect(SPOTS.filter((s) => s.action === 'pantry')).toHaveLength(2);
+    const ids = SPOTS.filter((s) => s.action === 'pantry').map((s) => s.id).sort();
+    expect(ids).toEqual(['pantry-apples', 'pantry-boxes', 'pantry-bread', 'pantry-machine']);
     expect(INSTANT_ACTIONS.has('pantry')).toBe(true);
   });
 

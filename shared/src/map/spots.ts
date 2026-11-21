@@ -54,7 +54,7 @@ const VERB: Record<SpotAction, string> = {
   costume: 'potato suit',
   vend: 'get a snack',
   mascot: 'poke Mr. Potato',
-  pantry: 'food & drinks',
+  pantry: 'help yourself',
 };
 
 function footprintTiles(p: Placement): TilePos[] {
@@ -131,9 +131,11 @@ function spotsFor(p: Placement): Spot[] {
       return [spot(p.id, 'sing', t(0, 0), 'down', { dy: 2, onFloor: true })];
     case 'danceFloor': // every tile of the dance floor is a place to dance
       return footprintTiles(p).map((c, i) => spot(`${p.id}:${i}`, 'dance', c, 'down', { onFloor: true }));
-    case 'beverageCounter': // both left-wall counters offer food & drinks
-    case 'buffetCounter':
-      return [spot(p.id, 'pantry', t(1, 1), 'left', { clickTiles: [...footprintTiles(p), t(1, 1)], onFloor: true })];
+    case 'coffeeTeaMachine': // each item on the pantry's left counter: stand in front of it
+    case 'appleBasket':
+    case 'breadBasket':
+    case 'mealBoxes':
+      return [spot(p.id, 'pantry', t(1, 0), 'left', { clickTiles: [t(0, 0), t(1, 0)], onFloor: true })];
     case 'potatoVending':
       return [spot(p.id, 'vend', t(0, 1), 'up', { clickTiles: [t(0, 0), t(0, 1)], onFloor: true })];
     case 'costumeRack':
