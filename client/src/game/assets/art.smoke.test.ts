@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { PLACEMENTS, HAIR_STYLES, SKIN_TONES, OUTFITS, HAIR_COLORS } from '@little-office/shared';
+import { FURNITURE, PLACEMENTS, HAIR_STYLES, SKIN_TONES, OUTFITS, HAIR_COLORS } from '@little-office/shared';
 
 /**
  * Smoke test for ALL generated art: runs every painter against a fake canvas,
@@ -33,6 +33,14 @@ describe('generated art', () => {
     const { PALETTES } = await import('./palette');
     for (const theme of ['light', 'dark'] as const)
       for (const p of PLACEMENTS) expect(() => paintFurniture(p, PALETTES[theme]), `${p.id} (${theme})`).not.toThrow();
+  });
+
+  it('has real art for every furniture type on the map (no placeholder boxes)', async () => {
+    const { hasPainter } = await import('./furnitureArt');
+    // ceiling items (the disco ball) are drawn and animated by the renderer itself
+    const types = PLACEMENTS.filter((p) => FURNITURE[p.type].layer !== 'ceiling').map((p) => p.type);
+    const missing = [...new Set(types)].filter((t) => !hasPainter(t));
+    expect(missing).toEqual([]);
   });
 
   it('paints the background, sunbeams and glows', async () => {
