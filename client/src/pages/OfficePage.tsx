@@ -8,6 +8,8 @@ import { AchievementToast } from '../components/AchievementToast';
 import { ClubPanel } from '../components/ClubPanel';
 import { ZoomControls } from '../components/ZoomControls';
 import { PantryPrompt } from '../components/PantryPrompt';
+import { LeavePrompt } from '../components/LeavePrompt';
+import { WelcomeBanner } from '../components/WelcomeBanner';
 import { sound } from '../audio/sound';
 
 interface Props {
@@ -82,6 +84,8 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
       <AchievementToast />
       <ZoomControls />
       <PantryPrompt />
+      <LeavePrompt onLeave={onLeave} />
+      {ready && <WelcomeBanner name={profile.name} />}
       {showHelp && (
         <aside className="help pixel-panel">
           <button className="help-close" onClick={() => setShowHelp(false)} aria-label="Hide controls">×</button>
