@@ -53,7 +53,7 @@ export interface EnvPalette {
   shadow: string; // rgba for soft shadows
   sky: string;
   bg: string;
-  /** Lounge + reading-nook rugs: deeper Y2K tones (periwinkle, plum-mauve). */
+  /** Lounge + reading-nook rugs: deeper Y2K tones (denim blue, plum-mauve). */
   rugColors: [string, string];
   /** Private-office carpets: soft, desaturated Y2K / classic-game tones (no greens). */
   officeCarpets: [string, string, string];
@@ -126,7 +126,7 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(31, 58, 44, 0.14)',
     sky: '#d8ebe4',
     bg: '#b9cbb2',
-    rugColors: ['#8c8fc6', '#a585b0'], // muted periwinkle, dusty plum-mauve
+    rugColors: ['#7d9ac0', '#a585b0'], // dusty denim blue, dusty plum-mauve
     officeCarpets: ['#a7a1bd', '#9fb0c4', '#b89aa6'], // dusty lilac, powder blue-grey, muted mauve
     clubFloor: '#3d2754',
     clubFloorAlt: '#36224c',
@@ -190,7 +190,7 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     shadow: 'rgba(0, 8, 4, 0.36)',
     sky: '#13221b',
     bg: '#16221b',
-    rugColors: ['#4f5178', '#5e4a66'],
+    rugColors: ['#46597a', '#5e4a66'],
     officeCarpets: ['#5e5a72', '#55627a', '#6d5560'], // the same carpets after dark
     clubFloor: '#2a1a3c',
     clubFloorAlt: '#251735',
