@@ -954,7 +954,8 @@ const P: Partial<Record<Placement['type'], Painter>> = {
 
   rug(ctx, { pal, W, H, v }) {
     if (v >= 3) return officeCarpet(ctx, pal.officeCarpets[(v - 3) % 3], W, H);
-    const base = [pal.fabricC, pal.accents[3], pal.accents[1]][v % 3];
+    // 0 = lounge (periwinkle), 1 = chill corner (sage), 2 = reading nook (plum-mauve)
+    const base = [pal.rugColors[0], pal.accents[3], pal.rugColors[1]][v % 3];
     roundBox(ctx, 0, 0, W, H, mix(base, pal.outline, 0.25), mix(base, pal.outline, 0.45));
     roundBox(ctx, 2, 2, W - 4, H - 4, base, shade(base, 0.25));
     rect(ctx, 4, 4, W - 8, H - 8, base);
