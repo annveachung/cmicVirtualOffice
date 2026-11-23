@@ -250,6 +250,12 @@ describe('activity spots', () => {
       expect(reach.has(t.ty * MAP_W + t.tx), `${t.tx},${t.ty}`).toBe(true);
     expect(walkableTiles(grid, catRoams).length).toBeGreaterThan(100);
     expect(walkableTiles(grid, coachRoams).length).toBeGreaterThan(20);
+    // Mochi can get to (a tile next to) every desk chair she might borrow
+    const { CAT_CHAIR_SPOTS } = await import('./npcs.js');
+    const { approachTiles } = await import('./spots.js');
+    expect(CAT_CHAIR_SPOTS.length).toBeGreaterThanOrEqual(15);
+    for (const s of CAT_CHAIR_SPOTS)
+      expect(approachTiles(grid, s).some((t) => reach.has(t.ty * MAP_W + t.tx)), s.id).toBe(true);
   });
 
   it('has a booth for four in the pantry', async () => {
