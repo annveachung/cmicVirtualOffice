@@ -127,7 +127,7 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     sky: '#d8ebe4',
     bg: '#b9cbb2',
     rugColors: ['#5a7e63', '#a585b0'], // medium forest green, dusty plum-mauve
-    officeCarpets: ['#a7a1bd', '#9fb0c4', '#b89aa6'], // dusty lilac, powder blue-grey, muted mauve
+    officeCarpets: ['#c2ad8b', '#9fb0c4', '#b89aa6'], // warm camel, powder blue-grey, muted mauve
     clubFloor: '#3d2754',
     clubFloorAlt: '#36224c',
     clubWall: '#5a3680',
@@ -191,7 +191,7 @@ export const PALETTES: Record<Theme, EnvPalette> = {
     sky: '#13221b',
     bg: '#16221b',
     rugColors: ['#34503c', '#5e4a66'],
-    officeCarpets: ['#5e5a72', '#55627a', '#6d5560'], // the same carpets after dark
+    officeCarpets: ['#6b5d48', '#55627a', '#6d5560'], // the same carpets after dark
     clubFloor: '#2a1a3c',
     clubFloorAlt: '#251735',
     clubWall: '#3b2358',
