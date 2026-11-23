@@ -43,12 +43,13 @@ describe('generated art', () => {
     expect(missing).toEqual([]);
   });
 
-  it('draws Mochi the cat from well-formed 16x12 templates', async () => {
-    const { CAT_TEMPLATES_FOR_TEST } = await import('./npcArt');
-    for (const [name, rows] of Object.entries(CAT_TEMPLATES_FOR_TEST)) {
-      expect(rows, name).toHaveLength(12);
-      for (const r of rows) expect(r.length, `${name}: ${r}`).toBe(16);
-    }
+  it('draws the cat and the raccoons from well-formed 16x12 templates', async () => {
+    const { CRITTER_TEMPLATES_FOR_TEST } = await import('./npcArt');
+    for (const [kind, frames] of Object.entries(CRITTER_TEMPLATES_FOR_TEST))
+      for (const [name, rows] of Object.entries(frames)) {
+        expect(rows, `${kind} ${name}`).toHaveLength(12);
+        for (const r of rows) expect(r.length, `${kind} ${name}: ${r}`).toBe(16);
+      }
   });
 
   it('paints the background, sunbeams and glows', async () => {
