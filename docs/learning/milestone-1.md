@@ -251,3 +251,18 @@ Mochi's code lives in `game/npcs/cat/` and is split into three layers:
 
 Adding a trick means writing (maybe) one activity and adding one line to the menu.
 This pattern is common in games: designers tune the menu, and programmers write the building blocks.
+
+## 35. Data-driven NPCs: one class, many animals
+Adding three raccoons didn't copy the cat code. Mochi's code became a generic **`Critter`**, and
+everything that differs between animals is **data** in `critters/species.ts`:
+- the art (sprite texture and walk animation);
+- the speed;
+- what they say.
+
+`CRITTERS` lists who lives in the office. Adding a fourth raccoon is one line; adding a new
+animal means drawing it plus adding one species entry. This is "data-driven design":
+- behaviour lives in code, written once;
+- variety lives in data, which is easy to change.
+
+**Shared resources:** with several critters, a seat needs one owner. Each critter asks
+`seatBusy(id)`, which says yes if you **or any other critter** holds that seat or table spot.
