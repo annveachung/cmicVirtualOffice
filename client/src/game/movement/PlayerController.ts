@@ -106,6 +106,19 @@ export class PlayerController {
     return dest;
   }
 
+  /** True while an arrow / WASD key is held (and you're not typing in a text box). */
+  get steering(): boolean {
+    if (isTyping()) return false;
+    return Object.values(this.keys).some((k) => k.isDown);
+  }
+
+  /** Drop any click path or activity on the spot (e.g. when hopping onto Roomby). */
+  halt(pos: Vec2): void {
+    this.standUp(pos);
+    this.teleport = null;
+    this.cancelPath();
+  }
+
   /** "E": use a nearby spot, or stop if already using one. */
   interact(pos: Vec2, nearby: Spot | null): void {
     if (this.using) this.standUp(pos);

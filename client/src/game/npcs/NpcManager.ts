@@ -62,7 +62,7 @@ class Walker {
     private readonly grid: CollisionGrid,
     public x: number,
     public y: number,
-    private readonly speed: number,
+    public speed: number,
   ) {}
 
   get moving() {
@@ -116,6 +116,16 @@ class Walker {
   }
 }
 
+/** A free floor tile right next to a point (where you land when hopping off Roomby). */
+export function freeTileNear(grid: CollisionGrid, p: Vec2): Vec2 {
+  const t = toTile(p);
+  const around = [[0, 1], [-1, 0], [1, 0], [0, -1], [-1, 1], [1, 1], [-1, -1], [1, -1]];
+  for (const [dx, dy] of around) {
+    if (!grid.isBlocked(t.tx + dx, t.ty + dy)) return tileCenter({ tx: t.tx + dx, ty: t.ty + dy });
+  }
+  return tileCenter(t);
+}
+
 // ------------------------------------------------------------------ Mochi ----
 
 class Cat implements Npc {
@@ -124,13 +134,18 @@ class Cat implements Npc {
   private readonly bubble: SpeechBubble;
   private readonly walker: Walker;
   private readonly roam: TilePos[];
-  private state: 'idle' | 'walk' | 'sit' | 'nap' = 'idle';
+  private state: 'idle' | 'walk' | 'sit' | 'nap' | 'ride' = 'idle';
   private napping = false;
+  /** Walking over to catch Roomby for a ride. */
+  private chasing = false;
+  /** So she doesn't hop on every single time Roomby rolls past. */
+  private rideCooldown = 8000;
   private timer = 1500;
 
   constructor(
     private readonly scene: Phaser.Scene,
-    grid: CollisionGrid,
+    private readonly grid: CollisionGrid,
+    private readonly roomby: Vacuum,
   ) {
     const start = tileCenter(CAT_NAP_TILES[0]);
     this.walker = new Walker(grid, start.x, start.y, 38);
@@ -147,12 +162,31 @@ class Cat implements Npc {
   }
 
   update(dtMs: number, ctx: NpcContext) {
+    this.rideCooldown -= dtMs;
+    if (this.state === 'ride') {
+      // sit on top of Roomby, facing the way it rolls
+      const seat = this.roomby.seat();
+      this.walker.x = seat.x;
+      this.walker.y = seat.y;
+      if (this.roomby.heading === 'left') this.sprite.setFlipX(true);
+      if (this.roomby.heading === 'right') this.sprite.setFlipX(false);
+      this.timer -= dtMs;
+      if (this.timer <= 0) this.hopOff();
+      this.sprite.setPosition(Math.round(this.x), Math.round(this.y + 1)).setDepth(DEPTH.world + this.roomby.y - 3);
+      this.bubble.setPosition(this.x, this.y - 10);
+      return;
+    }
     const dir = this.walker.update(dtMs, { x: ctx.playerX, y: ctx.playerY });
     if (this.state === 'walk') {
       if (dir === 'left') this.sprite.setFlipX(true);
       if (dir === 'right') this.sprite.setFlipX(false);
       if (!this.walker.moving) this.arrive();
     } else {
+      // Roomby rolling right past? sometimes she can't resist hopping on
+      if (this.state !== 'nap' && this.rideCooldown <= 0 && this.roombyClose(18)) {
+        this.rideCooldown = rand(15000, 25000);
+        if (Math.random() < 0.6 && this.hopOn()) return;
+      }
       this.timer -= dtMs;
       if (this.timer <= 0) this.decide();
     }
@@ -160,7 +194,42 @@ class Cat implements Npc {
     this.bubble.setPosition(this.x, this.y - 12);
   }
 
+  private roombyClose(range: number) {
+    return Math.hypot(this.roomby.x - this.x, this.roomby.y - this.y) < range;
+  }
+
+  private hopOn(): boolean {
+    if (!this.roomby.board('cat')) return false;
+    this.state = 'ride';
+    this.chasing = false;
+    this.walker.goTo(toTile(this)); // drop any path she was on
+    this.sprite.stop().setFrame('sit');
+    this.bubble.say(pick(['mrrp! 🐾', 'Wheee! 🐱', '*hops on* 🐾']));
+    this.scene.time.delayedCall(2200, () => this.bubble.hide());
+    this.timer = rand(9000, 16000);
+    return true;
+  }
+
+  private hopOff() {
+    this.roomby.alight('cat');
+    const land = freeTileNear(this.grid, this.roomby);
+    this.walker.x = land.x;
+    this.walker.y = land.y;
+    this.state = 'sit';
+    this.sprite.setFrame('sit');
+    this.timer = rand(2000, 4000);
+  }
+
   private decide() {
+    // now and then, chase Roomby for a ride
+    if (this.rideCooldown <= 0 && !this.roomby.rider && Math.random() < 0.25 && this.walker.goTo(toTile(this.roomby))) {
+      this.chasing = true;
+      this.napping = false;
+      this.state = 'walk';
+      this.bubble.hide();
+      this.sprite.play('cat-walk', true);
+      return;
+    }
     // usually wander somewhere nearby; sometimes go for a nap on a cosy spot
     this.napping = Math.random() < 0.3;
     const near = this.roam.filter((t) => Math.abs(t.tx - toTile(this).tx) + Math.abs(t.ty - toTile(this).ty) < 12);
@@ -174,6 +243,11 @@ class Cat implements Npc {
 
   private arrive() {
     this.sprite.stop();
+    if (this.chasing) {
+      this.chasing = false;
+      this.rideCooldown = rand(15000, 25000);
+      if (this.roombyClose(32) && this.hopOn()) return;
+    }
     if (this.napping) {
       this.state = 'nap';
       this.sprite.setFrame('sleep');
@@ -188,9 +262,14 @@ class Cat implements Npc {
 
   interact() {
     const wasNapping = this.state === 'nap';
-    this.state = 'sit';
-    this.sprite.stop().setFrame('sit');
-    this.timer = rand(2500, 4000); // stays a moment for the cuddle
+    if (this.state !== 'ride') {
+      // (on Roomby she just enjoys the pets and keeps riding)
+      this.state = 'sit';
+      this.chasing = false;
+      this.walker.goTo(toTile(this));
+      this.sprite.stop().setFrame('sit');
+      this.timer = rand(2500, 4000); // stays a moment for the cuddle
+    }
     this.bubble.say(wasNapping ? '…mrrp? 💕' : pick(['Meow! 💕', 'Purrrr… 💕', 'Mrow! 🐟']));
     this.scene.time.delayedCall(2500, () => this.bubble.hide());
     const heart = this.scene.add.image(this.x, this.y - 10, REACTION_KEYS.heart).setDepth(DEPTH.nameplates + 2);
@@ -215,20 +294,28 @@ class Cat implements Npc {
 
 // ----------------------------------------------------------------- Roomby ----
 
+export type Rider = 'player' | 'cat';
+
+const ROOMBY_SPEED = 22;
+const ROOMBY_RIDE_SPEED = 30;
+
 class Vacuum implements Npc {
-  readonly verb = 'say hi to Roomby';
   private readonly sprite: Phaser.GameObjects.Sprite;
   private readonly bubble: SpeechBubble;
   private readonly walker: Walker;
   private leg = 0;
   private pause = 0;
+  /** Who's standing (or sitting) on top. One rider at a time. */
+  rider: Rider | null = null;
+  /** The way it last rolled (riders face this way). */
+  heading: Direction = 'right';
 
   constructor(
     private readonly scene: Phaser.Scene,
     grid: CollisionGrid,
   ) {
     const start = tileCenter(VACUUM_ROUTE[0]);
-    this.walker = new Walker(grid, start.x, start.y, 22);
+    this.walker = new Walker(grid, start.x, start.y, ROOMBY_SPEED);
     this.sprite = scene.add.sprite(start.x, start.y, VACUUM_KEY, 'a').setOrigin(0.5, 0.7).play('vacuum-blink');
     this.bubble = new SpeechBubble(scene);
   }
@@ -239,22 +326,63 @@ class Vacuum implements Npc {
   get y() {
     return this.walker.y;
   }
+  get verb() {
+    return this.rider === 'cat' ? 'say hi to Roomby' : 'hop on Roomby';
+  }
+
+  /** Where a rider stands: on top of the robot, a little up from its centre. */
+  seat(): Vec2 {
+    return { x: this.x, y: this.y - 3 };
+  }
+
+  /** Climb aboard. Returns false (and says so) if someone's already riding. */
+  board(who: Rider): boolean {
+    if (this.rider && this.rider !== who) {
+      if (who === 'player') this.say("beep! Mochi's riding — next one! 🐱");
+      return false;
+    }
+    this.rider = who;
+    this.pause = 0;
+    this.walker.speed = ROOMBY_RIDE_SPEED;
+    this.say(who === 'player' ? 'beep boop, all aboard! 🚂' : 'beep! passenger: Mochi 🐱');
+    return true;
+  }
+
+  alight(who: Rider) {
+    if (this.rider !== who) return;
+    this.rider = null;
+    this.walker.speed = ROOMBY_SPEED;
+    if (who === 'player') this.say('boop! come again ✨');
+  }
 
   update(dtMs: number, ctx: NpcContext) {
     if (this.pause > 0) this.pause -= dtMs;
     else if (!this.walker.moving) {
       this.leg = (this.leg + 1) % VACUUM_ROUTE.length;
       this.walker.goTo(VACUUM_ROUTE[this.leg]);
-    } else this.walker.update(dtMs, { x: ctx.playerX, y: ctx.playerY });
+    } else {
+      // with you on board it obviously doesn't need to wait for you
+      const avoid = this.rider === 'player' ? undefined : { x: ctx.playerX, y: ctx.playerY };
+      this.heading = this.walker.update(dtMs, avoid) ?? this.heading;
+    }
     this.sprite.setPosition(Math.round(this.x), Math.round(this.y)).setDepth(DEPTH.world + this.y - 4);
-    this.bubble.setPosition(this.x, this.y - 6);
+    this.bubble.setPosition(this.x, this.y - (this.rider === 'player' ? 30 : 6));
   }
 
+  /** E / click while not riding it (and Mochi is): a hello and a spin. */
   interact() {
+    if (this.rider) {
+      this.say(this.rider === 'cat' ? "beep! Mochi's riding — next one! 🐱" : 'beep boop ✨');
+      return;
+    }
     this.pause = 1600;
-    this.bubble.say(pick(['beep boop ✨', 'boop! 🧹', 'beep beep! ✨']));
-    this.scene.time.delayedCall(2000, () => this.bubble.hide());
+    this.say(pick(['beep boop ✨', 'boop! 🧹', 'beep beep! ✨']));
     this.scene.tweens.add({ targets: this.sprite, angle: 360, duration: 700, onComplete: () => this.sprite.setAngle(0) });
+  }
+
+  private say(text: string) {
+    this.bubble.say(text);
+    this.scene.time.delayedCall(2200, () => this.bubble.hide());
   }
 
   setTheme(t: Theme) {
@@ -402,10 +530,13 @@ class Coach implements Npc {
 
 export class NpcManager {
   private readonly npcs: Npc[];
+  /** Roomby, the rideable one. */
+  readonly roomby: Vacuum;
 
   constructor(scene: Phaser.Scene, grid: CollisionGrid, playerName: string) {
     registerNpcArt(scene);
-    this.npcs = [new Cat(scene, grid), new Vacuum(scene, grid), new Receptionist(scene, playerName), new Coach(scene, grid)];
+    this.roomby = new Vacuum(scene, grid);
+    this.npcs = [new Cat(scene, grid, this.roomby), this.roomby, new Receptionist(scene, playerName), new Coach(scene, grid)];
   }
 
   update(dtMs: number, ctx: NpcContext) {

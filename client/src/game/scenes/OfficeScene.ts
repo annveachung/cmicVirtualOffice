@@ -24,7 +24,7 @@ import { OfficeRenderer } from '../maps/OfficeRenderer';
 import { PlayerController } from '../movement/PlayerController';
 import { PotatoClub } from '../club/PotatoClub';
 import { CameraRig } from '../camera/CameraRig';
-import { NpcManager, type Npc } from '../npcs/NpcManager';
+import { NpcManager, freeTileNear, type Npc } from '../npcs/NpcManager';
 import { mealBoxMessage } from '../mealBoxes';
 
 export interface OfficeSceneData {
@@ -56,6 +56,8 @@ export class OfficeScene extends Phaser.Scene {
   private camera!: CameraRig;
   private npcs!: NpcManager;
   private nearbyNpc: Npc | null = null;
+  /** Standing on Roomby, riding its cleaning route. */
+  private riding = false;
   private zone: ZoneId | null = null;
 
   constructor() {
@@ -114,10 +116,11 @@ export class OfficeScene extends Phaser.Scene {
 
     this.input.keyboard!.on('keydown-E', () => {
       if (isTyping()) return;
+      if (this.riding) return this.hopOff();
       // a spot you're using or standing in front of wins; otherwise talk to a nearby NPC
       if (this.controller.activeSpot || this.nearbySpot || !this.nearbyNpc)
         this.controller.interact({ x: this.player.x, y: this.player.y }, this.nearbySpot);
-      else this.nearbyNpc.interact();
+      else this.useNpc(this.nearbyNpc);
     });
 
     // Camera: map-app style (drag to look around, scroll/pinch to zoom, buttons in the UI)
@@ -154,10 +157,14 @@ export class OfficeScene extends Phaser.Scene {
 
   /** A click that wasn't a drag: use the thing you clicked, or walk there. */
   private tapAt(wx: number, wy: number) {
-    const here = { x: this.player.x, y: this.player.y };
     const npc = this.npcs.hit(wx, wy);
+    if (this.riding) {
+      this.hopOff(); // any click gets you off — and walks you there, unless you clicked Roomby itself
+      if (npc === this.npcs.roomby) return;
+    }
+    const here = { x: this.player.x, y: this.player.y };
     if (npc) {
-      if (Math.hypot(npc.x - here.x, npc.y - here.y) <= TILE * 1.6) npc.interact();
+      if (Math.hypot(npc.x - here.x, npc.y - here.y) <= TILE * 1.6) this.useNpc(npc);
       else {
         const dest = this.controller.goTo(here, { x: npc.x, y: npc.y + TILE });
         this.marker.setVisible(!!dest);
@@ -171,7 +178,29 @@ export class OfficeScene extends Phaser.Scene {
     if (dest) this.marker.setPosition(dest.x, dest.y);
   }
 
+  /** Talk to / pet an NPC — or, for Roomby, hop on for a ride. */
+  private useNpc(npc: Npc) {
+    if (npc !== this.npcs.roomby || this.npcs.roomby.rider === 'cat') return npc.interact();
+    if (!this.npcs.roomby.board('player')) return;
+    this.controller.halt({ x: this.player.x, y: this.player.y });
+    this.marker.setVisible(false);
+    this.riding = true;
+  }
+
+  /** Step off Roomby onto a free tile next to it. */
+  private hopOff() {
+    if (!this.riding) return;
+    this.riding = false;
+    this.npcs.roomby.alight('player');
+    const land = freeTileNear(this.grid, this.npcs.roomby);
+    this.player.setPosition(land.x, land.y);
+  }
+
   update(_time: number, delta: number) {
+    if (this.riding) {
+      if (this.controller.steering) this.hopOff(); // an arrow / WASD key hops you off
+      else return this.updateRiding(delta);
+    }
     const m = this.controller.update({ x: this.player.x, y: this.player.y }, delta);
     this.player.setPosition(m.x, m.y);
     this.camera.update(); // cheap no-op unless the zoom changed
@@ -180,6 +209,19 @@ export class OfficeScene extends Phaser.Scene {
     this.updateZone();
     this.npcs.update(delta, { playerX: this.player.x, playerY: this.player.y, playerPose: m.pose });
     this.updateSpotHint(this.controller.activeSpot !== null);
+  }
+
+  /** On Roomby: stand on top of it and face the way it rolls. */
+  private updateRiding(delta: number) {
+    const roomby = this.npcs.roomby;
+    const seat = roomby.seat();
+    this.player.setPosition(seat.x, seat.y);
+    this.player.setMotion(roomby.heading, 'idle');
+    this.camera.update();
+    this.club.update('idle');
+    this.updateZone();
+    this.npcs.update(delta, { playerX: this.player.x, playerY: this.player.y, playerPose: 'idle' });
+    this.updateSpotHint(true);
   }
 
   /** The pantry counter: machine asks coffee or tea; apples/bread are instant; meal boxes only at 10:00 & 12:00. */
