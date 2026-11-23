@@ -294,7 +294,7 @@ const APPLE_LINES = ['🍎 A crunchy apple. Healthy choice!', '🍎 An apple a d
 const BREAD_LINES = ['🍞 A slice of fresh bread.', '🥖 Tore off a bit of baguette.', '🍞 Warm bread — cozy.'];
 
 const pantryLine = (i: PantryItem) => pick(PANTRY_LINES[i]);
-const TAKEN_LINES = ["Mochi's napping here… I'll find another seat 🐱", 'This seat is taken (by a cat) 🐾', "Can't sit — Mochi called dibs 🐱"];
+const TAKEN_LINES = ['Mochi got here first 🐱', 'Taken… by a cat 🐾', 'Mochi called dibs 🐱'];
 
 function isTyping(): boolean {
   const el = document.activeElement;

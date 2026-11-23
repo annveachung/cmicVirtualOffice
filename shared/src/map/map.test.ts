@@ -254,8 +254,14 @@ describe('activity spots', () => {
     const { catPerches } = await import('./npcs.js');
     const perches = catPerches(grid);
     expect(perches.filter((p) => p.seatId).length).toBeGreaterThanOrEqual(20); // 15 desk chairs + sofa cushions
-    expect(perches.filter((p) => !p.seatId).length).toBe(5); // dining table ×2, two café tables, the booth
+    expect(perches.filter((p) => !p.seatId).length).toBe(7); // dining ×2, two café tables, the booth, meeting table ×2
     for (const p of perches) expect(p.from.some((t) => reach.has(t.ty * MAP_W + t.tx)), p.id).toBe(true);
+    // …and the gym equipment she works out on, and the disco floor she dances on
+    const { CAT_GYM_SPOTS, DANCE_FLOOR_TILES } = await import('./npcs.js');
+    const { approachTiles } = await import('./spots.js');
+    expect(CAT_GYM_SPOTS.length).toBe(5); // 2 treadmills + 3 yoga mats
+    for (const s of CAT_GYM_SPOTS) expect(approachTiles(grid, s).some((t) => reach.has(t.ty * MAP_W + t.tx)), s.id).toBe(true);
+    expect(DANCE_FLOOR_TILES.filter((t) => reach.has(t.ty * MAP_W + t.tx)).length).toBeGreaterThanOrEqual(6);
   });
 
   it('has a booth for four in the pantry', async () => {

@@ -3,7 +3,7 @@ import type { TilePos, Vec2 } from '../types.js';
 import type { CollisionGrid } from './collision.js';
 import { footprint } from './furniture.js';
 import { PLACEMENTS, TILES, zoneAt } from './office.js';
-import { SPOTS, approachTiles } from './spots.js';
+import { SPOTS, approachTiles, type Spot } from './spots.js';
 
 /**
  * Where the office's NPCs live and roam. Kept in shared map data so that, once
@@ -34,6 +34,15 @@ export const CAT_NAP_TILES: TilePos[] = [
   { tx: 20, ty: 12 },
 ];
 
+/** Gym equipment Mochi can "use": the treadmills (she runs) and yoga mats (she stretches). */
+export const CAT_GYM_SPOTS: Spot[] = SPOTS.filter((s) => s.action === 'run' || s.action === 'stretch');
+
+/** The disco's dance floor tiles (where Mochi dances). */
+export const DANCE_FLOOR_TILES: TilePos[] = PLACEMENTS.filter((p) => p.type === 'danceFloor').flatMap((p) => {
+  const { w, h } = footprint(p);
+  return Array.from({ length: w * h }, (_, i) => ({ tx: p.tx + (i % w), ty: p.ty + Math.floor(i / w) }));
+});
+
 /** Somewhere Mochi can hop up onto: an office chair, a sofa cushion or a pantry table. */
 export interface CatPerch {
   id: string;
@@ -48,7 +57,7 @@ export interface CatPerch {
 }
 
 const PERCH_SEATS = new Set(['deskChair', 'sofa']);
-const PERCH_TABLES = new Set(['diningTable', 'roundTable', 'boothTable']);
+const PERCH_TABLES = new Set(['diningTable', 'roundTable', 'boothTable', 'meetingTable']);
 
 /** Every perch, with the floor tiles next to it (needs the collision grid). */
 export function catPerches(grid: CollisionGrid): CatPerch[] {
@@ -59,7 +68,7 @@ export function catPerches(grid: CollisionGrid): CatPerch[] {
     if (!type || !PERCH_SEATS.has(type)) continue;
     perches.push({ id: s.id, pos: s.pos, depthY: (s.tile.ty + 1) * TILE + 1, seatId: s.id, from: approachTiles(grid, s) });
   }
-  // pantry tables: she sits on the tabletop (the big table has room for two spots)
+  // pantry + meeting tables: she sits on the tabletop (long tables have room for two spots)
   for (const p of PLACEMENTS) {
     if (!PERCH_TABLES.has(p.type)) continue;
     const { w, h } = footprint(p);
