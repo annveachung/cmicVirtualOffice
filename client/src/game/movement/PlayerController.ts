@@ -53,6 +53,8 @@ export class PlayerController {
   private teleport: Vec2 | null = null;
   /** Called when a click-path finishes or is cancelled (to hide the target marker). */
   onPathEnd: () => void = () => {};
+  /** Positions of things you can't walk through that move (NPCs). */
+  blockers: () => Vec2[] = () => [];
   /** Called for one-off actions (costume, snack, poke the mascot) — they don't put you in a pose. */
   onInstant: (spot: Spot) => void = () => {};
 
@@ -157,7 +159,8 @@ export class PlayerController {
       }
     }
 
-    const next = moveWithCollision(this.grid, pos, dx, dy);
+    let next = moveWithCollision(this.grid, pos, dx, dy);
+    next = this.avoidBlockers(pos, next);
     const moved = Math.abs(next.x - pos.x) + Math.abs(next.y - pos.y) > 0.001;
     if (dx !== 0 || dy !== 0) this.dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down';
 
@@ -181,6 +184,25 @@ export class PlayerController {
   }
 
   // ---------------------------------------------------------------- helpers --
+
+  /**
+   * NPCs are solid: a move that would bring you within BLOCK_RADIUS of one (and
+   * closer than you were) is cancelled, axis by axis — so you slide around them,
+   * and you can always step away.
+   */
+  private avoidBlockers(pos: Vec2, next: Vec2): Vec2 {
+    const blockers = this.blockers();
+    if (!blockers.length) return next;
+    const intrudes = (p: Vec2) =>
+      blockers.some((b) => {
+        const d = Math.hypot(p.x - b.x, p.y - b.y);
+        return d < BLOCK_RADIUS && d < Math.hypot(pos.x - b.x, pos.y - b.y);
+      });
+    let { x, y } = next;
+    if (intrudes({ x, y: pos.y })) x = pos.x;
+    if (intrudes({ x, y })) y = pos.y;
+    return { x, y };
+  }
 
   private use(spot: Spot, standTile: TilePos) {
     this.waypoints = [];
@@ -220,6 +242,9 @@ export class PlayerController {
     }
   }
 }
+
+/** How close (px) you can get to an NPC before bumping into them. */
+const BLOCK_RADIUS = 10;
 
 function isTyping(): boolean {
   const el = document.activeElement;

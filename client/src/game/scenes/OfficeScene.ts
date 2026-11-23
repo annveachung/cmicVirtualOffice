@@ -89,6 +89,7 @@ export class OfficeScene extends Phaser.Scene {
     this.club = new PotatoClub(this, this.player, this.controller, this.office);
     this.npcs = new NpcManager(this, this.grid, name);
     this.npcs.setTheme(theme);
+    this.controller.blockers = () => this.npcs.positions(); // NPCs are solid
     // one-off actions: the pantry counters ask what you'd like; everything else is the club's
     this.controller.onInstant = (spot) => {
       if (spot.action === 'pantry') this.usePantry(spot.id);
