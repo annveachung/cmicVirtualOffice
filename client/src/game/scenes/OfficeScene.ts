@@ -14,6 +14,7 @@ import {
   type Theme,
   type ZoneId,
   zoneAt,
+  officeAt,
   DEFAULT_STATUS,
   type OfficeDoor,
 } from '@little-office/shared';
@@ -25,7 +26,7 @@ import { OfficeRenderer } from '../maps/OfficeRenderer';
 import { PlayerController } from '../movement/PlayerController';
 import { PotatoClub } from '../club/PotatoClub';
 import { CameraRig } from '../camera/CameraRig';
-import { NpcManager, freeTileNear, type Npc } from '../npcs/NpcManager';
+import { NpcManager, freeTileNear, type Critter, type Npc } from '../npcs/NpcManager';
 import { OfficeDoors } from '../doors/OfficeDoors';
 import { mealBoxMessage } from '../mealBoxes';
 
@@ -58,6 +59,10 @@ export class OfficeScene extends Phaser.Scene {
   private camera!: CameraRig;
   private npcs!: NpcManager;
   private nearbyNpc: Npc | null = null;
+  /** The cat / raccoon in your arms. */
+  private carrying: Critter | null = null;
+  /** Which way you're facing (a carried critter faces the same way). */
+  private facing: 'up' | 'down' | 'left' | 'right' = 'up';
   private doors!: OfficeDoors;
   /** A closed private-office door you're standing outside of. */
   private nearbyDoor: OfficeDoor | null = null;
@@ -128,10 +133,19 @@ export class OfficeScene extends Phaser.Scene {
       if (isTyping()) return;
       if (this.riding) return this.hopOff();
       if (this.nearbyDoor && !this.controller.activeSpot) return this.knock(this.nearbyDoor);
+      // nothing else around while carrying someone? give them a cuddle
+      if (this.carrying && !this.controller.activeSpot && !this.nearbySpot && !this.nearbyNpc) return this.carrying.interact();
       // a spot you're using or standing in front of wins; otherwise talk to a nearby NPC
       if (this.controller.activeSpot || this.nearbySpot || !this.nearbyNpc)
         this.controller.interact({ x: this.player.x, y: this.player.y }, this.nearbySpot);
       else this.useNpc(this.nearbyNpc);
+    });
+
+    // C: pick up a nearby cat / raccoon, or put the one you're carrying down
+    this.input.keyboard!.on('keydown-C', () => {
+      if (isTyping()) return;
+      if (this.carrying) this.putDown();
+      else this.pickUp();
     });
 
     // Camera: map-app style (drag to look around, scroll/pinch to zoom, buttons in the UI)
@@ -212,6 +226,31 @@ export class OfficeScene extends Phaser.Scene {
     if (this.doors.knock(door, then)) this.player.say('knock knock 🚪', 1500);
   }
 
+  private pickUp() {
+    const critter = this.npcs.critterNear(this.player.x, this.player.y);
+    if (!critter) return;
+    this.carrying = critter;
+    critter.pickUp(() => ({ x: this.player.x, y: this.player.y, dir: this.facing }));
+  }
+
+  /** Set them down on the floor in front of you (or the nearest free spot) — not inside a private office. */
+  private putDown() {
+    const critter = this.carrying;
+    if (!critter) return;
+    const here = toTile({ x: this.player.x, y: this.player.y });
+    const step = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[this.facing];
+    const ahead = { tx: here.tx + step[0], ty: here.ty + step[1] };
+    let at = !this.grid.isBlocked(ahead.tx, ahead.ty) ? tileCenter(ahead) : freeTileNear(this.grid, { x: this.player.x, y: this.player.y });
+    const t = toTile(at);
+    if (officeAt(here.tx, here.ty) || officeAt(t.tx, t.ty)) {
+      critter.say('not in here! 🙈'); // private offices are private — they'd get shut in
+      return;
+    }
+    if (this.riding) at = freeTileNear(this.grid, this.npcs.roomby);
+    this.carrying = null;
+    critter.putDown(at);
+  }
+
   /** Talk to / pet an NPC — or, for Roomby, hop on for a ride. */
   private useNpc(npc: Npc) {
     if (npc !== this.npcs.roomby || this.npcs.roomby.rider) return npc.interact();
@@ -237,6 +276,7 @@ export class OfficeScene extends Phaser.Scene {
     }
     const m = this.controller.update({ x: this.player.x, y: this.player.y }, delta);
     this.player.setPosition(m.x, m.y);
+    this.facing = m.dir;
     this.doors.update(delta, [{ x: m.x, y: m.y }]);
     this.camera.update(); // cheap no-op unless the zoom changed
     this.player.setMotion(m.dir, this.club.animFor(m.pose));
@@ -252,6 +292,7 @@ export class OfficeScene extends Phaser.Scene {
     const seat = roomby.seat();
     this.player.setPosition(seat.x, seat.y);
     this.player.setMotion(roomby.heading, 'idle');
+    this.facing = roomby.heading;
     this.camera.update();
     this.club.update('idle');
     this.updateZone();
@@ -304,10 +345,16 @@ export class OfficeScene extends Phaser.Scene {
     // no spot here? maybe an NPC is close enough to chat with
     this.nearbyNpc = !busy && !this.nearbySpot ? this.npcs.nearest(this.player.x, this.player.y) : null;
     if (this.nearbyNpc) {
-      this.showHint(`E · ${this.nearbyNpc.verb}`, this.nearbyNpc.x, this.nearbyNpc.y - 24);
+      // cats and raccoons can also be carried (unless your arms are full)
+      const carry = !this.carrying && this.npcs.critterNear(this.player.x, this.player.y) === this.nearbyNpc ? '  ·  C · carry' : '';
+      this.showHint(`E · ${this.nearbyNpc.verb}${carry}`, this.nearbyNpc.x, this.nearbyNpc.y - 24);
       return;
     }
     const s = this.nearbySpot;
+    if (!s && this.carrying && !this.riding) {
+      this.showHint(`E · pet  ·  C · put ${this.carrying.name} down`, this.player.x, this.player.y - 30);
+      return;
+    }
     this.spotHint.setVisible(!!s);
     if (!s) return;
     const at = s.hintAt ?? { x: s.pos.x, y: s.tile.ty * TILE - 6 };

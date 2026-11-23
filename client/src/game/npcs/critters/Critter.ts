@@ -20,7 +20,7 @@ import { REACTION_KEYS } from '../../assets/textures';
 import { SpeechBubble } from '../../characters/SpeechBubble';
 import { DEPTH, NIGHT_TINT } from '../../constants';
 import { Walker, pick, rand, type Npc, type NpcContext } from '../common';
-import { riding, sitting, type Activity, type Step } from './activities';
+import { carried, riding, sitting, type Activity, type Holder, type Step } from './activities';
 import { CRITTER_BEHAVIOURS } from './behaviours';
 import type { Species } from './species';
 
@@ -148,6 +148,24 @@ export class Critter implements Npc {
   private switchTo(next: Activity) {
     this.activity.end?.();
     this.activity = next;
+  }
+
+  /** In someone's arms right now? */
+  get isCarried(): boolean {
+    return this.activity.name === 'carried';
+  }
+
+  /** Scoop them up — whatever they were doing (perched, riding, dancing…) stops. */
+  pickUp(holder: () => Holder) {
+    this.switchTo(carried(this, holder));
+  }
+
+  /** Set them down on the floor at `at`; they sit a moment, then go about their day. */
+  putDown(at: Vec2) {
+    this.moveTo(at);
+    this.switchTo(sitting(this, rand(2000, 3500)));
+    this.drawOnFloor();
+    this.say(pick(this.species.lines.putDown));
   }
 
   // ------------------------------------------------ helpers for activities --

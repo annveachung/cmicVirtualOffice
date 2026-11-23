@@ -13,7 +13,7 @@ import type { Critter } from './Critter';
 export type Step = 'continue' | 'done' | Activity;
 
 export interface Activity {
-  readonly name: 'sit' | 'walk' | 'nap' | 'perch' | 'ride' | 'gym' | 'dance' | 'forage';
+  readonly name: 'sit' | 'walk' | 'nap' | 'perch' | 'ride' | 'gym' | 'dance' | 'forage' | 'carried';
   readonly seatId?: string;
   update(dtMs: number): Step;
   onPet?(): Activity | void;
@@ -216,6 +216,37 @@ export function fiddling(critter: Critter, thing: TilePos, start: string, done: 
       return sitting(critter, rand(2500, 4000));
     },
     onPet() {}, // too busy — keeps going
+  };
+}
+
+/** Where the person carrying a critter is, and which way they face. */
+export interface Holder {
+  x: number;
+  y: number;
+  dir: 'up' | 'down' | 'left' | 'right';
+}
+
+/**
+ * Carried in someone's arms: held against their chest, facing the way they face,
+ * until they put them down (Critter.putDown). Petting = happy purrs, still carried.
+ */
+export function carried(critter: Critter, holder: () => Holder): Activity {
+  critter.walker.goTo(toTile(critter)); // drop any path
+  critter.sprite.stop().setFrame('sit');
+  critter.say(pick(critter.species.lines.pickedUp));
+  return {
+    name: 'carried',
+    update() {
+      const h = holder();
+      critter.moveTo({ x: h.x, y: h.y });
+      if (h.dir === 'left') critter.face('left');
+      if (h.dir === 'right') critter.face('right');
+      // in their arms: a bit in front of the chest; behind them when they face away
+      const side = h.dir === 'left' ? -3 : h.dir === 'right' ? 3 : 0;
+      critter.drawAt({ x: h.x + side, y: h.y - 9 }, h.y + (h.dir === 'up' ? -0.5 : 0.5));
+      return 'continue';
+    },
+    onPet() {}, // purrs in their arms
   };
 }
 
