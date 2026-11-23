@@ -126,7 +126,6 @@ export class OfficeRenderer {
     const x = p.tx * TILE;
     switch (p.type) {
       case 'desk':
-        glow(GLOW_KEYS.small, x + 6, top + 7);
         if (p.dir === 'up') glow(GLOW_KEYS.screen, x + 24, top + 6);
         break;
       case 'stage': glow(GLOW_KEYS.lamp, x + (footprint(p).w * TILE) / 2, p.ty * TILE + 20); break;
