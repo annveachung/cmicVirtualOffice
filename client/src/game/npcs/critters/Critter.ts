@@ -20,7 +20,7 @@ import { SpeechBubble } from '../../characters/SpeechBubble';
 import { DEPTH, NIGHT_TINT } from '../../constants';
 import { Walker, pick, rand, type Npc, type NpcContext } from '../common';
 import { riding, sitting, type Activity, type Step } from './activities';
-import { CAT_BEHAVIOURS } from './behaviours';
+import { CRITTER_BEHAVIOURS } from './behaviours';
 import type { Species } from './species';
 
 /**
@@ -127,7 +127,7 @@ export class Critter implements Npc {
 
   /** Pick the next thing to do from the behaviour menu (weighted random). */
   private decide() {
-    const options = [...CAT_BEHAVIOURS];
+    const options = CRITTER_BEHAVIOURS.filter((b) => !b.only || b.only.includes(this.species.kind));
     while (options.length) {
       const total = options.reduce((n, b) => n + b.weight, 0);
       let roll = Math.random() * total;

@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import { tileCenter, toTile, type CatPerch, type Spot, type TilePos } from '@little-office/shared';
+import { TILE, tileCenter, toTile, type CatPerch, type Spot, type TilePos } from '@little-office/shared';
 import { freeTileNear, pick, rand } from '../common';
 import type { Critter } from './Critter';
 
@@ -13,7 +13,7 @@ import type { Critter } from './Critter';
 export type Step = 'continue' | 'done' | Activity;
 
 export interface Activity {
-  readonly name: 'sit' | 'walk' | 'nap' | 'perch' | 'ride' | 'gym' | 'dance';
+  readonly name: 'sit' | 'walk' | 'nap' | 'perch' | 'ride' | 'gym' | 'dance' | 'forage';
   readonly seatId?: string;
   update(dtMs: number): Step;
   onPet?(): Activity | void;
@@ -183,6 +183,33 @@ export function dancing(critter: Critter): Activity {
       return (left -= dt) <= 0 ? sitting(critter, rand(1500, 3000)) : 'continue';
     },
     onPet() {}, // keeps dancing
+  };
+}
+
+/**
+ * Busy little hands at something next to them (a bin, a sink): face it, fidget,
+ * say `start`… then, a few seconds later, one of `done`.
+ */
+export function fiddling(critter: Critter, thing: TilePos, start: string, done: string[]): Activity {
+  critter.face(thing.tx * TILE + TILE / 2 < critter.x ? 'left' : 'right');
+  critter.sprite.stop().setFrame('walkA');
+  critter.say(start, 2500);
+  let left = rand(5000, 8000);
+  let fidget = 0;
+  return {
+    name: 'forage',
+    update(dt) {
+      fidget -= dt;
+      if (fidget <= 0) {
+        fidget = 180; // quick paw movements
+        critter.sprite.setFrame(critter.sprite.frame.name === 'walkA' ? 'walkB' : 'walkA');
+      }
+      critter.drawOnFloor(fidget > 90 ? 1 : 0);
+      if ((left -= dt) > 0) return 'continue';
+      critter.say(pick(done), 2500);
+      return sitting(critter, rand(2500, 4000));
+    },
+    onPet() {}, // too busy — keeps going
   };
 }
 

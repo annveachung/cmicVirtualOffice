@@ -1,6 +1,7 @@
-import { approachTiles, toTile } from '@little-office/shared';
+import { BIN_TILES, SINK_TILES, approachTiles, besideTile, toTile } from '@little-office/shared';
+import type { CritterKind } from '../../assets/npcArt';
 import { pick } from '../common';
-import { dancing, napping, perching, riding, sitting, walking, workingOut, type Activity } from './activities';
+import { dancing, fiddling, napping, perching, riding, sitting, walking, workingOut, type Activity } from './activities';
 import type { Critter } from './Critter';
 
 /**
@@ -13,14 +14,18 @@ import type { Critter } from './Critter';
  *   - Roomby rolls past while they're sitting → they often hop on  (Critter.update)
  *   - you pet them → each activity decides how they react         (activities.ts onPet)
  *   - the seat / machine they're on can't be used by anyone else   (seatId)
+ *
+ * Raccoon-only habits at the bottom (`only: ['raccoon']`).
  */
-export interface CatBehaviour {
+export interface CritterBehaviour {
   id: string;
   weight: number;
+  /** Only these kinds of critter do it (e.g. raccoon habits). Everyone if left out. */
+  only?: CritterKind[];
   start(critter: Critter): Activity | null;
 }
 
-export const CAT_BEHAVIOURS: CatBehaviour[] = [
+export const CRITTER_BEHAVIOURS: CritterBehaviour[] = [
   {
     id: 'wander', // stroll somewhere nearby in the lounge / hall and sit
     weight: 38,
@@ -72,6 +77,34 @@ export const CAT_BEHAVIOURS: CatBehaviour[] = [
         critter.rideCooldown = 15000 + Math.random() * 10000;
         return (critter.roombyWithin(32) && riding(critter)) || sitting(critter);
       });
+    },
+  },
+
+  // ---- raccoon habits ----
+  {
+    id: 'rummage', // trash panda: dig through a bin for treasure
+    weight: 14,
+    only: ['raccoon'],
+    start(critter) {
+      const bin = pick(BIN_TILES);
+      const beside = bin && besideTile(critter.grid, bin);
+      if (!beside) return null;
+      return walking(critter, beside, () =>
+        fiddling(critter, bin, '*rummage rummage* 🗑️', ['found a snack! 🍕', 'ooh, half a donut 🍩', 'treasure! 🥨', 'a shiny wrapper ✨']),
+      );
+    },
+  },
+  {
+    id: 'wash-snack', // raccoons wash their food — at the pantry sink
+    weight: 8,
+    only: ['raccoon'],
+    start(critter) {
+      const sink = pick(SINK_TILES);
+      const beside = sink && besideTile(critter.grid, sink);
+      if (!beside) return null;
+      return walking(critter, beside, () =>
+        fiddling(critter, sink, '🧼 scrub scrub scrub', ['squeaky clean 🍎✨', 'now it\'s ready 🍇', '*washes it again* 🫧']),
+      );
     },
   },
 ];
