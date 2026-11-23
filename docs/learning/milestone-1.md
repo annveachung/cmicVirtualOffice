@@ -237,3 +237,17 @@ Riding has no physics. Each frame, the rider's position is **copied** from the v
 - **Mochi:** riding is just another state in her state machine (`idle → walk → sit | nap | ride`).
 - **One rider at a time:** Roomby keeps a `rider` field, a tiny **lock**. `board()` fails if someone
   else holds it, and `alight()` releases it.
+
+## 34. Organising behaviour: a menu + building blocks
+Mochi's code lives in `game/npcs/cat/` and is split into three layers:
+- **`Cat.ts` (the body):** her sprite, speech bubble and legs, plus a loop that runs **one activity
+  at a time**.
+- **`activities.ts` (the building blocks):** walk, sit, nap, perch, ride, work out, dance. Each one
+  is a small object with `update()` returning `'continue'`, `'done'` or the next activity. Examples:
+  - walking returns "perch" when she arrives;
+  - perching returns "sit" after hopping down.
+- **`behaviours.ts` (the menu):** what she might choose, with **weights** for a weighted random pick.
+  For example, `{ id: 'disco', weight: 9, start: walk to the dance floor, then dance }`.
+
+Adding a trick means writing (maybe) one activity and adding one line to the menu.
+This pattern is common in games: designers tune the menu, and programmers write the building blocks.
