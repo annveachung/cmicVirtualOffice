@@ -56,6 +56,7 @@ export interface Npc {
 /** Follows A* paths across the tile grid at a fixed speed (NPCs don't collide with people). */
 class Walker {
   private waypoints: Vec2[] = [];
+  private waited = 0;
 
   constructor(
     private readonly grid: CollisionGrid,
@@ -76,14 +77,33 @@ class Walker {
     return this.waypoints.length > 0;
   }
 
-  /** Returns the direction travelled this frame (or null if standing still). */
-  update(dtMs: number): Direction | null {
+  /**
+   * Returns the direction travelled this frame (or null if standing still).
+   * If `avoid` (the player) is right in the way, it waits instead of walking through.
+   */
+  update(dtMs: number, avoid?: Vec2): Direction | null {
     const wp = this.waypoints[0];
     if (!wp) return null;
     const step = (this.speed * Math.min(dtMs, 50)) / 1000;
     const dx = wp.x - this.x;
     const dy = wp.y - this.y;
     const d = Math.hypot(dx, dy);
+    if (avoid && d > 0) {
+      const nx = this.x + (dx / d) * Math.min(step, d);
+      const ny = this.y + (dy / d) * Math.min(step, d);
+      const before = Math.hypot(this.x - avoid.x, this.y - avoid.y);
+      const after = Math.hypot(nx - avoid.x, ny - avoid.y);
+      if (after < 12 && after < before) {
+        // politely wait — but if you're parked in the way for a while, give up and do something else
+        this.waited += dtMs;
+        if (this.waited > 1500) {
+          this.waypoints = [];
+          this.waited = 0;
+        }
+        return null;
+      }
+    }
+    this.waited = 0;
     if (d <= step) {
       this.x = wp.x;
       this.y = wp.y;
@@ -126,8 +146,8 @@ class Cat implements Npc {
     return this.walker.y;
   }
 
-  update(dtMs: number) {
-    const dir = this.walker.update(dtMs);
+  update(dtMs: number, ctx: NpcContext) {
+    const dir = this.walker.update(dtMs, { x: ctx.playerX, y: ctx.playerY });
     if (this.state === 'walk') {
       if (dir === 'left') this.sprite.setFlipX(true);
       if (dir === 'right') this.sprite.setFlipX(false);
@@ -220,12 +240,12 @@ class Vacuum implements Npc {
     return this.walker.y;
   }
 
-  update(dtMs: number) {
+  update(dtMs: number, ctx: NpcContext) {
     if (this.pause > 0) this.pause -= dtMs;
     else if (!this.walker.moving) {
       this.leg = (this.leg + 1) % VACUUM_ROUTE.length;
       this.walker.goTo(VACUUM_ROUTE[this.leg]);
-    } else this.walker.update(dtMs);
+    } else this.walker.update(dtMs, { x: ctx.playerX, y: ctx.playerY });
     this.sprite.setPosition(Math.round(this.x), Math.round(this.y)).setDepth(DEPTH.world + this.y - 4);
     this.bubble.setPosition(this.x, this.y - 6);
   }
@@ -337,7 +357,7 @@ class Coach implements Npc {
   }
 
   update(dtMs: number, ctx: NpcContext) {
-    const dir = this.walker.update(dtMs);
+    const dir = this.walker.update(dtMs, { x: ctx.playerX, y: ctx.playerY });
     if (dir) this.person.setMotion(dir, 'walk');
     else {
       this.person.setMotion('down', 'idle');
@@ -390,6 +410,11 @@ export class NpcManager {
 
   update(dtMs: number, ctx: NpcContext) {
     for (const n of this.npcs) n.update(dtMs, ctx);
+  }
+
+  /** Where every NPC is (they're solid: the player can't walk through them). */
+  positions(): Vec2[] {
+    return this.npcs.map((n) => ({ x: n.x, y: n.y }));
   }
 
   /** The closest NPC within `range` px of a point (for the E hint and key). */
