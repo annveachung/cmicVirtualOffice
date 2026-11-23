@@ -24,7 +24,7 @@ import { CRITTER_BEHAVIOURS } from './behaviours';
 import type { Species } from './species';
 
 /**
- * THE OFFICE CRITTERS — Mochi the cat and the raccoons (Bandit, Ziggy, Pudding).
+ * THE OFFICE CRITTERS — Mochi the cat and the raccoons (Ziggy and Pudding).
  *
  * Organised in four layers:
  *   Critter.ts      a critter's body — sprite, speech bubble, legs (Walker) — and the loop that
