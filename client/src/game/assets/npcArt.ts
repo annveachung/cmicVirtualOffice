@@ -70,50 +70,53 @@ const CAT = {
 const CAT_COLORS = { O: '#3a2a22', C: '#e3a15d', S: '#c27d3e', E: '#2a2a2a', P: '#e88a9a', '-': '#3a2a22' };
 
 /**
- * Raccoon: grey coat, black eye mask, pale muzzle and belly, ringed bushy tail.
- *   O outline  G grey  L light  M mask  E eye  R tail ring  P nose  - closed eye
+ * Raccoon: a hunched grey body with a darker back, a pointy snout, a black
+ * "bandit" mask framed by white brows and cheeks, dark little hands and a
+ * thick tail with black rings.
+ *   O outline  G grey  D dark back  W white face  M mask  E eye glint
+ *   P nose  L pale belly  K dark paws  R tail ring  - closed eye
  */
 const RACCOON = {
   walkA: [
-    '.........OO...OO',
-    '.........OGGGGGO',
-    '.OO......OMMGMMO',
-    'ORRO.....OMEGMEO',
-    'OGGO.....OGLLLPO',
-    'ORROOOOOOOGGGGO.',
-    '.OGGOGGGGGGGGGO.',
-    '..OGGGGGGGGGGGO.',
-    '...OGLLLLLLLGO..',
-    '...OGOOOOOOOGO..',
-    '...OMO.....OMO..',
-    '...OO......OO...',
+    '.........OWOOWO.',
+    '........OGGGGGGO',
+    '.OOO....OWWGGWWO',
+    'ORGRO...OMEMMEMM',
+    'OGRGRO..OMMMWWWP',
+    'ORGRGOOOOOWWWWO.',
+    '.ORGRODDDDDDDDO.',
+    '..OORGGGGGGGGGO.',
+    '...OGGGGGGGGGGO.',
+    '...OLLLLLLLLLO..',
+    '...OKKO...OKKO..',
+    '...OOO....OOO...',
   ],
   walkB: [
-    '.........OO...OO',
-    '.........OGGGGGO',
-    '.OO......OMMGMMO',
-    'ORRO.....OMEGMEO',
-    'OGGO.....OGLLLPO',
-    'ORROOOOOOOGGGGO.',
-    '.OGGOGGGGGGGGGO.',
-    '..OGGGGGGGGGGGO.',
-    '...OGLLLLLLLGO..',
-    '...OGOOOOOOOGO..',
-    '....OMO...OMO...',
-    '....OO.....OO...',
+    '.........OWOOWO.',
+    '........OGGGGGGO',
+    '.OOO....OWWGGWWO',
+    'ORGRO...OMEMMEMM',
+    'OGRGRO..OMMMWWWP',
+    'ORGRGOOOOOWWWWO.',
+    '.ORGRODDDDDDDDO.',
+    '..OORGGGGGGGGGO.',
+    '...OGGGGGGGGGGO.',
+    '...OLLLLLLLLLO..',
+    '....OKKO.OKKO...',
+    '....OOO..OOO....',
   ],
   sit: [
-    '................',
-    '.......OO..OO...',
-    '.......OGGGGO...',
-    '.......OMMMMO...',
-    '.......OEMMEO...',
-    '.......OLPPLO...',
-    '......OOGLLGOO..',
+    '.....OO...OO....',
+    '....OGGGGGGGGO..',
+    '....OWWWGGWWWO..',
+    '....MMEMMMMEMM..',
+    '....OMMMWWMMMO..',
+    '.....OWWPPWWO...',
+    '......OOWWOO....',
     'OO...OGGLLLLGO..',
-    'ORO..OGGLLLLGO..',
-    'OGGO.OGGGGGGGO..',
-    '.ORROOGGGGGGGO..',
+    'ORO..OKKLLLKKO..',
+    'OGRO.OGGLLLGGO..',
+    '.ORGROGGGGGGGO..',
     '..OOOOOOOOOOOO..',
   ],
   sleep: [
@@ -123,15 +126,27 @@ const RACCOON = {
     '................',
     '................',
     '................',
-    '..........O.O...',
+    '...........O.O..',
     '....OOOOOOOGOGO.',
-    '...ORRGGRRGOMMO.',
-    '..OGGGGGGGGOM-MO',
-    '..OGGGGGGGGGLLO.',
+    '...ORGRGRGOWWWO.',
+    '..ORGRGRGROM-MMO',
+    '..OGGGGGGGGOWWP.',
     '...OOOOOOOOOOO..',
   ],
 };
-const RACCOON_COLORS = { O: '#2b2a2e', G: '#8d8a93', L: '#e6e2dc', M: '#2f2c33', E: '#f4f1e8', R: '#4a4750', P: '#1d1b20', '-': '#cfcac2' };
+const RACCOON_COLORS = {
+  O: '#26242a',
+  G: '#8e8a94',
+  D: '#6c6873',
+  W: '#efece6',
+  M: '#1f1d22',
+  E: '#f6f3ea',
+  P: '#141216',
+  L: '#d9d4cc',
+  K: '#2a272d',
+  R: '#2f2c33',
+  '-': '#8e8a94',
+};
 
 export const CAT_FRAMES = ['walkA', 'walkB', 'sit', 'sleep'] as const;
 type CritterTemplates = Record<(typeof CAT_FRAMES)[number], string[]>;
