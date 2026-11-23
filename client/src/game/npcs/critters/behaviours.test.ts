@@ -13,10 +13,10 @@ describe('the critter behaviour menu', () => {
 });
 
 describe('who lives in the office', () => {
-  it('has Mochi plus three raccoons, each with a known species and a unique name', async () => {
+  it('has Mochi plus two raccoons, each with a known species and a unique name', async () => {
     const { CRITTERS, SPECIES } = await import('./species');
     expect(CRITTERS.filter((c) => c.kind === 'cat')).toHaveLength(1);
-    expect(CRITTERS.filter((c) => c.kind === 'raccoon')).toHaveLength(3);
+    expect(CRITTERS.filter((c) => c.kind === 'raccoon')).toHaveLength(2);
     expect(new Set(CRITTERS.map((c) => c.name)).size).toBe(CRITTERS.length);
     for (const c of CRITTERS) expect(SPECIES[c.kind].lines.pet.length, c.name).toBeGreaterThan(0);
   });

@@ -51,7 +51,6 @@ export const SPECIES: Record<CritterKind, Species> = {
 /** Who lives in the office. */
 export const CRITTERS: { name: string; kind: CritterKind }[] = [
   { name: 'Mochi', kind: 'cat' },
-  { name: 'Bandit', kind: 'raccoon' },
   { name: 'Ziggy', kind: 'raccoon' },
   { name: 'Pudding', kind: 'raccoon' },
 ];

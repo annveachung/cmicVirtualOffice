@@ -27,8 +27,7 @@ import { SpeechBubble } from '../characters/SpeechBubble';
 import { DEPTH, NIGHT_TINT } from '../constants';
 
 /**
- * The office's NPCs: the critters (Mochi the cat + raccoons Bandit, Ziggy and
- * Pudding), Roomby the robot vacuum, Pip at reception and Coach Rio in the gym. Each is a tiny state machine (idle → walk → do a
+ * The office's NPCs: the critters (Mochi the cat + raccoons Ziggy and Pudding), Roomby the robot vacuum, Pip at reception and Coach Rio in the gym. Each is a tiny state machine (idle → walk → do a
  * thing → idle…). They run on this screen for now; in Milestone 2 the server
  * will run them so everyone sees the same critters in the same places.
  */
