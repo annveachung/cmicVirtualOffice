@@ -1,7 +1,9 @@
-import type { TilePos } from '../types.js';
+import { TILE } from '../config.js';
+import type { TilePos, Vec2 } from '../types.js';
 import type { CollisionGrid } from './collision.js';
+import { footprint } from './furniture.js';
 import { PLACEMENTS, TILES, zoneAt } from './office.js';
-import { SPOTS, type Spot } from './spots.js';
+import { SPOTS, approachTiles } from './spots.js';
 
 /**
  * Where the office's NPCs live and roam. Kept in shared map data so that, once
@@ -32,8 +34,54 @@ export const CAT_NAP_TILES: TilePos[] = [
   { tx: 20, ty: 12 },
 ];
 
-/** The office (gaming) chairs at the desks — Mochi likes to borrow them for a nap. */
-export const CAT_CHAIR_SPOTS: Spot[] = SPOTS.filter((s) => PLACEMENTS.find((p) => p.id === s.id)?.type === 'deskChair');
+/** Somewhere Mochi can hop up onto: an office chair, a sofa cushion or a pantry table. */
+export interface CatPerch {
+  id: string;
+  /** Pixel position of her feet while perched. */
+  pos: Vec2;
+  /** Draw-order y: just in front of whatever she's on (but behind what's in front of it). */
+  depthY: number;
+  /** The seat she's taking (nobody can sit there meanwhile). Chairs and sofa cushions only. */
+  seatId?: string;
+  /** Floor tiles she can hop up from (and back down to). */
+  from: TilePos[];
+}
+
+const PERCH_SEATS = new Set(['deskChair', 'sofa']);
+const PERCH_TABLES = new Set(['diningTable', 'roundTable', 'boothTable']);
+
+/** Every perch, with the floor tiles next to it (needs the collision grid). */
+export function catPerches(grid: CollisionGrid): CatPerch[] {
+  const perches: CatPerch[] = [];
+  // office chairs + every sofa cushion (sofa seats are "<sofa id>:<n>")
+  for (const s of SPOTS) {
+    const type = PLACEMENTS.find((p) => p.id === s.id.split(':')[0])?.type;
+    if (!type || !PERCH_SEATS.has(type)) continue;
+    perches.push({ id: s.id, pos: s.pos, depthY: (s.tile.ty + 1) * TILE + 1, seatId: s.id, from: approachTiles(grid, s) });
+  }
+  // pantry tables: she sits on the tabletop (the big table has room for two spots)
+  for (const p of PLACEMENTS) {
+    if (!PERCH_TABLES.has(p.type)) continue;
+    const { w, h } = footprint(p);
+    const around: TilePos[] = [];
+    for (let x = p.tx - 1; x <= p.tx + w; x++)
+      for (let y = p.ty - 1; y <= p.ty + h; y++) {
+        const edge = x === p.tx - 1 || x === p.tx + w || y === p.ty - 1 || y === p.ty + h;
+        const corner = (x === p.tx - 1 || x === p.tx + w) && (y === p.ty - 1 || y === p.ty + h);
+        if (edge && !corner && !grid.isBlocked(x, y)) around.push({ tx: x, ty: y });
+      }
+    const xs = w >= 4 ? [p.tx * TILE + w * TILE * 0.3, p.tx * TILE + w * TILE * 0.7] : [p.tx * TILE + (w * TILE) / 2];
+    xs.forEach((x, i) =>
+      perches.push({
+        id: `${p.id}:top${i}`,
+        pos: { x, y: p.ty * TILE + h * TILE * 0.6 },
+        depthY: (p.ty + h) * TILE + 1,
+        from: around,
+      }),
+    );
+  }
+  return perches;
+}
 
 /** Every walkable tile in an area (used as random wander targets). */
 export function walkableTiles(grid: CollisionGrid, test: (t: TilePos) => boolean): TilePos[] {
