@@ -102,9 +102,7 @@ class Vacuum implements Npc {
       this.leg = (this.leg + 1) % VACUUM_ROUTE.length;
       this.walker.goTo(VACUUM_ROUTE[this.leg]);
     } else {
-      // with you on board it obviously doesn't need to wait for you
-      const avoid = this.rider === 'player' ? undefined : { x: ctx.playerX, y: ctx.playerY };
-      this.heading = this.walker.update(dtMs, avoid) ?? this.heading;
+      this.heading = this.walker.update(dtMs, ctx.obstacles) ?? this.heading;
     }
     this.sprite.setPosition(Math.round(this.x), Math.round(this.y)).setDepth(DEPTH.world + this.y - 4);
     this.bubble.setPosition(this.x, this.y - (this.rider === 'player' ? 30 : 6));
@@ -226,7 +224,7 @@ class Coach implements Npc {
   }
 
   update(dtMs: number, ctx: NpcContext) {
-    const dir = this.walker.update(dtMs, { x: ctx.playerX, y: ctx.playerY });
+    const dir = this.walker.update(dtMs, ctx.obstacles);
     if (dir) this.person.setMotion(dir, 'walk');
     else {
       this.person.setMotion('down', 'idle');
@@ -289,8 +287,26 @@ export class NpcManager {
     this.npcs = [...this.critters, this.roomby, new Receptionist(scene, playerName), new Coach(scene, grid)];
   }
 
-  update(dtMs: number, ctx: NpcContext) {
-    for (const n of this.npcs) n.update(dtMs, ctx);
+  /**
+   * Everyone is solid: each NPC is told where you and all the OTHER NPCs are, so
+   * nobody walks through anybody. (Roomby and whoever is riding it don't count —
+   * the rider is on top of it.)
+   */
+  update(dtMs: number, ctx: Omit<NpcContext, 'obstacles'>) {
+    const player = { x: ctx.playerX, y: ctx.playerY };
+    const riderOf = (n: Npc) => (n === this.roomby ? this.roomby.rider : null);
+    const isRiding = (n: Npc) => n instanceof Critter && this.roomby.rider === n.name;
+    for (const n of this.npcs) {
+      const obstacles: Vec2[] = [];
+      if (riderOf(n) !== 'player') obstacles.push(player);
+      for (const o of this.npcs) {
+        if (o === n) continue;
+        if (n === this.roomby && isRiding(o)) continue; // its own passenger
+        if (o === this.roomby && isRiding(n)) continue;
+        obstacles.push({ x: o.x, y: o.y });
+      }
+      n.update(dtMs, { ...ctx, obstacles });
+    }
   }
 
   /** The name of the critter occupying a seat / machine (nobody else can use it), if any. */
