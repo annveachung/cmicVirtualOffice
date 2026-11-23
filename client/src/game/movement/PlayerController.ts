@@ -55,6 +55,10 @@ export class PlayerController {
   onPathEnd: () => void = () => {};
   /** Positions of things you can't walk through that move (NPCs). */
   blockers: () => Vec2[] = () => [];
+  /** Is this seat already taken by someone else (e.g. Mochi napping on it)? */
+  isTaken: (spot: Spot) => boolean = () => false;
+  /** Called when you try to use a taken seat. */
+  onTaken: (spot: Spot) => void = () => {};
   /** Called for one-off actions (costume, snack, poke the mascot) — they don't put you in a pose. */
   onInstant: (spot: Spot) => void = () => {};
 
@@ -70,6 +74,11 @@ export class PlayerController {
     return this.using?.spot ?? null;
   }
 
+  /** The spot you're using or walking over to use (so nobody else takes it). */
+  get claimedSpot(): Spot | null {
+    return this.using?.spot ?? this.pending?.spot ?? null;
+  }
+
   /** Plan a route to a clicked floor position. Returns the destination, or null if unreachable. */
   goTo(pos: Vec2, target: Vec2): Vec2 | null {
     const from = this.standUp(pos);
@@ -82,6 +91,10 @@ export class PlayerController {
   /** Walk to the best tile next to (or on) a spot, then use it. Returns the walk destination. */
   goUse(pos: Vec2, spot: Spot): Vec2 | null {
     if (this.using?.spot.id === spot.id) return null;
+    if (this.isTaken(spot)) {
+      this.onTaken(spot);
+      return null;
+    }
     const from = this.standUp(pos);
     const here = toTile(from);
     // One-off things (food, machines, the mat…): a click only walks you over; you take
@@ -220,6 +233,10 @@ export class PlayerController {
   private use(spot: Spot, standTile: TilePos) {
     this.waypoints = [];
     this.pending = null;
+    if (this.isTaken(spot)) {
+      this.onTaken(spot); // someone got there first
+      return;
+    }
     if (INSTANT_ACTIONS.has(spot.action)) {
       // one-off: face it, do the thing, stay standing where you are
       this.dir = spot.facing;

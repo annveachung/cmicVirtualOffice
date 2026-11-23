@@ -92,6 +92,10 @@ export class OfficeScene extends Phaser.Scene {
     this.npcs = new NpcManager(this, this.grid, name);
     this.npcs.setTheme(theme);
     this.controller.blockers = () => this.npcs.positions(); // NPCs are solid
+    // a seat is taken while Mochi is curled up on it (and she won't take yours)
+    this.npcs.seatBusy = (id) => this.controller.claimedSpot?.id === id;
+    this.controller.isTaken = (spot) => this.npcs.catSeat === spot.id;
+    this.controller.onTaken = () => this.player.say(pick(TAKEN_LINES), 3000);
     // one-off actions: the pantry counters ask what you'd like; everything else is the club's
     this.controller.onInstant = (spot) => {
       if (spot.action === 'pantry') this.usePantry(spot.id);
@@ -249,6 +253,7 @@ export class OfficeScene extends Phaser.Scene {
       let bestD = Infinity;
       for (const s of SPOTS) {
         if (!isInFrontOf(this.grid, here, s)) continue; // only when you're facing it, not standing behind
+        if (s.id === this.npcs.catSeat) continue; // Mochi's on it (you get "pet Mochi" instead)
         const d = Math.hypot(s.pos.x - this.player.x, s.pos.y - this.player.y);
         if (d < bestD) {
           bestD = d;
@@ -289,6 +294,7 @@ const APPLE_LINES = ['🍎 A crunchy apple. Healthy choice!', '🍎 An apple a d
 const BREAD_LINES = ['🍞 A slice of fresh bread.', '🥖 Tore off a bit of baguette.', '🍞 Warm bread — cozy.'];
 
 const pantryLine = (i: PantryItem) => pick(PANTRY_LINES[i]);
+const TAKEN_LINES = ["Mochi's napping here… I'll find another seat 🐱", 'This seat is taken (by a cat) 🐾', "Can't sit — Mochi called dibs 🐱"];
 
 function isTyping(): boolean {
   const el = document.activeElement;
