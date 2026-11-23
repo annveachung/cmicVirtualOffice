@@ -18,6 +18,7 @@ import {
 } from '@little-office/shared';
 import { VACUUM_KEY, registerNpcArt } from '../assets/npcArt';
 import { Critter } from './critters/Critter';
+export type { Critter } from './critters/Critter';
 import { CRITTERS, SPECIES } from './critters/species';
 import { Walker, pick, rand, type Npc, type NpcContext } from './common';
 
@@ -301,12 +302,28 @@ export class NpcManager {
       if (riderOf(n) !== 'player') obstacles.push(player);
       for (const o of this.npcs) {
         if (o === n) continue;
+        if (o instanceof Critter && o.isCarried) continue; // in your arms — not in anyone's way
         if (n === this.roomby && isRiding(o)) continue; // its own passenger
         if (o === this.roomby && isRiding(n)) continue;
         obstacles.push({ x: o.x, y: o.y });
       }
       n.update(dtMs, { ...ctx, obstacles });
     }
+  }
+
+  /** A critter close enough to pick up (not one you're already holding). */
+  critterNear(x: number, y: number, range = TILE * 1.6): Critter | null {
+    let best: Critter | null = null;
+    let bestD = range;
+    for (const c of this.critters) {
+      if (c.isCarried) continue;
+      const d = Math.hypot(c.x - x, c.y - y);
+      if (d < bestD) {
+        bestD = d;
+        best = c;
+      }
+    }
+    return best;
   }
 
   /** The name of the critter occupying a seat / machine (nobody else can use it), if any. */
@@ -316,7 +333,7 @@ export class NpcManager {
 
   /** Where every NPC is (they're solid: the player can't walk through them). */
   positions(): Vec2[] {
-    return this.npcs.map((n) => ({ x: n.x, y: n.y }));
+    return this.npcs.filter((n) => !(n instanceof Critter && n.isCarried)).map((n) => ({ x: n.x, y: n.y }));
   }
 
   /** The closest NPC within `range` px of a point (for the E hint and key). */
@@ -324,6 +341,7 @@ export class NpcManager {
     let best: Npc | null = null;
     let bestD = range;
     for (const n of this.npcs) {
+      if (n instanceof Critter && n.isCarried) continue; // the one in your arms
       const d = Math.hypot(n.x - x, n.y - y);
       if (d < bestD) {
         bestD = d;
