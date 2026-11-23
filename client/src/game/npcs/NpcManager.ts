@@ -1,11 +1,10 @@
 import Phaser from 'phaser';
 import {
-  CAT_CHAIR_SPOTS,
+  catPerches,
   CAT_NAP_TILES,
   RECEPTIONIST_TILE,
   TILE,
   VACUUM_ROUTE,
-  approachTiles,
   catRoams,
   coachRoams,
   findPath,
@@ -17,7 +16,7 @@ import {
   type Appearance,
   type CollisionGrid,
   type Direction,
-  type Spot,
+  type CatPerch,
   type Theme,
   type TilePos,
   type Vec2,
@@ -138,10 +137,12 @@ class Cat implements Npc {
   private readonly walker: Walker;
   private readonly roam: TilePos[];
   private state: 'idle' | 'walk' | 'sit' | 'nap' | 'ride' | 'chair' = 'idle';
-  /** The office chair she's curled up on (nobody else can sit there meanwhile). */
-  private chair: { spot: Spot; from: TilePos } | null = null;
-  /** The chair she's walking over to. */
-  private headingToChair: { spot: Spot; from: TilePos } | null = null;
+  /** Chairs, sofa cushions and pantry tables she can hop up onto. */
+  private readonly perches: CatPerch[];
+  /** Where she's curled up (if it's a seat, nobody else can sit there meanwhile). */
+  private chair: { perch: CatPerch; from: TilePos } | null = null;
+  /** The perch she's walking over to. */
+  private headingToChair: { perch: CatPerch; from: TilePos } | null = null;
   private napping = false;
   /** Walking over to catch Roomby for a ride. */
   private chasing = false;
@@ -159,6 +160,7 @@ class Cat implements Npc {
     const start = tileCenter(CAT_NAP_TILES[0]);
     this.walker = new Walker(grid, start.x, start.y, 38);
     this.roam = walkableTiles(grid, catRoams);
+    this.perches = catPerches(grid);
     this.sprite = scene.add.sprite(start.x, start.y, CAT_KEY, 'sit').setOrigin(0.5, 1);
     this.bubble = new SpeechBubble(scene);
   }
@@ -172,7 +174,7 @@ class Cat implements Npc {
 
   /** The seat she's occupying, if any. */
   get seatId(): string | null {
-    return this.chair?.spot.id ?? null;
+    return this.chair?.perch.seatId ?? null;
   }
 
   update(dtMs: number, ctx: NpcContext) {
@@ -182,9 +184,9 @@ class Cat implements Npc {
       if (this.timer <= 0) this.leaveChair();
       else {
         // drawn on the seat, above the chair but still behind the desk in front of it
-        const { spot } = this.chair;
-        this.sprite.setPosition(Math.round(spot.pos.x), Math.round(spot.pos.y - 1)).setDepth(DEPTH.world + (spot.tile.ty + 1) * TILE + 1);
-        this.bubble.setPosition(spot.pos.x, spot.pos.y - 14);
+        const { perch } = this.chair;
+        this.sprite.setPosition(Math.round(perch.pos.x), Math.round(perch.pos.y - 1)).setDepth(DEPTH.world + perch.depthY);
+        this.bubble.setPosition(perch.pos.x, perch.pos.y - 14);
         return;
       }
     }
@@ -246,8 +248,8 @@ class Cat implements Npc {
   }
 
   private decide() {
-    // sometimes borrow a free office chair for a snooze
-    if (Math.random() < 0.2 && this.goToChair()) return;
+    // sometimes hop up onto a free chair, sofa or pantry table for a snooze
+    if (Math.random() < 0.25 && this.goToChair()) return;
     // now and then, chase Roomby for a ride
     if (this.rideCooldown <= 0 && !this.roomby.rider && Math.random() < 0.25 && this.walker.goTo(toTile(this.roomby))) {
       this.chasing = true;
@@ -269,12 +271,12 @@ class Cat implements Npc {
   }
 
   private goToChair(): boolean {
-    const free = CAT_CHAIR_SPOTS.filter((s) => !this.seatBusy(s.id));
+    const free = this.perches.filter((p) => !p.seatId || !this.seatBusy(p.seatId));
     if (!free.length) return false;
-    const spot = pick(free);
-    for (const from of approachTiles(this.grid, spot)) {
+    const perch = pick(free);
+    for (const from of perch.from) {
       if (!this.walker.goTo(from)) continue;
-      this.headingToChair = { spot, from };
+      this.headingToChair = { perch, from };
       this.napping = false;
       this.chasing = false;
       this.state = 'walk';
@@ -301,12 +303,12 @@ class Cat implements Npc {
     this.sprite.stop();
     const target = this.headingToChair;
     this.headingToChair = null;
-    if (target && !this.seatBusy(target.spot.id)) {
+    if (target && !(target.perch.seatId && this.seatBusy(target.perch.seatId))) {
       // hop up onto the seat; half the time she curls up and dozes
       this.chair = target;
       this.state = 'chair';
-      this.walker.x = target.spot.pos.x;
-      this.walker.y = target.spot.pos.y;
+      this.walker.x = target.perch.pos.x;
+      this.walker.y = target.perch.pos.y;
       const doze = Math.random() < 0.5;
       this.sprite.setFrame(doze ? 'sleep' : 'sit');
       if (doze) this.bubble.say('z z z');
