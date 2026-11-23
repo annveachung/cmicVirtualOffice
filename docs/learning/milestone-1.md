@@ -218,3 +218,14 @@ TypeScript can't catch this (`colors[i]` is typed as a colour even when `i` is 1
 The fix was one `Math.floor`. The lasting fix is `art.smoke.test.ts`: it runs **every painter for
 every placement in both themes** against a fake canvas that refuses bad colours, so this whole class
 of bug now fails `npm test` in under a second instead of freezing the game.
+
+## 32. NPCs as tiny state machines
+Each NPC (`game/npcs/NpcManager.ts`) is a few states and a timer:
+- **Mochi the cat:** `idle → walk (to a random nearby tile, or a nap spot) → sit | nap → idle…`
+- **Roomby the vacuum:** walks a fixed loop of waypoints, pathfinding between them.
+- **Coach Rio:** wanders gym tiles and, on a timer, cheers if *your* pose is a workout pose.
+- **Pip:** stands still, greets once, cycles tips on request.
+They reuse what already exists: A* + path smoothing for movement, the `Character` class for
+the two people, `SpeechBubble` for talking. Their homes and routes live in **shared** map data,
+because in multiplayer the *server* should run NPCs. Otherwise every player would see a
+different cat in a different place.

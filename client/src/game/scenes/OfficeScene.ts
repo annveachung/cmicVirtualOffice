@@ -24,6 +24,7 @@ import { OfficeRenderer } from '../maps/OfficeRenderer';
 import { PlayerController } from '../movement/PlayerController';
 import { PotatoClub } from '../club/PotatoClub';
 import { CameraRig } from '../camera/CameraRig';
+import { NpcManager, type Npc } from '../npcs/NpcManager';
 import { mealBoxMessage } from '../mealBoxes';
 
 export interface OfficeSceneData {
@@ -53,6 +54,8 @@ export class OfficeScene extends Phaser.Scene {
   private unsubscribers: (() => void)[] = [];
   private club!: PotatoClub;
   private camera!: CameraRig;
+  private npcs!: NpcManager;
+  private nearbyNpc: Npc | null = null;
   private zone: ZoneId | null = null;
 
   constructor() {
@@ -84,6 +87,8 @@ export class OfficeScene extends Phaser.Scene {
     this.tweens.add({ targets: this.marker, scale: { from: 1, to: 0.6 }, yoyo: true, repeat: -1, duration: 420 });
     this.controller.onPathEnd = () => this.marker.setVisible(false);
     this.club = new PotatoClub(this, this.player, this.controller, this.office);
+    this.npcs = new NpcManager(this, this.grid, name);
+    this.npcs.setTheme(theme);
     // one-off actions: the pantry counters ask what you'd like; everything else is the club's
     this.controller.onInstant = (spot) => {
       if (spot.action === 'pantry') this.usePantry(spot.id);
@@ -108,7 +113,10 @@ export class OfficeScene extends Phaser.Scene {
 
     this.input.keyboard!.on('keydown-E', () => {
       if (isTyping()) return;
-      this.controller.interact({ x: this.player.x, y: this.player.y }, this.nearbySpot);
+      // a spot you're using or standing in front of wins; otherwise talk to a nearby NPC
+      if (this.controller.activeSpot || this.nearbySpot || !this.nearbyNpc)
+        this.controller.interact({ x: this.player.x, y: this.player.y }, this.nearbySpot);
+      else this.nearbyNpc.interact();
     });
 
     // Camera: map-app style (drag to look around, scroll/pinch to zoom, buttons in the UI)
@@ -117,6 +125,7 @@ export class OfficeScene extends Phaser.Scene {
         this.player.setLabelScale(sc);
         this.spotHint.setScale(sc);
         this.club.setLabelScale(sc);
+        this.npcs.setLabelScale(sc);
       },
       worldScale: (sc) => this.office.setLabelScale(sc),
       onTap: (wx, wy) => this.tapAt(wx, wy),
@@ -129,10 +138,12 @@ export class OfficeScene extends Phaser.Scene {
       bus.on('theme:set', (t) => {
         this.office.applyTheme(t);
         this.player.setTheme(t);
+        this.npcs.setTheme(t);
       }),
     );
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.club.destroy();
+      this.npcs.destroy();
       this.unsubscribers.forEach((u) => u());
       this.camera.destroy();
     });
@@ -143,6 +154,16 @@ export class OfficeScene extends Phaser.Scene {
   /** A click that wasn't a drag: use the thing you clicked, or walk there. */
   private tapAt(wx: number, wy: number) {
     const here = { x: this.player.x, y: this.player.y };
+    const npc = this.npcs.hit(wx, wy);
+    if (npc) {
+      if (Math.hypot(npc.x - here.x, npc.y - here.y) <= TILE * 1.6) npc.interact();
+      else {
+        const dest = this.controller.goTo(here, { x: npc.x, y: npc.y + TILE });
+        this.marker.setVisible(!!dest);
+        if (dest) this.marker.setPosition(dest.x, dest.y);
+      }
+      return;
+    }
     const spot = spotForTile(toTile({ x: wx, y: wy }));
     const dest = spot ? this.controller.goUse(here, spot) : this.controller.goTo(here, { x: wx, y: wy });
     this.marker.setVisible(!!dest);
@@ -156,6 +177,7 @@ export class OfficeScene extends Phaser.Scene {
     this.player.setMotion(m.dir, this.club.animFor(m.pose));
     this.club.update(m.pose);
     this.updateZone();
+    this.npcs.update(delta, { playerX: this.player.x, playerY: this.player.y, playerPose: m.pose });
     this.updateSpotHint(this.controller.activeSpot !== null);
   }
 
@@ -191,16 +213,26 @@ export class OfficeScene extends Phaser.Scene {
         }
       }
     }
+    // no spot here? maybe an NPC is close enough to chat with
+    this.nearbyNpc = !busy && !this.nearbySpot ? this.npcs.nearest(this.player.x, this.player.y) : null;
+    if (this.nearbyNpc) {
+      this.showHint(`E · ${this.nearbyNpc.verb}`, this.nearbyNpc.x, this.nearbyNpc.y - 24);
+      return;
+    }
     const s = this.nearbySpot;
     this.spotHint.setVisible(!!s);
     if (!s) return;
-    const label = `E · ${s.verb}`;
+    const at = s.hintAt ?? { x: s.pos.x, y: s.tile.ty * TILE - 6 };
+    this.showHint(`E · ${s.verb}`, at.x, at.y);
+  }
+
+  private showHint(label: string, x: number, y: number) {
+    this.spotHint.setVisible(true);
     if (this.spotHint.text !== label) {
       this.spotHint.setText(label); // only re-render the text texture when it changes
       this.spotHint.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
     }
-    const at = s.hintAt ?? { x: s.pos.x, y: s.tile.ty * TILE - 6 };
-    this.spotHint.setPosition(at.x, at.y);
+    this.spotHint.setPosition(x, y);
   }
 }
 
