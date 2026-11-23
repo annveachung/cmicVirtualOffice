@@ -243,6 +243,15 @@ describe('activity spots', () => {
     expect(isInFrontOf(grid, { tx: apple.tile.tx, ty: apple.tile.ty + 1 }, apple)).toBe(false);
   });
 
+  it('gives the NPCs reachable homes, routes and roaming areas', async () => {
+    const { VACUUM_ROUTE, RECEPTIONIST_TILE, CAT_NAP_TILES, walkableTiles, catRoams, coachRoams } = await import('./npcs.js');
+    const reach = reachableFromSpawn();
+    for (const t of [...VACUUM_ROUTE, RECEPTIONIST_TILE, ...CAT_NAP_TILES])
+      expect(reach.has(t.ty * MAP_W + t.tx), `${t.tx},${t.ty}`).toBe(true);
+    expect(walkableTiles(grid, catRoams).length).toBeGreaterThan(100);
+    expect(walkableTiles(grid, coachRoams).length).toBeGreaterThan(20);
+  });
+
   it('has a booth for four in the pantry', async () => {
     const { SPOTS } = await import('./spots.js');
     expect(SPOTS.filter((s) => s.id.startsWith('booth-')).length).toBe(4);
