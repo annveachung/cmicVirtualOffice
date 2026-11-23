@@ -50,12 +50,6 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     for (let i = 0; i < 3; i++) hline(ctx, 4 + i * 13, y0 + 6 + i * 4, 7, shade(pal.furnLight, -0.08));
     box(ctx, 0, y0 + 20, 48, 6, pal.furn, pal.outline);
     rect(ctx, 21, y0 + 22, 6, 1, pal.furnDark);
-    // desk lamp (left)
-    ellipse(ctx, 6, y0 + 9, 3, 1, pal.metalDark);
-    vline(ctx, 6, 3, y0 + 6, pal.metalDark);
-    rect(ctx, 2, 0, 9, 1, pal.outline);
-    box(ctx, 1, 1, 11, 5, pal.lampShade, pal.outline); // pale yellow shade
-    hline(ctx, 3, 6, 7, pal.lampLight);
     if (dir === 'up') {
       // chair BELOW the desk: monitor at the back edge facing the sitter (we see the screen)
       box(ctx, 15, 0, 18, 12, pal.outline, pal.outline);
