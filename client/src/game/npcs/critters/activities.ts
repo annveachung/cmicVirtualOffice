@@ -36,18 +36,24 @@ export function sitting(critter: Critter, ms = rand(2000, 5000)): Activity {
   };
 }
 
-/** Walk to a tile, then carry on with `then()` (or null if there's no way there). */
-export function walking(critter: Critter, to: TilePos, then: () => Activity): Activity | null {
+/**
+ * Walk to a tile, then carry on with `then()` (or null if there's no way there).
+ * `mustArrive: false` = run `then()` even if someone blocked the last bit (e.g. chasing Roomby).
+ */
+export function walking(critter: Critter, to: TilePos, then: () => Activity, mustArrive = true): Activity | null {
   if (!critter.walker.goTo(to)) return null;
   critter.hush();
   critter.sprite.play(critter.species.walkAnim, true);
   return {
     name: 'walk',
     update(dt) {
-      critter.face(critter.walker.update(dt, critter.player));
+      critter.face(critter.walker.update(dt, critter.obstacles));
       critter.drawOnFloor();
       if (critter.walker.moving) return 'continue';
       critter.sprite.stop();
+      // someone stood in the way until they gave up? then they never got there — just sit
+      const goal = tileCenter(to);
+      if (mustArrive && Math.hypot(goal.x - critter.x, goal.y - critter.y) > 4) return sitting(critter, rand(1000, 2500));
       return then();
     },
     onPet() {

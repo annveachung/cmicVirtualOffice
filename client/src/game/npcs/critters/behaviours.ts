@@ -76,7 +76,7 @@ export const CRITTER_BEHAVIOURS: CritterBehaviour[] = [
       return walking(critter, toTile(critter.roomby), () => {
         critter.rideCooldown = 15000 + Math.random() * 10000;
         return (critter.roombyWithin(32) && riding(critter)) || sitting(critter);
-      });
+      }, false); // Roomby is solid too, so "next to it" counts as caught
     },
   },
 

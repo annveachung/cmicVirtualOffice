@@ -64,8 +64,8 @@ export class Critter implements Npc {
   readonly sprite: Phaser.GameObjects.Sprite;
   readonly walker: Walker;
   readonly places: CatPlaces;
-  /** Where the player is (critters wait rather than walking through them). */
-  player: Vec2 = { x: -999, y: -999 };
+  /** Where you and the other NPCs are (critters wait rather than walking through anyone). */
+  obstacles: Vec2[] = [];
   /** So they don't hop on Roomby every single time it rolls past. */
   rideCooldown = 8000;
   private readonly bubble: SpeechBubble;
@@ -114,7 +114,7 @@ export class Critter implements Npc {
   }
 
   update(dtMs: number, ctx: NpcContext) {
-    this.player = { x: ctx.playerX, y: ctx.playerY };
+    this.obstacles = ctx.obstacles;
     this.rideCooldown -= dtMs;
     // Roomby rolling right past while they're just sitting? sometimes they can't resist
     if (this.activity.name === 'sit' && this.rideCooldown <= 0 && this.roombyWithin(18)) {

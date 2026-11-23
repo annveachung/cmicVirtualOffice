@@ -20,6 +20,8 @@ export interface NpcContext {
   playerX: number;
   playerY: number;
   playerPose: CharacterPose;
+  /** Everyone this NPC mustn't walk through: you and every other NPC (filled in by NpcManager). */
+  obstacles: Vec2[];
 }
 
 export interface Npc {
@@ -35,6 +37,9 @@ export interface Npc {
 }
 
 /** Follows A* paths across the tile grid at a fixed speed (NPCs don't collide with people). */
+/** How close (px) two characters / NPCs can get before one has to wait. */
+const PERSONAL_SPACE = 12;
+
 export class Walker {
   private waypoints: Vec2[] = [];
   private waited = 0;
@@ -60,21 +65,25 @@ export class Walker {
 
   /**
    * Returns the direction travelled this frame (or null if standing still).
-   * If `avoid` (the player) is right in the way, it waits instead of walking through.
+   * If anyone in `avoid` (you, or another NPC) is right in the way, it waits instead of
+   * walking through — and gives up on the trip if they stay put.
    */
-  update(dtMs: number, avoid?: Vec2): Direction | null {
+  update(dtMs: number, avoid: readonly Vec2[] = []): Direction | null {
     const wp = this.waypoints[0];
     if (!wp) return null;
     const step = (this.speed * Math.min(dtMs, 50)) / 1000;
     const dx = wp.x - this.x;
     const dy = wp.y - this.y;
     const d = Math.hypot(dx, dy);
-    if (avoid && d > 0) {
+    if (d > 0) {
       const nx = this.x + (dx / d) * Math.min(step, d);
       const ny = this.y + (dy / d) * Math.min(step, d);
-      const before = Math.hypot(this.x - avoid.x, this.y - avoid.y);
-      const after = Math.hypot(nx - avoid.x, ny - avoid.y);
-      if (after < 12 && after < before) {
+      // blocked = this step would bring us closer than PERSONAL_SPACE to someone (moving away is always fine)
+      const blocked = avoid.some((o) => {
+        const after = Math.hypot(nx - o.x, ny - o.y);
+        return after < PERSONAL_SPACE && after < Math.hypot(this.x - o.x, this.y - o.y);
+      });
+      if (blocked) {
         // politely wait — but if you're parked in the way for a while, give up and do something else
         this.waited += dtMs;
         if (this.waited > 1500) {
