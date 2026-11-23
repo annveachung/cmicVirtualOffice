@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import {
+  CAT_NAP_TILES,
   RECEPTIONIST_TILE,
   TILE,
   VACUUM_ROUTE,
@@ -16,7 +17,8 @@ import {
   type Vec2,
 } from '@little-office/shared';
 import { VACUUM_KEY, registerNpcArt } from '../assets/npcArt';
-import { Cat } from './cat/Cat';
+import { Critter } from './critters/Critter';
+import { CRITTERS, SPECIES } from './critters/species';
 import { Walker, pick, rand, type Npc, type NpcContext } from './common';
 
 export { freeTileNear, type Npc, type NpcContext } from './common';
@@ -25,15 +27,16 @@ import { SpeechBubble } from '../characters/SpeechBubble';
 import { DEPTH, NIGHT_TINT } from '../constants';
 
 /**
- * The office's NPCs: Mochi the cat, Roomby the robot vacuum, Pip at reception
- * and Coach Rio in the gym. Each is a tiny state machine (idle → walk → do a
+ * The office's NPCs: the critters (Mochi the cat + raccoons Bandit, Ziggy and
+ * Pudding), Roomby the robot vacuum, Pip at reception and Coach Rio in the gym. Each is a tiny state machine (idle → walk → do a
  * thing → idle…). They run on this screen for now; in Milestone 2 the server
- * will run them so everyone sees the same cat in the same place.
+ * will run them so everyone sees the same critters in the same places.
  */
 
 // ----------------------------------------------------------------- Roomby ----
 
-export type Rider = 'player' | 'cat';
+/** 'player' (you) or a critter's name. */
+export type Rider = string;
 
 const ROOMBY_SPEED = 22;
 const ROOMBY_RIDE_SPEED = 30;
@@ -66,7 +69,7 @@ class Vacuum implements Npc {
     return this.walker.y;
   }
   get verb() {
-    return this.rider === 'cat' ? 'say hi to Roomby' : 'hop on Roomby';
+    return this.rider ? 'say hi to Roomby' : 'hop on Roomby';
   }
 
   /** Where a rider stands: on top of the robot, a little up from its centre. */
@@ -77,13 +80,13 @@ class Vacuum implements Npc {
   /** Climb aboard. Returns false (and says so) if someone's already riding. */
   board(who: Rider): boolean {
     if (this.rider && this.rider !== who) {
-      if (who === 'player') this.say("beep! Mochi's riding — next one! 🐱");
+      if (who === 'player') this.say(`beep! ${this.rider}'s riding — next one! 🐾`);
       return false;
     }
     this.rider = who;
     this.pause = 0;
     this.walker.speed = ROOMBY_RIDE_SPEED;
-    this.say(who === 'player' ? 'beep boop, all aboard! 🚂' : 'beep! passenger: Mochi 🐱');
+    this.say(who === 'player' ? 'beep boop, all aboard! 🚂' : `beep! passenger: ${who} 🐾`);
     return true;
   }
 
@@ -108,10 +111,10 @@ class Vacuum implements Npc {
     this.bubble.setPosition(this.x, this.y - (this.rider === 'player' ? 30 : 6));
   }
 
-  /** E / click while not riding it (and Mochi is): a hello and a spin. */
+  /** E / click while not riding it (or a critter is): a hello and a spin. */
   interact() {
     if (this.rider) {
-      this.say(this.rider === 'cat' ? "beep! Mochi's riding — next one! 🐱" : 'beep boop ✨');
+      this.say(this.rider !== 'player' ? `beep! ${this.rider}'s riding — next one! 🐾` : 'beep boop ✨');
       return;
     }
     this.pause = 1600;
@@ -271,24 +274,29 @@ export class NpcManager {
   private readonly npcs: Npc[];
   /** Roomby, the rideable one. */
   readonly roomby: Vacuum;
-  private readonly cat: Cat;
+  /** Mochi + the raccoons. */
+  private readonly critters: Critter[];
   /** Set by the scene: is the player using (or walking to) this seat? */
   seatBusy: (id: string) => boolean = () => false;
 
   constructor(scene: Phaser.Scene, grid: CollisionGrid, playerName: string) {
     registerNpcArt(scene);
     this.roomby = new Vacuum(scene, grid);
-    this.cat = new Cat(scene, grid, this.roomby, (id) => this.seatBusy(id));
-    this.npcs = [this.cat, this.roomby, new Receptionist(scene, playerName), new Coach(scene, grid)];
+    // each starts on a different cosy spot; a seat is busy if you OR another critter has it
+    this.critters = CRITTERS.map(({ name, kind }, i) => {
+      const busy = (id: string) => this.seatBusy(id) || this.critters.some((c) => c.name !== name && c.seatId === id);
+      return new Critter(scene, grid, this.roomby, busy, name, SPECIES[kind], CAT_NAP_TILES[(i * 2) % CAT_NAP_TILES.length]);
+    });
+    this.npcs = [...this.critters, this.roomby, new Receptionist(scene, playerName), new Coach(scene, grid)];
   }
 
   update(dtMs: number, ctx: NpcContext) {
     for (const n of this.npcs) n.update(dtMs, ctx);
   }
 
-  /** The seat Mochi is curled up on (nobody else can sit there), if any. */
-  get catSeat(): string | null {
-    return this.cat.seatId;
+  /** The name of the critter occupying a seat / machine (nobody else can use it), if any. */
+  critterOn(spotId: string): string | null {
+    return this.critters.find((c) => c.seatId === spotId)?.name ?? null;
   }
 
   /** Where every NPC is (they're solid: the player can't walk through them). */
