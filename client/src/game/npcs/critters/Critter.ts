@@ -15,39 +15,42 @@ import {
   type TilePos,
   type Vec2,
 } from '@little-office/shared';
-import { CAT_KEY } from '../../assets/npcArt';
 import { REACTION_KEYS } from '../../assets/textures';
 import { SpeechBubble } from '../../characters/SpeechBubble';
 import { DEPTH, NIGHT_TINT } from '../../constants';
 import { Walker, pick, rand, type Npc, type NpcContext } from '../common';
 import { riding, sitting, type Activity, type Step } from './activities';
-import { CAT_BEHAVIOURS } from './behaviours';
+import { CRITTER_BEHAVIOURS } from './behaviours';
+import type { Species } from './species';
 
 /**
- * MOCHI THE OFFICE CAT
+ * THE OFFICE CRITTERS — Mochi the cat and the raccoons (Bandit, Ziggy, Pudding).
  *
- * Organised in three layers:
- *   Cat.ts          her body — sprite, speech bubble, legs (Walker) — and the loop that runs
- *                   ONE activity at a time, choosing a new one when it finishes.
- *   behaviours.ts   the MENU of things she might decide to do, each with a weight (how often).
+ * Organised in four layers:
+ *   Critter.ts      a critter's body — sprite, speech bubble, legs (Walker) — and the loop that
+ *                   runs ONE activity at a time, choosing a new one when it finishes.
+ *   behaviours.ts   the MENU of things they might decide to do, each with a weight (how often).
  *   activities.ts   the small building blocks a behaviour is made of: walk, sit, nap, perch,
  *                   ride Roomby, work out, dance.
+ *   species.ts      what differs per kind of animal (art, speed, lines) + who lives here.
  *
  * Adding a new trick = write an activity (if needed) + add one line to the menu.
+ * Adding a new animal = draw it (npcArt.ts) + add a species + add them to CRITTERS.
  */
 
-/** What she needs to know about Roomby to hitch a ride (it lives in NpcManager). */
+/** What a critter needs to know about Roomby to hitch a ride (it lives in NpcManager). */
 export interface Rideable {
   readonly x: number;
   readonly y: number;
-  readonly rider: 'player' | 'cat' | null;
+  /** 'player', a critter's name, or null. */
+  readonly rider: string | null;
   readonly heading: Direction;
-  board(who: 'cat'): boolean;
-  alight(who: 'cat'): void;
+  board(who: string): boolean;
+  alight(who: string): void;
   seat(): Vec2;
 }
 
-/** Places in the office she knows about (computed once). */
+/** Places in the office critters know about (computed once). */
 export interface CatPlaces {
   roam: TilePos[];
   napTiles: TilePos[];
@@ -56,16 +59,14 @@ export interface CatPlaces {
   danceTiles: TilePos[];
 }
 
-const PET_LINES = ['Meow! 💕', 'Purrrr… 💕', 'Mrow! 🐟'];
-
-export class Cat implements Npc {
-  readonly verb = 'pet Mochi';
+export class Critter implements Npc {
+  readonly verb: string;
   readonly sprite: Phaser.GameObjects.Sprite;
   readonly walker: Walker;
   readonly places: CatPlaces;
-  /** Where the player is (she waits rather than walking through them). */
+  /** Where the player is (critters wait rather than walking through them). */
   player: Vec2 = { x: -999, y: -999 };
-  /** So she doesn't hop on Roomby every single time it rolls past. */
+  /** So they don't hop on Roomby every single time it rolls past. */
   rideCooldown = 8000;
   private readonly bubble: SpeechBubble;
   private activity: Activity;
@@ -76,9 +77,13 @@ export class Cat implements Npc {
     readonly roomby: Rideable,
     /** Is the player using (or walking to) this seat / machine? */
     readonly seatBusy: (id: string) => boolean,
+    readonly name: string,
+    readonly species: Species,
+    startTile: TilePos,
   ) {
-    const start = tileCenter(CAT_NAP_TILES[0]);
-    this.walker = new Walker(grid, start.x, start.y, 38);
+    this.verb = `pet ${name}`;
+    const start = tileCenter(startTile);
+    this.walker = new Walker(grid, start.x, start.y, species.speed);
     this.places = {
       roam: walkableTiles(grid, catRoams),
       napTiles: CAT_NAP_TILES,
@@ -86,7 +91,7 @@ export class Cat implements Npc {
       gymSpots: CAT_GYM_SPOTS,
       danceTiles: DANCE_FLOOR_TILES.filter((t) => !grid.isBlocked(t.tx, t.ty)),
     };
-    this.sprite = scene.add.sprite(start.x, start.y, CAT_KEY, 'sit').setOrigin(0.5, 1);
+    this.sprite = scene.add.sprite(start.x, start.y, species.texture, 'sit').setOrigin(0.5, 1);
     this.bubble = new SpeechBubble(scene);
     this.activity = sitting(this, 1500);
   }
@@ -98,12 +103,12 @@ export class Cat implements Npc {
     return this.walker.y;
   }
 
-  /** The seat / machine she's occupying (nobody else can use it meanwhile). */
+  /** The seat / machine this critter is occupying (nobody else can use it meanwhile). */
   get seatId(): string | null {
     return this.activity.seatId ?? null;
   }
 
-  /** What she's doing right now (handy for debugging: "walk", "perch", "dance"…). */
+  /** What they're doing right now (handy for debugging: "walk", "perch", "dance"…). */
   get doing(): string {
     return this.activity.name;
   }
@@ -111,7 +116,7 @@ export class Cat implements Npc {
   update(dtMs: number, ctx: NpcContext) {
     this.player = { x: ctx.playerX, y: ctx.playerY };
     this.rideCooldown -= dtMs;
-    // Roomby rolling right past while she's just sitting? sometimes she can't resist
+    // Roomby rolling right past while they're just sitting? sometimes they can't resist
     if (this.activity.name === 'sit' && this.rideCooldown <= 0 && this.roombyWithin(18)) {
       this.rideCooldown = rand(15000, 25000);
       const ride = Math.random() < 0.6 ? riding(this) : null;
@@ -122,7 +127,7 @@ export class Cat implements Npc {
 
   /** Pick the next thing to do from the behaviour menu (weighted random). */
   private decide() {
-    const options = [...CAT_BEHAVIOURS];
+    const options = CRITTER_BEHAVIOURS.filter((b) => !b.only || b.only.includes(this.species.kind));
     while (options.length) {
       const total = options.reduce((n, b) => n + b.weight, 0);
       let roll = Math.random() * total;
@@ -160,7 +165,7 @@ export class Cat implements Npc {
     if (dir === 'right') this.sprite.setFlipX(false);
   }
 
-  /** Standing on the floor where her walker is. */
+  /** Standing on the floor where their walker is. */
   drawOnFloor(lift = 0) {
     this.sprite.setPosition(Math.round(this.x), Math.round(this.y + 4 - lift)).setDepth(DEPTH.world + this.y);
     this.bubble.setPosition(this.x, this.y - 12);
@@ -185,11 +190,11 @@ export class Cat implements Npc {
 
   interact() {
     const wasAsleep = this.sprite.frame.name === 'sleep';
-    // the activity decides how she takes it (default: stop and enjoy the cuddle)
+    // the activity decides how they take it (default: stop and enjoy the cuddle)
     const next = this.activity.onPet ? this.activity.onPet() : sitting(this, rand(2500, 4000));
     if (next) this.switchTo(next);
     if (wasAsleep && this.sprite.frame.name === 'sleep') this.sprite.setFrame('sit');
-    this.say(wasAsleep ? '…mrrp? 💕' : pick(PET_LINES), 2500);
+    this.say(wasAsleep ? this.species.lines.wake : pick(this.species.lines.pet), 2500);
     const heart = this.scene.add.image(this.sprite.x, this.sprite.y - 14, REACTION_KEYS.heart).setDepth(DEPTH.nameplates + 2);
     this.scene.tweens.add({ targets: heart, y: heart.y - 16, alpha: 0, duration: 1200, onComplete: () => heart.destroy() });
   }

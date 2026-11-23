@@ -92,10 +92,10 @@ export class OfficeScene extends Phaser.Scene {
     this.npcs = new NpcManager(this, this.grid, name);
     this.npcs.setTheme(theme);
     this.controller.blockers = () => this.npcs.positions(); // NPCs are solid
-    // a seat is taken while Mochi is curled up on it (and she won't take yours)
+    // a seat / machine is taken while a critter is on it (and they won't take yours)
     this.npcs.seatBusy = (id) => this.controller.claimedSpot?.id === id;
-    this.controller.isTaken = (spot) => this.npcs.catSeat === spot.id;
-    this.controller.onTaken = () => this.player.say(pick(TAKEN_LINES), 3000);
+    this.controller.isTaken = (spot) => this.npcs.critterOn(spot.id) !== null;
+    this.controller.onTaken = (spot) => this.player.say(takenLine(this.npcs.critterOn(spot.id) ?? 'Someone'), 3000);
     // one-off actions: the pantry counters ask what you'd like; everything else is the club's
     this.controller.onInstant = (spot) => {
       if (spot.action === 'pantry') this.usePantry(spot.id);
@@ -184,7 +184,7 @@ export class OfficeScene extends Phaser.Scene {
 
   /** Talk to / pet an NPC — or, for Roomby, hop on for a ride. */
   private useNpc(npc: Npc) {
-    if (npc !== this.npcs.roomby || this.npcs.roomby.rider === 'cat') return npc.interact();
+    if (npc !== this.npcs.roomby || this.npcs.roomby.rider) return npc.interact();
     if (!this.npcs.roomby.board('player')) return;
     this.controller.halt({ x: this.player.x, y: this.player.y });
     this.marker.setVisible(false);
@@ -253,7 +253,7 @@ export class OfficeScene extends Phaser.Scene {
       let bestD = Infinity;
       for (const s of SPOTS) {
         if (!isInFrontOf(this.grid, here, s)) continue; // only when you're facing it, not standing behind
-        if (s.id === this.npcs.catSeat) continue; // Mochi's on it (you get "pet Mochi" instead)
+        if (this.npcs.critterOn(s.id)) continue; // a critter's on it (you get "pet Mochi" instead)
         const d = Math.hypot(s.pos.x - this.player.x, s.pos.y - this.player.y);
         if (d < bestD) {
           bestD = d;
@@ -294,7 +294,7 @@ const APPLE_LINES = ['🍎 A crunchy apple. Healthy choice!', '🍎 An apple a d
 const BREAD_LINES = ['🍞 A slice of fresh bread.', '🥖 Tore off a bit of baguette.', '🍞 Warm bread — cozy.'];
 
 const pantryLine = (i: PantryItem) => pick(PANTRY_LINES[i]);
-const TAKEN_LINES = ['Mochi got here first 🐱', 'Taken… by a cat 🐾', 'Mochi called dibs 🐱'];
+const takenLine = (who: string) => pick([`${who} got here first 🐾`, `Taken… by ${who} 🐾`, `${who} called dibs 🐾`]);
 
 function isTyping(): boolean {
   const el = document.activeElement;

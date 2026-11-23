@@ -43,6 +43,18 @@ export const DANCE_FLOOR_TILES: TilePos[] = PLACEMENTS.filter((p) => p.type === 
   return Array.from({ length: w * h }, (_, i) => ({ tx: p.tx + (i % w), ty: p.ty + Math.floor(i / w) }));
 });
 
+/** Bins the raccoons rummage through, and the pantry sinks they wash their snacks at. */
+export const BIN_TILES: TilePos[] = PLACEMENTS.filter((p) => p.type === 'bin').map((p) => ({ tx: p.tx, ty: p.ty }));
+export const SINK_TILES: TilePos[] = PLACEMENTS.filter((p) => p.type === 'sink').map((p) => ({ tx: p.tx, ty: p.ty }));
+
+/** A free floor tile right beside a (solid) thing — left, right, below, above — or null. */
+export function besideTile(grid: CollisionGrid, t: TilePos): TilePos | null {
+  for (const [dx, dy] of [[-1, 0], [1, 0], [0, 1], [0, -1]]) {
+    if (!grid.isBlocked(t.tx + dx, t.ty + dy)) return { tx: t.tx + dx, ty: t.ty + dy };
+  }
+  return null;
+}
+
 /** Somewhere Mochi can hop up onto: an office chair, a sofa cushion or a pantry table. */
 export interface CatPerch {
   id: string;

@@ -262,6 +262,14 @@ describe('activity spots', () => {
     expect(CAT_GYM_SPOTS.length).toBe(5); // 2 treadmills + 3 yoga mats
     for (const s of CAT_GYM_SPOTS) expect(approachTiles(grid, s).some((t) => reach.has(t.ty * MAP_W + t.tx)), s.id).toBe(true);
     expect(DANCE_FLOOR_TILES.filter((t) => reach.has(t.ty * MAP_W + t.tx)).length).toBeGreaterThanOrEqual(6);
+    // the raccoons can stand beside every bin and pantry sink
+    const { BIN_TILES, SINK_TILES, besideTile } = await import('./npcs.js');
+    expect(BIN_TILES.length).toBe(2);
+    expect(SINK_TILES.length).toBe(2);
+    for (const t of [...BIN_TILES, ...SINK_TILES]) {
+      const at = besideTile(grid, t);
+      expect(at && reach.has(at.ty * MAP_W + at.tx), `${t.tx},${t.ty}`).toBe(true);
+    }
   });
 
   it('has a booth for four in the pantry', async () => {
