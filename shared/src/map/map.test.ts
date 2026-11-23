@@ -243,6 +243,18 @@ describe('activity spots', () => {
     expect(isInFrontOf(grid, { tx: apple.tile.tx, ty: apple.tile.ty + 1 }, apple)).toBe(false);
   });
 
+  it('gives every private office a door you can knock on (hall side) and leave by (office side)', async () => {
+    const { OFFICE_DOORS, officeAt } = await import('./office.js');
+    const reach = reachableFromSpawn();
+    expect(OFFICE_DOORS).toHaveLength(3);
+    for (const d of OFFICE_DOORS) {
+      for (const t of [...d.tiles, ...d.outside, ...d.inside]) expect(grid.isBlocked(t.tx, t.ty), `${d.id} ${t.tx},${t.ty}`).toBe(false);
+      for (const t of d.outside) expect(reach.has(t.ty * MAP_W + t.tx), `${d.id} knock spot`).toBe(true);
+      for (const t of d.inside) expect(officeAt(t.tx, t.ty)?.id).toBe(d.id);
+      for (const t of d.tiles) expect(officeAt(t.tx, t.ty)).toBeNull(); // the doorway itself isn't "inside"
+    }
+  });
+
   it('gives the NPCs reachable homes, routes and roaming areas', async () => {
     const { VACUUM_ROUTE, RECEPTIONIST_TILE, CAT_NAP_TILES, walkableTiles, catRoams, coachRoams } = await import('./npcs.js');
     const reach = reachableFromSpawn();

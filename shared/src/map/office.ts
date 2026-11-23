@@ -337,5 +337,42 @@ export function zoneAt(tx: number, ty: number): ZoneId | null {
   return ZONES.find((z) => tx >= z.x0 && tx <= z.x1 && ty >= z.y0 && ty <= z.y1)?.id ?? null;
 }
 
+/**
+ * PRIVATE-OFFICE DOORS. Each office has a 2-tile doorway in its right-hand wall.
+ * The doors are normally closed: from the hall you knock first; from inside, the
+ * door simply opens as you walk up to it. (The open/closed state is runtime — the
+ * client blocks the doorway tiles in the collision grid while a door is shut.)
+ */
+export interface OfficeDoor {
+  id: string;
+  /** 1, 2, 3 — matches "Private office N". */
+  room: number;
+  /** The doorway tiles (blocked while the door is closed). */
+  tiles: TilePos[];
+  /** Hall-side tiles you knock from. */
+  outside: TilePos[];
+  /** Office-side tiles that open the door when you walk up to leave. */
+  inside: TilePos[];
+  /** The office's floor area (inclusive). */
+  area: { x0: number; y0: number; x1: number; y1: number };
+}
+
+export const OFFICE_DOORS: OfficeDoor[] = OFFICE_ROOMS.map((r, i) => {
+  const rows = [r.y0 + 1, r.y0 + 2];
+  return {
+    id: `office-door-${i + 1}`,
+    room: i + 1,
+    tiles: rows.map((ty) => ({ tx: 7, ty })),
+    outside: rows.map((ty) => ({ tx: 8, ty })),
+    inside: rows.map((ty) => ({ tx: 6, ty })),
+    area: { x0: 1, y0: r.y0, x1: 6, y1: r.y1 },
+  };
+});
+
+/** The private office a tile is inside (not counting its doorway), if any. */
+export function officeAt(tx: number, ty: number): OfficeDoor | null {
+  return OFFICE_DOORS.find((d) => tx >= d.area.x0 && tx <= d.area.x1 && ty >= d.area.y0 && ty <= d.area.y1) ?? null;
+}
+
 /** Everyone arrives just inside the main entrance (bottom of the open-plan hall). */
 export const SPAWN: TilePos = { tx: 25, ty: 29 };
