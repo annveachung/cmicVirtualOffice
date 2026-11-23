@@ -59,6 +59,11 @@ describe('generated art', () => {
     expect(() => paintGlow(10, '#ffcc88')).not.toThrow();
   });
 
+  it('builds the muscular build sheet (Coach Rio)', async () => {
+    const { buildCharacterSheet } = await import('./characterArt');
+    expect(() => buildCharacterSheet({ skin: 3, hairStyle: 3, hairColor: 4, outfit: 1 }, 'buff')).not.toThrow();
+  });
+
   it('builds a sprite sheet for every hair style and colour option', async () => {
     const { buildCharacterSheet } = await import('./characterArt');
     for (let h = 0; h < HAIR_STYLES.length; h++)

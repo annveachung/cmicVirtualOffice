@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { Appearance, Direction, StatusId, Theme } from '@little-office/shared';
-import { FEET_ROW, FRAME_H } from '../assets/characterArt';
+import { FEET_ROW, FRAME_H, type Build } from '../assets/characterArt';
 import { COSTUME_KEY, REACTION_KEYS, animKey, ensureCharacter, statusKey, type AnimName, type Reaction } from '../assets/textures';
 import { CHARACTER_SCALE, DEPTH, GAME_FONT, LABEL_PX, NIGHT_TINT, TEXT_RESOLUTION, TOP_BAR_PX } from '../constants';
 import { SpeechBubble } from './SpeechBubble';
@@ -24,6 +24,7 @@ export class Character {
   private readonly nameTag: Phaser.GameObjects.Text;
   private readonly bubble: SpeechBubble;
   private readonly costume: Phaser.GameObjects.Image;
+  private readonly build: Build;
   private statusIcon: Phaser.GameObjects.Image | null = null;
   private sayTimer: Phaser.Time.TimerEvent | null = null;
   private labelScale = 1;
@@ -36,9 +37,10 @@ export class Character {
     private readonly scene: Phaser.Scene,
     private readonly appearance: Appearance,
     name: string,
-    opts: { isLocal: boolean },
+    opts: { isLocal: boolean; build?: Build },
   ) {
-    const texKey = ensureCharacter(scene, appearance);
+    this.build = opts.build ?? 'regular';
+    const texKey = ensureCharacter(scene, appearance, this.build);
     this.shadow = scene.add.ellipse(0, 0, 11 * CHARACTER_SCALE, 4 * CHARACTER_SCALE, 0x2a1e1a, 0.25);
     this.sprite = scene.add.sprite(0, 0, texKey, 'down-idle').setOrigin(0.5, FEET_ROW / FRAME_H).setScale(CHARACTER_SCALE);
     this.nameTag = scene.add
@@ -117,7 +119,7 @@ export class Character {
   }
 
   private playAnim(): void {
-    this.sprite.play(animKey(this.appearance, `${this.pose}-${this.dir}`), true);
+    this.sprite.play(animKey(this.appearance, `${this.pose}-${this.dir}`, this.build), true);
   }
 
   /** Show a small pixel status dot just left of the name tag. */

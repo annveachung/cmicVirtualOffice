@@ -340,8 +340,8 @@ class Coach implements Npc {
   private cheer = 4000;
 
   constructor(scene: Phaser.Scene, grid: CollisionGrid) {
-    const look: Appearance = { skin: 3, hairStyle: 3, hairColor: 4, outfit: 1 }; // spiky hair, sporty rose top
-    this.person = new Character(scene, look, 'Coach Rio', { isLocal: false });
+    const look: Appearance = { skin: 3, hairStyle: 3, hairColor: 4, outfit: 1 }; // spiky hair, rose tank top
+    this.person = new Character(scene, look, 'Coach Rio', { isLocal: false, build: 'buff' }); // the muscly build
     this.roam = walkableTiles(grid, coachRoams);
     const p = tileCenter(pick(this.roam));
     this.walker = new Walker(grid, p.x, p.y, 60);
