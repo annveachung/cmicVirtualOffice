@@ -1,6 +1,7 @@
 import type { TilePos } from '../types.js';
 import type { CollisionGrid } from './collision.js';
-import { TILES, zoneAt } from './office.js';
+import { PLACEMENTS, TILES, zoneAt } from './office.js';
+import { SPOTS, type Spot } from './spots.js';
 
 /**
  * Where the office's NPCs live and roam. Kept in shared map data so that, once
@@ -30,6 +31,9 @@ export const CAT_NAP_TILES: TilePos[] = [
   { tx: 13, ty: 3 },
   { tx: 20, ty: 12 },
 ];
+
+/** The office (gaming) chairs at the desks — Mochi likes to borrow them for a nap. */
+export const CAT_CHAIR_SPOTS: Spot[] = SPOTS.filter((s) => PLACEMENTS.find((p) => p.id === s.id)?.type === 'deskChair');
 
 /** Every walkable tile in an area (used as random wander targets). */
 export function walkableTiles(grid: CollisionGrid, test: (t: TilePos) => boolean): TilePos[] {

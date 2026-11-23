@@ -1,9 +1,11 @@
 import Phaser from 'phaser';
 import {
+  CAT_CHAIR_SPOTS,
   CAT_NAP_TILES,
   RECEPTIONIST_TILE,
   TILE,
   VACUUM_ROUTE,
+  approachTiles,
   catRoams,
   coachRoams,
   findPath,
@@ -15,6 +17,7 @@ import {
   type Appearance,
   type CollisionGrid,
   type Direction,
+  type Spot,
   type Theme,
   type TilePos,
   type Vec2,
@@ -134,7 +137,11 @@ class Cat implements Npc {
   private readonly bubble: SpeechBubble;
   private readonly walker: Walker;
   private readonly roam: TilePos[];
-  private state: 'idle' | 'walk' | 'sit' | 'nap' | 'ride' = 'idle';
+  private state: 'idle' | 'walk' | 'sit' | 'nap' | 'ride' | 'chair' = 'idle';
+  /** The office chair she's curled up on (nobody else can sit there meanwhile). */
+  private chair: { spot: Spot; from: TilePos } | null = null;
+  /** The chair she's walking over to. */
+  private headingToChair: { spot: Spot; from: TilePos } | null = null;
   private napping = false;
   /** Walking over to catch Roomby for a ride. */
   private chasing = false;
@@ -146,6 +153,8 @@ class Cat implements Npc {
     private readonly scene: Phaser.Scene,
     private readonly grid: CollisionGrid,
     private readonly roomby: Vacuum,
+    /** Is someone (the player) using or heading for this seat? */
+    private readonly seatBusy: (id: string) => boolean,
   ) {
     const start = tileCenter(CAT_NAP_TILES[0]);
     this.walker = new Walker(grid, start.x, start.y, 38);
@@ -161,8 +170,24 @@ class Cat implements Npc {
     return this.walker.y;
   }
 
+  /** The seat she's occupying, if any. */
+  get seatId(): string | null {
+    return this.chair?.spot.id ?? null;
+  }
+
   update(dtMs: number, ctx: NpcContext) {
     this.rideCooldown -= dtMs;
+    if (this.state === 'chair' && this.chair) {
+      this.timer -= dtMs;
+      if (this.timer <= 0) this.leaveChair();
+      else {
+        // drawn on the seat, above the chair but still behind the desk in front of it
+        const { spot } = this.chair;
+        this.sprite.setPosition(Math.round(spot.pos.x), Math.round(spot.pos.y - 1)).setDepth(DEPTH.world + (spot.tile.ty + 1) * TILE + 1);
+        this.bubble.setPosition(spot.pos.x, spot.pos.y - 14);
+        return;
+      }
+    }
     if (this.state === 'ride') {
       // sit on top of Roomby, facing the way it rolls
       const seat = this.roomby.seat();
@@ -221,6 +246,8 @@ class Cat implements Npc {
   }
 
   private decide() {
+    // sometimes borrow a free office chair for a snooze
+    if (Math.random() < 0.2 && this.goToChair()) return;
     // now and then, chase Roomby for a ride
     if (this.rideCooldown <= 0 && !this.roomby.rider && Math.random() < 0.25 && this.walker.goTo(toTile(this.roomby))) {
       this.chasing = true;
@@ -241,8 +268,51 @@ class Cat implements Npc {
     } else this.timer = 1000;
   }
 
+  private goToChair(): boolean {
+    const free = CAT_CHAIR_SPOTS.filter((s) => !this.seatBusy(s.id));
+    if (!free.length) return false;
+    const spot = pick(free);
+    for (const from of approachTiles(this.grid, spot)) {
+      if (!this.walker.goTo(from)) continue;
+      this.headingToChair = { spot, from };
+      this.napping = false;
+      this.chasing = false;
+      this.state = 'walk';
+      this.bubble.hide();
+      this.sprite.play('cat-walk', true);
+      return true;
+    }
+    return false;
+  }
+
+  private leaveChair() {
+    const from = this.chair!.from;
+    const p = tileCenter(from);
+    this.walker.x = p.x;
+    this.walker.y = p.y;
+    this.chair = null;
+    this.state = 'sit';
+    this.sprite.setFrame('sit');
+    this.bubble.hide();
+    this.timer = rand(1500, 3000);
+  }
+
   private arrive() {
     this.sprite.stop();
+    const target = this.headingToChair;
+    this.headingToChair = null;
+    if (target && !this.seatBusy(target.spot.id)) {
+      // hop up onto the seat; half the time she curls up and dozes
+      this.chair = target;
+      this.state = 'chair';
+      this.walker.x = target.spot.pos.x;
+      this.walker.y = target.spot.pos.y;
+      const doze = Math.random() < 0.5;
+      this.sprite.setFrame(doze ? 'sleep' : 'sit');
+      if (doze) this.bubble.say('z z z');
+      this.timer = rand(12000, 22000);
+      return;
+    }
     if (this.chasing) {
       this.chasing = false;
       this.rideCooldown = rand(15000, 25000);
@@ -262,7 +332,11 @@ class Cat implements Npc {
 
   interact() {
     const wasNapping = this.state === 'nap';
-    if (this.state !== 'ride') {
+    if (this.state === 'chair') {
+      // on a chair she just enjoys the pets (and wakes up) — but keeps the seat
+      this.sprite.setFrame('sit');
+      this.timer = Math.max(this.timer, 4000);
+    } else if (this.state !== 'ride') {
       // (on Roomby she just enjoys the pets and keeps riding)
       this.state = 'sit';
       this.chasing = false;
@@ -532,15 +606,24 @@ export class NpcManager {
   private readonly npcs: Npc[];
   /** Roomby, the rideable one. */
   readonly roomby: Vacuum;
+  private readonly cat: Cat;
+  /** Set by the scene: is the player using (or walking to) this seat? */
+  seatBusy: (id: string) => boolean = () => false;
 
   constructor(scene: Phaser.Scene, grid: CollisionGrid, playerName: string) {
     registerNpcArt(scene);
     this.roomby = new Vacuum(scene, grid);
-    this.npcs = [new Cat(scene, grid, this.roomby), this.roomby, new Receptionist(scene, playerName), new Coach(scene, grid)];
+    this.cat = new Cat(scene, grid, this.roomby, (id) => this.seatBusy(id));
+    this.npcs = [this.cat, this.roomby, new Receptionist(scene, playerName), new Coach(scene, grid)];
   }
 
   update(dtMs: number, ctx: NpcContext) {
     for (const n of this.npcs) n.update(dtMs, ctx);
+  }
+
+  /** The seat Mochi is curled up on (nobody else can sit there), if any. */
+  get catSeat(): string | null {
+    return this.cat.seatId;
   }
 
   /** Where every NPC is (they're solid: the player can't walk through them). */
