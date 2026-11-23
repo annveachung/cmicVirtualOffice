@@ -5,6 +5,7 @@ import {
   DANCE_FLOOR_TILES,
   catPerches,
   catRoams,
+  officeAt,
   tileCenter,
   walkableTiles,
   type CatPerch,
@@ -87,7 +88,7 @@ export class Critter implements Npc {
     this.places = {
       roam: walkableTiles(grid, catRoams),
       napTiles: CAT_NAP_TILES,
-      perches: catPerches(grid),
+      perches: catPerches(grid).filter((p) => !p.from.some((t) => officeAt(t.tx, t.ty))), // private offices are private
       gymSpots: CAT_GYM_SPOTS,
       danceTiles: DANCE_FLOOR_TILES.filter((t) => !grid.isBlocked(t.tx, t.ty)),
     };

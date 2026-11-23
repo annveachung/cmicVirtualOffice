@@ -1,4 +1,5 @@
 import {
+  TILE,
   findPath,
   smoothPath,
   tileCenter,
@@ -79,7 +80,8 @@ export class Walker {
       const nx = this.x + (dx / d) * Math.min(step, d);
       const ny = this.y + (dy / d) * Math.min(step, d);
       // blocked = this step would bring us closer than PERSONAL_SPACE to someone (moving away is always fine)
-      const blocked = avoid.some((o) => {
+      // …or onto a tile that's become solid since the path was planned (a door that just closed)
+      const blocked = this.grid.isBlocked(Math.floor(nx / TILE), Math.floor(ny / TILE)) || avoid.some((o) => {
         const after = Math.hypot(nx - o.x, ny - o.y);
         return after < PERSONAL_SPACE && after < Math.hypot(this.x - o.x, this.y - o.y);
       });
