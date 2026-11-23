@@ -167,7 +167,7 @@ export const PLACEMENTS: Placement[] = [
   // ---- Lounge (top-left, sunny) ----
   // nothing tall against the window wall, so the skyline view stays clear
   // main seating group: two sofas facing each other across a coffee table
-  P('rug', 4, 4, { w: 6, h: 5, variant: 0 }),
+  P('rug', 3, 4, { w: 8, h: 5, variant: 0 }), // wide enough to sit under both sofas and both armchairs
   P('sofa', 5, 4, { dir: 'down' }),
   P('coffeeTable', 6, 6),
   P('sofa', 5, 8, { dir: 'up' }),
