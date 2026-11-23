@@ -229,3 +229,11 @@ They reuse what already exists: A* + path smoothing for movement, the `Character
 the two people, `SpeechBubble` for talking. Their homes and routes live in **shared** map data,
 because in multiplayer the *server* should run NPCs. Otherwise every player would see a
 different cat in a different place.
+
+## 33. Riding Roomby: one thing following another
+Riding has no physics. Each frame, the rider's position is **copied** from the vehicle (`roomby.seat()`).
+- **You:** while `riding` is true, the scene skips the movement controller entirely and only watches
+  for "get off" input (an arrow key, E or a click).
+- **Mochi:** riding is just another state in her state machine (`idle → walk → sit | nap | ride`).
+- **One rider at a time:** Roomby keeps a `rider` field, a tiny **lock**. `board()` fails if someone
+  else holds it, and `alight()` releases it.
