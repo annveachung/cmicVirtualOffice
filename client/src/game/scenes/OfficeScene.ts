@@ -15,6 +15,7 @@ import {
   type ZoneId,
   zoneAt,
   DEFAULT_STATUS,
+  type OfficeDoor,
 } from '@little-office/shared';
 import { registerEnvironmentTextures } from '../assets/textures';
 import { bus, type PantryItem } from '../bus';
@@ -25,6 +26,7 @@ import { PlayerController } from '../movement/PlayerController';
 import { PotatoClub } from '../club/PotatoClub';
 import { CameraRig } from '../camera/CameraRig';
 import { NpcManager, freeTileNear, type Npc } from '../npcs/NpcManager';
+import { OfficeDoors } from '../doors/OfficeDoors';
 import { mealBoxMessage } from '../mealBoxes';
 
 export interface OfficeSceneData {
@@ -56,6 +58,9 @@ export class OfficeScene extends Phaser.Scene {
   private camera!: CameraRig;
   private npcs!: NpcManager;
   private nearbyNpc: Npc | null = null;
+  private doors!: OfficeDoors;
+  /** A closed private-office door you're standing outside of. */
+  private nearbyDoor: OfficeDoor | null = null;
   /** Standing on Roomby, riding its cleaning route. */
   private riding = false;
   private zone: ZoneId | null = null;
@@ -83,6 +88,7 @@ export class OfficeScene extends Phaser.Scene {
     this.player.setTheme(theme);
     this.player.setStatus(DEFAULT_STATUS);
     this.controller = new PlayerController(this, this.grid);
+    this.doors = new OfficeDoors(this, this.grid, theme); // closed doors block their doorways in the grid
 
     // Click-to-move target marker (a small pulsing diamond on the floor)
     this.marker = this.add.rectangle(0, 0, 5, 5, 0xfff3cf, 0.9).setAngle(45).setDepth(DEPTH.marker).setVisible(false);
@@ -121,6 +127,7 @@ export class OfficeScene extends Phaser.Scene {
     this.input.keyboard!.on('keydown-E', () => {
       if (isTyping()) return;
       if (this.riding) return this.hopOff();
+      if (this.nearbyDoor && !this.controller.activeSpot) return this.knock(this.nearbyDoor);
       // a spot you're using or standing in front of wins; otherwise talk to a nearby NPC
       if (this.controller.activeSpot || this.nearbySpot || !this.nearbyNpc)
         this.controller.interact({ x: this.player.x, y: this.player.y }, this.nearbySpot);
@@ -147,6 +154,7 @@ export class OfficeScene extends Phaser.Scene {
         this.office.applyTheme(t);
         this.player.setTheme(t);
         this.npcs.setTheme(t);
+        this.doors.setTheme(t);
       }),
     );
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -167,6 +175,17 @@ export class OfficeScene extends Phaser.Scene {
       if (npc === this.npcs.roomby) return;
     }
     const here = { x: this.player.x, y: this.player.y };
+    // clicked into a private office with its door shut? go and knock first
+    const tile = toTile({ x: wx, y: wy });
+    this.doors.openIfLeaving(here, tile);
+    const shut = npc ? null : this.doors.closedOfficeAt(tile, here);
+    if (shut) {
+      const spot = this.doors.knockSpot(shut, here);
+      const goIn = () => this.walkTo({ x: wx, y: wy });
+      if (toTile(here).tx === spot.tx && toTile(here).ty === spot.ty) this.knock(shut, goIn);
+      else this.walkTo(tileCenter(spot));
+      return;
+    }
     if (npc) {
       if (Math.hypot(npc.x - here.x, npc.y - here.y) <= TILE * 1.6) this.useNpc(npc);
       else {
@@ -180,6 +199,17 @@ export class OfficeScene extends Phaser.Scene {
     const dest = spot ? this.controller.goUse(here, spot) : this.controller.goTo(here, { x: wx, y: wy });
     this.marker.setVisible(!!dest);
     if (dest) this.marker.setPosition(dest.x, dest.y);
+  }
+
+  private walkTo(p: { x: number; y: number }) {
+    const dest = this.controller.goTo({ x: this.player.x, y: this.player.y }, p);
+    this.marker.setVisible(!!dest);
+    if (dest) this.marker.setPosition(dest.x, dest.y);
+  }
+
+  /** Knock knock 🚪 — the door opens a moment later (then `then`, e.g. walk on in). */
+  private knock(door: OfficeDoor, then?: () => void) {
+    if (this.doors.knock(door, then)) this.player.say('knock knock 🚪', 1500);
   }
 
   /** Talk to / pet an NPC — or, for Roomby, hop on for a ride. */
@@ -207,6 +237,7 @@ export class OfficeScene extends Phaser.Scene {
     }
     const m = this.controller.update({ x: this.player.x, y: this.player.y }, delta);
     this.player.setPosition(m.x, m.y);
+    this.doors.update(delta, [{ x: m.x, y: m.y }]);
     this.camera.update(); // cheap no-op unless the zoom changed
     this.player.setMotion(m.dir, this.club.animFor(m.pose));
     this.club.update(m.pose);
@@ -260,6 +291,15 @@ export class OfficeScene extends Phaser.Scene {
           this.nearbySpot = s;
         }
       }
+    }
+    // standing outside a closed office? knocking comes first
+    this.nearbyDoor = !busy ? this.doors.knockable({ x: this.player.x, y: this.player.y }) : null;
+    if (this.nearbyDoor) {
+      this.nearbySpot = null;
+      this.nearbyNpc = null;
+      const at = this.doors.hintAt(this.nearbyDoor);
+      this.showHint('E · knock', at.x, at.y);
+      return;
     }
     // no spot here? maybe an NPC is close enough to chat with
     this.nearbyNpc = !busy && !this.nearbySpot ? this.npcs.nearest(this.player.x, this.player.y) : null;

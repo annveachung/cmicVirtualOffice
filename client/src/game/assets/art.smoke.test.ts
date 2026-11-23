@@ -43,6 +43,12 @@ describe('generated art', () => {
     expect(missing).toEqual([]);
   });
 
+  it('paints the private-office doors, open and closed, in both themes', async () => {
+    const { paintDoor } = await import('../doors/OfficeDoors');
+    const { PALETTES } = await import('./palette');
+    for (const pal of Object.values(PALETTES)) for (const open of [false, true]) expect(() => paintDoor(pal, open)).not.toThrow();
+  });
+
   it('draws the cat and the raccoons from well-formed 16x12 templates', async () => {
     const { CRITTER_TEMPLATES_FOR_TEST } = await import('./npcArt');
     for (const [kind, frames] of Object.entries(CRITTER_TEMPLATES_FOR_TEST))

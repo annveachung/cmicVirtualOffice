@@ -103,6 +103,38 @@ class SoundEngine {
     osc.stop(t + 0.1);
   }
 
+  /** Two knocks on a wooden door: a low thump with a woody "tok" on top, twice. */
+  knock() {
+    if (!this.prefs.sfx) return;
+    const ctx = this.ensure();
+    if (!ctx) return;
+    const t0 = ctx.currentTime;
+    for (const at of [0, 0.19]) {
+      const t = t0 + at;
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(210, t);
+      osc.frequency.exponentialRampToValueAtTime(90, t + 0.08);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.5, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+      osc.connect(g).connect(this.sfxBus);
+      osc.start(t);
+      osc.stop(t + 0.14);
+      const tok = ctx.createOscillator();
+      const tg = ctx.createGain();
+      tok.type = 'square';
+      tok.frequency.setValueAtTime(620, t);
+      tg.gain.setValueAtTime(0.0001, t);
+      tg.gain.exponentialRampToValueAtTime(0.06, t + 0.002);
+      tg.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+      tok.connect(tg).connect(this.sfxBus);
+      tok.start(t);
+      tok.stop(t + 0.04);
+    }
+  }
+
   // ------------------------------------------------------------------ internals
 
   private update(patch: Partial<Prefs>) {

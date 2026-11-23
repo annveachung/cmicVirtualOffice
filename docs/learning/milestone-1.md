@@ -266,3 +266,16 @@ animal means drawing it plus adding one species entry. This is "data-driven desi
 
 **Shared resources:** with several critters, a seat needs one owner. Each critter asks
 `seatBusy(id)`, which says yes if you **or any other critter** holds that seat or table spot.
+
+## 36. Doors: changing the world at runtime
+The map is static data, but a door changes while the game runs. When a door closes, the client
+**marks its doorway tiles as blocked** in the collision grid; opening it un-blocks them.
+Everything that reads the grid then respects the door automatically:
+- your movement;
+- click-to-walk pathfinding;
+- NPC routes.
+
+There's no `if (door)` scattered around the codebase. The door's rules form a tiny state machine:
+- closed → knock from the hall → open a moment later;
+- closed → walk up to it from inside → open (leaving never needs a knock);
+- open → nobody nearby for 2.5s → closed.
