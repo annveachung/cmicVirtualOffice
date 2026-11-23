@@ -279,3 +279,15 @@ There's no `if (door)` scattered around the codebase. The door's rules form a ti
 - closed → knock from the hall → open a moment later;
 - closed → walk up to it from inside → open (leaving never needs a knock);
 - open → nobody nearby for 2.5s → closed.
+
+## 37. Carrying a critter: the same "follower" trick again
+Picking up Mochi doesn't need any new physics either. **Carried** is just one more activity in the
+critter's state machine: every frame, it copies the **holder's** position and facing (with a small
+offset so the critter sits against the chest). It's the same follower idea as riding Roomby, with
+the roles flipped.
+
+A few rules keep it tidy:
+- **Nobody bumps into the critter you're carrying:** it's skipped in the obstacle lists.
+- **Whatever it was doing stops cleanly:** each activity's `end()` handles that. Riding gets off
+  Roomby, and perching frees the seat.
+- **You can't set it down inside a private office,** where it would get shut in.
