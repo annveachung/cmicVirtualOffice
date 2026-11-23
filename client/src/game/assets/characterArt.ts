@@ -298,6 +298,29 @@ const BODY_SIDE_TOP = [
   '....OTTSTTTO....',
   '....OPPPPPPO....',
 ];
+/**
+ * Muscular build (used by Coach Rio): a tank top, broad shoulders, bulging
+ * biceps on bare arms and a V-shaped torso. Same rows as the regular body.
+ */
+const BUFF_FRONT_TOP = [
+  '..OOSTTTTTTSOO..',
+  '.OSSOTTTTTTOSSO.',
+  '.OSsOTTTTTTOsSO.',
+  '.OSSOTtTTtTOSSO.',
+  '..OSOTTTTTTOSO..',
+  '..OSOOPPPPOOSO..',
+];
+const BUFF_SIDE_TOP = [
+  '.....OTTTTO.....',
+  '...OOTTTTTTO....',
+  '...OSSOTTTTO....',
+  '...OSsOTTTTO....',
+  '....OSOTTTTO....',
+  '....OSPPPPPO....',
+];
+
+export type Build = 'regular' | 'buff';
+
 /** Facing left with the arm thrown forward (punch / ping-pong swing). */
 const BODY_SIDE_PUNCH = [
   '.....OTTTTO.....',
@@ -392,7 +415,15 @@ function colorsFor(a: Appearance): Record<string, string> {
 }
 
 /** Draw one frame at (ox, oy). Pure canvas — also used by the React character preview. */
-export function drawCharacterFrame(ctx: Ctx, ox: number, oy: number, a: Appearance, dir: Direction, pose: Pose): void {
+export function drawCharacterFrame(
+  ctx: Ctx,
+  ox: number,
+  oy: number,
+  a: Appearance,
+  dir: Direction,
+  pose: Pose,
+  build: Build = 'regular',
+): void {
   const facing: Facing = dir === 'left' || dir === 'right' ? 'side' : dir;
   const mirror = dir === 'right';
   const colors = colorsFor(a);
@@ -404,8 +435,19 @@ export function drawCharacterFrame(ctx: Ctx, ox: number, oy: number, a: Appearan
   const arms: Arms =
     spec.arms === 'up' && facing === 'side' ? 'side' : spec.arms === 'punch' && facing !== 'side' ? 'side' : spec.arms;
 
+  const buff = build === 'buff' && arms === 'side';
   const top =
-    facing === 'side' ? (arms === 'punch' ? BODY_SIDE_PUNCH : BODY_SIDE_TOP) : arms === 'up' ? BODY_FRONT_ARMS_UP : BODY_FRONT_TOP;
+    facing === 'side'
+      ? arms === 'punch'
+        ? BODY_SIDE_PUNCH
+        : buff
+          ? BUFF_SIDE_TOP
+          : BODY_SIDE_TOP
+      : arms === 'up'
+        ? BODY_FRONT_ARMS_UP
+        : buff
+          ? BUFF_FRONT_TOP
+          : BODY_FRONT_TOP;
   const y0 = oy + sitDy;
   drawTemplate(ctx, [...top, ...legRows(facing, spec.legs)], ox, y0 + 12, colors, mirror);
   drawTemplate(ctx, HEAD[facing], ox, y0 + headDy, colors, mirror);
@@ -422,10 +464,10 @@ export function drawCharacterFrame(ctx: Ctx, ox: number, oy: number, a: Appearan
  * Build a full sprite sheet for one appearance: rows = directions, columns = poses.
  * Returns the canvas plus a frame-name lookup.
  */
-export function buildCharacterSheet(a: Appearance): HTMLCanvasElement {
+export function buildCharacterSheet(a: Appearance, build: Build = 'regular'): HTMLCanvasElement {
   const { canvas, ctx } = makeCanvas(FRAME_W * POSES.length, FRAME_H * DIRECTIONS.length);
   DIRECTIONS.forEach((dir, row) =>
-    POSES.forEach((pose, col) => drawCharacterFrame(ctx, col * FRAME_W, row * FRAME_H, a, dir, pose)),
+    POSES.forEach((pose, col) => drawCharacterFrame(ctx, col * FRAME_W, row * FRAME_H, a, dir, pose, build)),
   );
   return canvas;
 }
@@ -433,7 +475,7 @@ export function buildCharacterSheet(a: Appearance): HTMLCanvasElement {
 export const frameName = (dir: Direction, pose: Pose) => `${dir}-${pose}`;
 
 /** Exposed for tests / sanity checks. */
-export const TEMPLATES_FOR_VALIDATION = { HEAD, HAIR, BODY_FRONT_TOP, BODY_SIDE_TOP, LEGS_FRONT, LEGS_SIDE };
+export const TEMPLATES_FOR_VALIDATION = { HEAD, HAIR, BODY_FRONT_TOP, BODY_SIDE_TOP, BUFF_FRONT_TOP, BUFF_SIDE_TOP, LEGS_FRONT, LEGS_SIDE };
 
 /**
  * The potato costume, drawn over the character's body (the head stays visible

@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { PLACEMENTS, STATUSES, appearanceKey, type Appearance, type StatusId, type Theme } from '@little-office/shared';
 import { STATUS_ICON_SIZE, statusPixels } from '../../ui/statusIcons';
 import { paintBackground, paintGlow, paintSunbeams } from './backgroundArt';
-import { DIRECTIONS, FRAME_H, FRAME_W, POSES, buildCharacterSheet, drawPotatoSuit, frameName, type Pose } from './characterArt';
+import { DIRECTIONS, FRAME_H, FRAME_W, POSES, buildCharacterSheet, drawPotatoSuit, frameName, type Build, type Pose } from './characterArt';
 import { drawTemplate, makeCanvas, vline } from './pixel';
 import { furnitureTextureKey, paintFurniture } from './furnitureArt';
 import { PALETTES } from './palette';
@@ -138,14 +138,14 @@ export type DanceStyle = (typeof DANCE_STYLES)[number];
 
 export type AnimName = keyof typeof ANIMS;
 
-export const charKey = (a: Appearance) => `char:${appearanceKey(a)}`;
-export const animKey = (a: Appearance, name: string) => `${charKey(a)}:${name}`;
+export const charKey = (a: Appearance, build: Build = 'regular') => `char:${appearanceKey(a)}${build === 'buff' ? ':buff' : ''}`;
+export const animKey = (a: Appearance, name: string, build: Build = 'regular') => `${charKey(a, build)}:${name}`;
 
 /** Ensure a sprite sheet + all animations exist for this look. */
-export function ensureCharacter(scene: Phaser.Scene, a: Appearance): string {
-  const key = charKey(a);
+export function ensureCharacter(scene: Phaser.Scene, a: Appearance, build: Build = 'regular'): string {
+  const key = charKey(a, build);
   if (scene.textures.exists(key)) return key;
-  const texture = scene.textures.addCanvas(key, buildCharacterSheet(a))!;
+  const texture = scene.textures.addCanvas(key, buildCharacterSheet(a, build))!;
   DIRECTIONS.forEach((dir, row) =>
     POSES.forEach((pose, col) => texture.add(frameName(dir, pose), 0, col * FRAME_W, row * FRAME_H, FRAME_W, FRAME_H)),
   );
@@ -153,7 +153,7 @@ export function ensureCharacter(scene: Phaser.Scene, a: Appearance): string {
     for (const [name, def] of Object.entries(ANIMS)) {
       const spin = 'spin' in def && def.spin;
       scene.anims.create({
-        key: animKey(a, `${name}-${dir}`),
+        key: animKey(a, `${name}-${dir}`, build),
         frames: spin
           ? (['down', 'right', 'up', 'left'] as const).map((d) => ({ key, frame: frameName(d, def.frames[0]) }))
           : def.frames.map((pose) => ({ key, frame: frameName(dir, pose) })),
