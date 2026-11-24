@@ -291,3 +291,16 @@ A few rules keep it tidy:
 - **Whatever it was doing stops cleanly:** each activity's `end()` handles that. Riding gets off
   Roomby, and perching frees the seat.
 - **You can't set it down inside a private office,** where it would get shut in.
+
+## 38. Filling any screen shape: trim, then stretch
+The office has a fixed shape, but screens don't. The camera now zooms each axis separately
+(Phaser cameras have `zoomX` / `zoomY`):
+- **Always fill the width.**
+- **Narrower screens** (taller than the office's shape): stretch vertically a little to fill.
+- **Wider screens:** first trim up to 14px of window glass off the top (nothing important there),
+  then stretch horizontally a little if that's not enough.
+- **Limit:** stretching is capped at 12%, so a very odd shape gets bands back instead of a
+  distorted picture.
+
+Anything that turns screen pixels into world pixels (dragging, zoom-to-cursor, the speech-bubble
+check) now uses the right axis's zoom.
