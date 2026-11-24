@@ -79,7 +79,7 @@ export class Character {
     // screen (e.g. on the meeting-room stage), then it sits to the character's right.
     const aboveY = tagY - this.nameTag.displayHeight - 2 * this.labelScale;
     const cam = this.scene.cameras.main;
-    const bubbleTopOnScreen = (aboveY - cam.worldView.y) * cam.zoom - this.bubble.heightPx;
+    const bubbleTopOnScreen = (aboveY - cam.worldView.y) * cam.zoomY - this.bubble.heightPx;
     if (bubbleTopOnScreen < TOP_BAR_PX + 6) {
       this.bubble.setSide('right');
       this.bubble.setPosition(rx + 7 * CHARACTER_SCALE, ry - 12 * CHARACTER_SCALE);
