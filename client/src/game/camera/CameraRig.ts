@@ -11,6 +11,15 @@ const WORLD_H = MAP_H * TILE;
  * the windows and the entrance stay visible; the office just gets a bit bigger.
  */
 const VIEW = { x0: TILE, x1: WORLD_W - TILE, y0: TILE, y1: WORLD_H };
+/**
+ * Filling screens of different shapes (no padding bands):
+ *   - a wider screen first trims up to TRIM_TOP px of window glass off the top;
+ *   - whatever difference is left is made up by stretching the view a little in one
+ *     direction (Phaser cameras have separate zoomX / zoomY), capped at MAX_STRETCH
+ *     so unusual screen shapes don't distort it badly — beyond that, bands come back.
+ */
+const TRIM_TOP = 14;
+const MAX_STRETCH = 1.12;
 /** How far (screen px) the pointer must move before a press counts as a drag, not a click. */
 const DRAG_THRESHOLD = 6;
 
@@ -33,6 +42,7 @@ interface Hooks {
 export class CameraRig {
   private factor = 1;
   private lastZoom = 0;
+  private introTween: Phaser.Tweens.Tween | null = null;
   private drag: { x: number; y: number; scrollX: number; scrollY: number; moved: boolean } | null = null;
   private introRunning = false;
   private readonly cam: Phaser.Cameras.Scene2D.Camera;
@@ -79,11 +89,21 @@ export class CameraRig {
     this.lookAtPlayer();
     this.scene.time.delayedCall(1400, () => {
       if (!this.introRunning) return;
+      // zoom + pan out together (by hand, since the end zoom can differ per axis)
+      const from = { zx: this.cam.zoomX, zy: this.cam.zoomY, x: this.cam.midPoint.x, y: this.cam.midPoint.y };
       const z = this.fitZoom();
       const c = this.fitCentre(z);
-      this.cam.pan(c.x, c.y, 1800, 'Sine.easeInOut');
-      this.cam.zoomTo(z, 1800, 'Sine.easeInOut', false, (_c: unknown, p: number) => {
-        if (p >= 1) this.endIntro();
+      this.introTween = this.scene.tweens.addCounter({
+        from: 0,
+        to: 1,
+        duration: 1800,
+        ease: 'Sine.easeInOut',
+        onUpdate: (tw) => {
+          const t = tw.getValue() ?? 0;
+          this.cam.setZoom(from.zx + (z.x - from.zx) * t, from.zy + (z.y - from.zy) * t);
+          this.cam.centerOn(from.x + (c.x - from.x) * t, from.y + (c.y - from.y) * t);
+        },
+        onComplete: () => this.endIntro(),
       });
     });
     this.scene.input.keyboard!.once('keydown', () => this.skipIntro());
@@ -91,11 +111,11 @@ export class CameraRig {
 
   /** Call every frame: keeps bounds + label scales in step during zoom animations. */
   update() {
-    const zoom = this.cam.zoom;
+    const zoom = this.cam.zoomX;
     if (zoom === this.lastZoom) return;
     this.lastZoom = zoom;
-    this.hooks.screenScale(1 / zoom);
-    if (!this.introRunning) this.factor = zoom / this.fitZoom();
+    this.hooks.screenScale(2 / (this.cam.zoomX + this.cam.zoomY));
+    if (!this.introRunning) this.factor = zoom / this.fitZoom().x;
     this.applyBounds();
     this.emitState();
   }
@@ -112,15 +132,33 @@ export class CameraRig {
 
   // ---------------------------------------------------------------- internals
 
-  /** Zoom at which the whole office (VIEW) fits under the top bar (= 100%). */
-  private fitZoom() {
+  /**
+   * Zoom (per axis) at which the office fills the space under the top bar (= 100%).
+   * Equal on both axes when the screen's shape matches the office; otherwise a
+   * little trimming and/or stretching (see TRIM_TOP / MAX_STRETCH).
+   */
+  private fitZoom(): { x: number; y: number } {
     const { width, height } = this.scene.scale;
-    return Math.min(width / (VIEW.x1 - VIEW.x0), (height - TOP_BAR_PX) / (VIEW.y1 - VIEW.y0));
+    const vw = VIEW.x1 - VIEW.x0;
+    const vh = VIEW.y1 - VIEW.y0;
+    const zx = width / vw; // always fill the width…
+    const fillY = (height - TOP_BAR_PX) / vh; // …and the height, if we can
+    if (fillY >= zx) return { x: zx, y: Math.min(fillY, zx * MAX_STRETCH) }; // narrower screen: stretch taller
+    const trimmedY = (height - TOP_BAR_PX) / (vh - TRIM_TOP);
+    if (trimmedY >= zx) return { x: zx, y: zx }; // wider screen: trimming some glass is enough
+    return { x: Math.min(zx, trimmedY * MAX_STRETCH), y: trimmedY }; // much wider: trim + stretch wider
   }
 
-  /** Where to centre the camera so the office sits in the middle of the space under the top bar. */
-  private fitCentre(zoom: number) {
-    return { x: (VIEW.x0 + VIEW.x1) / 2, y: (VIEW.y0 + VIEW.y1) / 2 - TOP_BAR_PX / 2 / zoom };
+  /**
+   * Where to centre the camera at 100%: the office's bottom edge on the bottom of the
+   * screen (so any trimming comes off the top of the window glass) — or simply
+   * centred under the top bar if the screen is too odd a shape to fill.
+   */
+  private fitCentre(zoom: { x: number; y: number }) {
+    const x = (VIEW.x0 + VIEW.x1) / 2;
+    const visibleH = this.scene.scale.height / zoom.y;
+    const filled = visibleH <= VIEW.y1 - VIEW.y0 + TOP_BAR_PX / zoom.y + 0.5;
+    return { x, y: filled ? VIEW.y1 - visibleH / 2 : (VIEW.y0 + VIEW.y1) / 2 - TOP_BAR_PX / 2 / zoom.y };
   }
 
   private atFit() {
@@ -132,11 +170,11 @@ export class CameraRig {
     if (this.introRunning) return;
     if (this.atFit()) {
       this.cam.removeBounds();
-      const c = this.fitCentre(this.cam.zoom);
+      const c = this.fitCentre({ x: this.cam.zoomX, y: this.cam.zoomY });
       this.cam.centerOn(c.x, c.y);
     } else {
-      const z = this.cam.zoom;
-      this.cam.setBounds(0, -TOP_BAR_PX / z, WORLD_W, WORLD_H + TOP_BAR_PX / z);
+      const zy = this.cam.zoomY;
+      this.cam.setBounds(0, -TOP_BAR_PX / zy, WORLD_W, WORLD_H + TOP_BAR_PX / zy);
     }
   }
 
@@ -146,18 +184,18 @@ export class CameraRig {
    */
   private setFactor(f: number, anchor?: { x: number; y: number }) {
     const fit = this.fitZoom();
-    this.factor = Phaser.Math.Clamp(f, 1, Math.max(1, MAX_ZOOM / fit));
-    const oldZoom = this.cam.zoom;
-    const newZoom = fit * this.factor;
+    this.factor = Phaser.Math.Clamp(f, 1, Math.max(1, MAX_ZOOM / fit.x));
+    const old = { x: this.cam.zoomX, y: this.cam.zoomY };
+    const next = { x: fit.x * this.factor, y: fit.y * this.factor };
     if (anchor && !this.atFit()) {
       const { width, height } = this.scene.scale;
-      // Phaser camera maths (origin 0.5): world = scroll + w/2 + (screen - w/2) / zoom
-      const wx = this.cam.scrollX + width / 2 + (anchor.x - width / 2) / oldZoom;
-      const wy = this.cam.scrollY + height / 2 + (anchor.y - height / 2) / oldZoom;
-      this.cam.setZoom(newZoom);
-      this.cam.setScroll(wx - width / 2 - (anchor.x - width / 2) / newZoom, wy - height / 2 - (anchor.y - height / 2) / newZoom);
+      // Phaser camera maths (origin 0.5): world = scroll + w/2 + (screen - w/2) / zoom, per axis
+      const wx = this.cam.scrollX + width / 2 + (anchor.x - width / 2) / old.x;
+      const wy = this.cam.scrollY + height / 2 + (anchor.y - height / 2) / old.y;
+      this.cam.setZoom(next.x, next.y);
+      this.cam.setScroll(wx - width / 2 - (anchor.x - width / 2) / next.x, wy - height / 2 - (anchor.y - height / 2) / next.y);
     } else {
-      this.cam.setZoom(newZoom);
+      this.cam.setZoom(next.x, next.y);
     }
     this.lastZoom = 0; // force update() to re-sync labels/bounds
     this.update();
@@ -170,25 +208,27 @@ export class CameraRig {
    */
   private lookAtPlayer() {
     const { width, height } = this.scene.scale;
-    const z = this.cam.zoom;
-    const viewW = width / z;
-    const viewH = height / z;
-    const top = -TOP_BAR_PX / z; // the strip under the top bar counts as "inside"
+    const zx = this.cam.zoomX;
+    const zy = this.cam.zoomY;
+    const viewW = width / zx;
+    const viewH = height / zy;
+    const top = -TOP_BAR_PX / zy; // the strip under the top bar counts as "inside"
     const cx = viewW >= WORLD_W ? WORLD_W / 2 : Phaser.Math.Clamp(this.target.x, viewW / 2, WORLD_W - viewW / 2);
     const cy =
-      viewH >= WORLD_H - top ? this.fitCentre(z).y : Phaser.Math.Clamp(this.target.y, top + viewH / 2, WORLD_H - viewH / 2);
+      viewH >= WORLD_H - top ? this.fitCentre({ x: zx, y: zy }).y : Phaser.Math.Clamp(this.target.y, top + viewH / 2, WORLD_H - viewH / 2);
     this.cam.centerOn(cx, cy);
   }
 
   private skipIntro() {
     if (!this.introRunning) return;
-    this.cam.zoomEffect.reset();
-    this.cam.panEffect.reset();
+    this.introTween?.remove();
+    this.introTween = null;
     this.endIntro();
   }
 
   private endIntro() {
     this.introRunning = false;
+    this.introTween = null;
     this.setFactor(1);
   }
 
@@ -198,7 +238,8 @@ export class CameraRig {
 
   private onResize() {
     // room tags keep a fixed size relative to the building: readable at 100%, scale with zoom
-    this.hooks.worldScale(1 / this.fitZoom());
+    const fit = this.fitZoom();
+    this.hooks.worldScale(2 / (fit.x + fit.y));
     this.setFactor(this.factor);
   }
 
@@ -215,7 +256,7 @@ export class CameraRig {
     if (!this.drag.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
     this.drag.moved = true;
     if (this.atFit()) return; // the whole office is already in view: nothing to pan
-    this.cam.setScroll(this.drag.scrollX - dx / this.cam.zoom, this.drag.scrollY - dy / this.cam.zoom);
+    this.cam.setScroll(this.drag.scrollX - dx / this.cam.zoomX, this.drag.scrollY - dy / this.cam.zoomY);
   }
 
   private onUp(p: Phaser.Input.Pointer) {
