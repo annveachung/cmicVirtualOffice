@@ -550,21 +550,6 @@ input:not([type]) {
   padding: 4px;
 }
 
-.zoom-percent {
-  font: inherit;
-  font-size: 13px;
-  min-width: 52px;
-  padding: 4px 6px;
-  background: none;
-  border: 0;
-  color: var(--ink);
-  text-align: center;
-}
-
-.zoom-percent:hover {
-  text-decoration: underline;
-}
-
 .game-host canvas:active {
   cursor: var(--cursor-hand, grabbing) !important;
 }
