@@ -201,7 +201,7 @@ export const PLACEMENTS: Placement[] = [
   P('coffeeTeaMachine', 32, 4, { id: 'pantry-machine', dy: -4 }),
   P('appleBasket', 32, 5, { id: 'pantry-apples', dy: 2 }),
   P('breadBasket', 32, 7, { id: 'pantry-bread', dy: -10 }),
-  P('mealBoxes', 32, 8, { id: 'pantry-boxes', dy: 4 }), // breakfast 10:00, lunch 12:00
+  P('mealBoxes', 32, 8, { id: 'pantry-boxes', dy: 4 }), // breakfast 9–11, lunch 12–14
   // the big communal table sits in the middle, well away from the entrance
   P('diningTable', 42, 5, { w: 6, h: 2 }),
   ...[43, 44, 45, 46].map((x) => P('chair', x, 4, { dir: 'down', variant: 1 })),

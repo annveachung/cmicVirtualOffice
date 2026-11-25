@@ -143,7 +143,7 @@ class Vacuum implements Npc {
 // ---------------------------------------------------------- Kit (reception) ----
 
 const TIPS = [
-  'Meal boxes: breakfast at 10:00, lunch at 12:00 🍱',
+  'Meal boxes: breakfast 9–11, lunch 12–2 🍱',
   'Set your status in the top bar so people know 💬',
   'Press T for night mode 🌙',
   'The Potato Club has karaoke — try the mic 🎤',

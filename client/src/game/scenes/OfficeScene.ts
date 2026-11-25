@@ -300,7 +300,7 @@ export class OfficeScene extends Phaser.Scene {
     this.updateSpotHint(true);
   }
 
-  /** The pantry counter: machine asks coffee or tea; apples/bread are instant; meal boxes only at 10:00 & 12:00. */
+  /** The pantry counter: machine asks coffee or tea; apples/bread are instant; meal boxes only 9–11 (breakfast) & 12–14 (lunch). */
   private usePantry(id: string) {
     if (id === 'pantry-machine') bus.emit('pantry:prompt');
     else if (id === 'pantry-apples') this.player.say(pick(APPLE_LINES));
