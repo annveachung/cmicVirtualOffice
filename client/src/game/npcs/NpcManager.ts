@@ -159,7 +159,7 @@ class Receptionist implements Npc {
 
   constructor(scene: Phaser.Scene, playerName: string) {
     const look: Appearance = { skin: 2, hairStyle: 2, hairColor: 0, outfit: 5 }; // bun, cream outfit
-    this.person = new Character(scene, look, 'Pip · Reception', { isLocal: false });
+    this.person = new Character(scene, look, 'Pip', { isLocal: false });
     const p = tileCenter(RECEPTIONIST_TILE);
     this.person.setPosition(p.x, p.y);
     this.person.setMotion('down', 'idle');
