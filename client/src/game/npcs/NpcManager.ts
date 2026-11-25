@@ -28,7 +28,7 @@ import { SpeechBubble } from '../characters/SpeechBubble';
 import { DEPTH, NIGHT_TINT } from '../constants';
 
 /**
- * The office's NPCs: the critters (Mochi the cat + raccoons Ziggy and Pudding), Roomby the robot vacuum, Pip at reception and Coach Rio in the gym. Each is a tiny state machine (idle → walk → do a
+ * The office's NPCs: the critters (Mochi the cat + raccoons Ziggy and Pudding), Roomby the robot vacuum, Kit at reception and Coach Rio in the gym. Each is a tiny state machine (idle → walk → do a
  * thing → idle…). They run on this screen for now; in Milestone 2 the server
  * will run them so everyone sees the same critters in the same places.
  */
@@ -140,7 +140,7 @@ class Vacuum implements Npc {
   }
 }
 
-// ---------------------------------------------------------- Pip (reception) ----
+// ---------------------------------------------------------- Kit (reception) ----
 
 const TIPS = [
   'Meal boxes: breakfast at 10:00, lunch at 12:00 🍱',
@@ -153,13 +153,13 @@ const TIPS = [
 ];
 
 class Receptionist implements Npc {
-  readonly verb = 'talk to Pip';
+  readonly verb = 'talk to Kit';
   private readonly person: Character;
   private tip = 0;
 
   constructor(scene: Phaser.Scene, playerName: string) {
     const look: Appearance = { skin: 2, hairStyle: 2, hairColor: 0, outfit: 5 }; // bun, cream outfit
-    this.person = new Character(scene, look, 'Pip · Reception', { isLocal: false });
+    this.person = new Character(scene, look, 'Kit', { isLocal: false });
     const p = tileCenter(RECEPTIONIST_TILE);
     this.person.setPosition(p.x, p.y);
     this.person.setMotion('down', 'idle');
