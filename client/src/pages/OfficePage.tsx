@@ -11,15 +11,20 @@ import { PantryPrompt } from '../components/PantryPrompt';
 import { LeavePrompt } from '../components/LeavePrompt';
 import { WelcomeBanner } from '../components/WelcomeBanner';
 import { sound } from '../audio/sound';
+import type { Session } from '../net/session';
+import { useRoster } from '../hooks/useRoster';
 
 interface Props {
   profile: Profile;
+  /** Connection to the shared office, or null when playing solo. */
+  session: Session | null;
   theme: Theme;
   onToggleTheme: () => void;
   onLeave: () => void;
 }
 
-export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
+export function OfficePage({ profile, session, theme, onToggleTheme, onLeave }: Props) {
+  const roster = useRoster(session, profile.name);
   const [ready, setReady] = useState(false);
   const [showHelp, setShowHelp] = useState(true);
   const [zone, setZone] = useState<ZoneId | null>(null);
@@ -67,18 +72,24 @@ export function OfficePage({ profile, theme, onToggleTheme, onLeave }: Props) {
         name={profile.name}
         appearance={profile.appearance}
         deskId={null}
+        session={session}
         theme={theme}
         onReady={() => setReady(true)}
       />
       <TopBar
         theme={theme}
-        onlineCount={1}
+        online={roster.names}
         status={status}
         onStatusChange={setStatus}
         onToggleTheme={onToggleTheme}
         onToggleHelp={() => setShowHelp((v) => !v)}
         onLeave={onLeave}
       />
+      {ready && !roster.online && (
+        <div className="offline-note pixel-panel" role="status">
+          {session ? 'Reconnecting to the office…' : 'Couldn’t reach the office server, so it’s just you for now.'}
+        </div>
+      )}
       {!ready && <div className="loading pixel-panel">Opening the office…</div>}
       {zone === 'potato-club' && <ClubPanel />}
       <AchievementToast />

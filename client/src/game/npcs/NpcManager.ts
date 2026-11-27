@@ -289,17 +289,18 @@ export class NpcManager {
   }
 
   /**
-   * Everyone is solid: each NPC is told where you and all the OTHER NPCs are, so
+   * Everyone is solid: each NPC is told where you, your colleagues and all the OTHER NPCs are, so
    * nobody walks through anybody. (Roomby and whoever is riding it don't count —
    * the rider is on top of it.)
    */
-  update(dtMs: number, ctx: Omit<NpcContext, 'obstacles'>) {
+  update(dtMs: number, ctx: Omit<NpcContext, 'obstacles'>, others: Vec2[] = []) {
     const player = { x: ctx.playerX, y: ctx.playerY };
     const riderOf = (n: Npc) => (n === this.roomby ? this.roomby.rider : null);
     const isRiding = (n: Npc) => n instanceof Critter && this.roomby.rider === n.name;
     for (const n of this.npcs) {
       const obstacles: Vec2[] = [];
       if (riderOf(n) !== 'player') obstacles.push(player);
+      obstacles.push(...others); // colleagues are solid too
       for (const o of this.npcs) {
         if (o === n) continue;
         if (o instanceof Critter && o.isCarried) continue; // in your arms — not in anyone's way

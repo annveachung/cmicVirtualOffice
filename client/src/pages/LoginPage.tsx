@@ -1,20 +1,20 @@
 import { useState, type FormEvent } from 'react';
-import { DEFAULT_APPEARANCE, type Appearance, type Theme } from '@little-office/shared';
+import { DEFAULT_APPEARANCE, isValidName, type Appearance, type Theme } from '@little-office/shared';
 import type { Profile } from '../App';
 import { CharacterCreator } from '../components/CharacterCreator';
 import { PixelIcon } from '../components/PixelIcon';
 import { ThemeToggle } from '../components/ThemeToggle';
 
-const NAME_RE = /^[A-Za-z0-9 _-]{1,12}$/;
-
 interface Props {
   theme: Theme;
   onToggleTheme: () => void;
-  onEnter: (p: Profile) => void;
+  /** Join the office; resolves to an error message to show (e.g. name taken), or null. */
+  onEnter: (p: Profile) => Promise<string | null>;
 }
 
 /**
- * Milestone 1 entry screen: pick a name and build a character.
+ * Entry screen: pick a name and build a character, then walk into the shared
+ * office. No password — names just have to be unique among the people online.
  * Username + PIN + invitation code (real accounts) replace this in Milestone 3.
  */
 export function LoginPage({ theme, onToggleTheme, onEnter }: Props) {
@@ -23,14 +23,25 @@ export function LoginPage({ theme, onToggleTheme, onEnter }: Props) {
   // Only complain after the user tries to enter, or types something invalid —
   // never just because they clicked the character options first.
   const [attempted, setAttempted] = useState(false);
+  const [joining, setJoining] = useState(false);
+  /** Error from the server (e.g. that name is already in the office). */
+  const [serverError, setServerError] = useState<string | null>(null);
   const trimmed = name.trim();
-  const valid = NAME_RE.test(trimmed);
+  const valid = isValidName(trimmed);
   const showError = !valid && (attempted || trimmed.length > 0);
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     setAttempted(true);
-    if (valid) onEnter({ name: trimmed, appearance });
+    if (!valid || joining) return;
+    setJoining(true);
+    setServerError(null);
+    const err = await onEnter({ name: trimmed, appearance });
+    // on success this page is gone; only touch state if we're still here
+    if (err) {
+      setServerError(err);
+      setJoining(false);
+    }
   };
 
   return (
@@ -56,18 +67,22 @@ export function LoginPage({ theme, onToggleTheme, onEnter }: Props) {
             autoFocus
             autoComplete="off"
             placeholder="e.g. Mochi"
-            onChange={(e) => setName(e.target.value)}
-            aria-invalid={showError}
+            onChange={(e) => {
+              setName(e.target.value);
+              setServerError(null);
+            }}
+            aria-invalid={showError || !!serverError}
           />
           {showError && <small className="field-error">1–12 letters, numbers, spaces, _ or -</small>}
+          {!showError && serverError && <small className="field-error">{serverError}</small>}
         </label>
 
         <CharacterCreator value={appearance} onChange={setAppearance} />
 
-        <button className="pixel-btn primary block" type="submit">
-          <PixelIcon name="door" size={16} /> Enter the office
+        <button className="pixel-btn primary block" type="submit" disabled={joining}>
+          <PixelIcon name="door" size={16} /> {joining ? 'Walking in…' : 'Enter the office'}
         </button>
-        <p className="footnote">Prototype build · team accounts with a PIN arrive in Milestone 3</p>
+        <p className="footnote">No password needed · just pick a name nobody in the office is using</p>
       </form>
     </main>
   );

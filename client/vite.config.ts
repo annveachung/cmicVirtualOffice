@@ -5,6 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    // Multiplayer: the Socket.IO server runs on :3001; forward its traffic (incl. websockets) there.
+    proxy: { '/socket.io': { target: 'http://localhost:3001', ws: true } },
     // npm workspaces hoist packages (like the pixel font) into the repo-root node_modules,
     // which is outside client/. Allow the dev server to serve files from the whole workspace.
     fs: { allow: ['..'] }, // '..' = the repo root (relative to client/)

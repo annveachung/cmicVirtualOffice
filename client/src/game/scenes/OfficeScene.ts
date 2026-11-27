@@ -17,6 +17,8 @@ import {
   officeAt,
   DEFAULT_STATUS,
   type OfficeDoor,
+  OFFICE_DOORS,
+  type Motion,
 } from '@little-office/shared';
 import { registerEnvironmentTextures } from '../assets/textures';
 import { bus, type PantryItem } from '../bus';
@@ -29,6 +31,8 @@ import { CameraRig } from '../camera/CameraRig';
 import { NpcManager, freeTileNear, type Critter, type Npc } from '../npcs/NpcManager';
 import { OfficeDoors } from '../doors/OfficeDoors';
 import { mealBoxMessage } from '../mealBoxes';
+import { RemotePlayers } from '../net/RemotePlayers';
+import type { Session } from '../../net/session';
 
 export interface OfficeSceneData {
   name: string;
@@ -36,6 +40,8 @@ export interface OfficeSceneData {
   theme: Theme;
   /** Desk to label with the player's name (assigned for real in Milestone 3). */
   deskId: number | null;
+  /** The shared office connection (null = solo, the server couldn't be reached). */
+  session: Session | null;
 }
 
 
@@ -69,6 +75,10 @@ export class OfficeScene extends Phaser.Scene {
   /** Standing on Roomby, riding its cleaning route. */
   private riding = false;
   private zone: ZoneId | null = null;
+  /** Your colleagues (only when connected). */
+  private remotes: RemotePlayers | null = null;
+  /** Last motion sent to the server, and when. */
+  private sent: { m: Motion | null; at: number } = { m: null, at: 0 };
 
   constructor() {
     super('office');
@@ -79,7 +89,7 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   create() {
-    const { name, appearance, theme, deskId } = this.data0;
+    const { name, appearance, theme, deskId, session } = this.data0;
     registerEnvironmentTextures(this);
     this.grid = buildCollisionGrid();
     this.office = new OfficeRenderer(this, theme);
@@ -102,11 +112,29 @@ export class OfficeScene extends Phaser.Scene {
     this.club = new PotatoClub(this, this.player, this.controller, this.office);
     this.npcs = new NpcManager(this, this.grid, name);
     this.npcs.setTheme(theme);
-    this.controller.blockers = () => this.npcs.positions(); // NPCs are solid
-    // a seat / machine is taken while a critter is on it (and they won't take yours)
-    this.npcs.seatBusy = (id) => this.controller.claimedSpot?.id === id;
-    this.controller.isTaken = (spot) => this.npcs.critterOn(spot.id) !== null;
-    this.controller.onTaken = (spot) => this.player.say(takenLine(this.npcs.critterOn(spot.id) ?? 'Someone'), 3000);
+
+    // Multiplayer: draw colleagues, and tell them what you say / react / wear.
+    if (session) {
+      this.remotes = new RemotePlayers(this, session, theme);
+      this.remotes.onKnock = (id) => {
+        const door = OFFICE_DOORS.find((d) => d.id === id);
+        if (door) this.doors.knock(door);
+      };
+      this.player.echo = {
+        say: (text) => session.say(text),
+        react: (kind) => session.react(kind),
+        costume: (on) => session.costume(on),
+      };
+    }
+
+    // NPCs and colleagues are solid
+    this.controller.blockers = () => [...this.npcs.positions(), ...(this.remotes?.positions() ?? [])];
+    // a seat / machine is taken while a critter or a colleague is on it (and critters won't take yours)
+    const spotById = new Map(SPOTS.map((sp) => [sp.id, sp]));
+    const remoteOn = (spot: Spot | undefined) => (spot && this.remotes?.usingSpot(spot)) ?? null;
+    this.npcs.seatBusy = (id) => this.controller.claimedSpot?.id === id || remoteOn(spotById.get(id)) !== null;
+    this.controller.isTaken = (spot) => this.whoIsOn(spot) !== null;
+    this.controller.onTaken = (spot) => this.player.say(takenLine(this.whoIsOn(spot) ?? 'Someone'), 3000);
     // one-off actions: the pantry counters ask what you'd like; everything else is the club's
     this.controller.onInstant = (spot) => {
       if (spot.action === 'pantry') this.usePantry(spot.id);
@@ -155,6 +183,7 @@ export class OfficeScene extends Phaser.Scene {
         this.spotHint.setScale(sc);
         this.club.setLabelScale(sc);
         this.npcs.setLabelScale(sc);
+        this.remotes?.setLabelScale(sc);
       },
       worldScale: (sc) => this.office.setLabelScale(sc),
       onTap: (wx, wy) => this.tapAt(wx, wy),
@@ -163,17 +192,22 @@ export class OfficeScene extends Phaser.Scene {
 
     this.unsubscribers.push(
       bus.on('pantry:choose', (item) => this.player.say(pantryLine(item))),
-      bus.on('status:set', (id) => this.player.setStatus(id)),
+      bus.on('status:set', (id) => {
+        this.player.setStatus(id);
+        session?.status(id);
+      }),
       bus.on('theme:set', (t) => {
         this.office.applyTheme(t);
         this.player.setTheme(t);
         this.npcs.setTheme(t);
         this.doors.setTheme(t);
+        this.remotes?.setTheme(t);
       }),
     );
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.club.destroy();
       this.npcs.destroy();
+      this.remotes?.destroy();
       this.unsubscribers.forEach((u) => u());
       this.camera.destroy();
     });
@@ -223,7 +257,9 @@ export class OfficeScene extends Phaser.Scene {
 
   /** Knock knock 🚪 — the door opens a moment later (then `then`, e.g. walk on in). */
   private knock(door: OfficeDoor, then?: () => void) {
-    if (this.doors.knock(door, then)) this.player.say('knock knock 🚪', 1500);
+    if (!this.doors.knock(door, then)) return;
+    this.player.say('knock knock 🚪', 1500);
+    this.data0.session?.knock(door.id); // everyone hears it, and the door opens for them too
   }
 
   private pickUp() {
@@ -277,13 +313,17 @@ export class OfficeScene extends Phaser.Scene {
     const m = this.controller.update({ x: this.player.x, y: this.player.y }, delta);
     this.player.setPosition(m.x, m.y);
     this.facing = m.dir;
-    this.doors.update(delta, [{ x: m.x, y: m.y }]);
+    this.remotes?.update(delta);
+    const others = this.remotes?.positions() ?? [];
+    this.doors.update(delta, [{ x: m.x, y: m.y }, ...others]);
     this.camera.update(); // cheap no-op unless the zoom changed
-    this.player.setMotion(m.dir, this.club.animFor(m.pose));
+    const anim = this.club.animFor(m.pose);
+    this.player.setMotion(m.dir, anim);
     this.club.update(m.pose);
     this.updateZone();
-    this.npcs.update(delta, { playerX: this.player.x, playerY: this.player.y, playerPose: m.pose });
+    this.npcs.update(delta, { playerX: this.player.x, playerY: this.player.y, playerPose: m.pose }, others);
     this.updateSpotHint(this.controller.activeSpot !== null);
+    this.syncMotion(m.dir, anim);
   }
 
   /** On Roomby: stand on top of it and face the way it rolls. */
@@ -293,11 +333,35 @@ export class OfficeScene extends Phaser.Scene {
     this.player.setPosition(seat.x, seat.y);
     this.player.setMotion(roomby.heading, 'idle');
     this.facing = roomby.heading;
+    this.remotes?.update(delta);
+    const others = this.remotes?.positions() ?? [];
+    this.doors.update(delta, [{ x: seat.x, y: seat.y }, ...others]);
     this.camera.update();
     this.club.update('idle');
     this.updateZone();
-    this.npcs.update(delta, { playerX: this.player.x, playerY: this.player.y, playerPose: 'idle' });
+    this.npcs.update(delta, { playerX: this.player.x, playerY: this.player.y, playerPose: 'idle' }, others);
     this.updateSpotHint(true);
+    this.syncMotion(roomby.heading, 'idle');
+  }
+
+  /** Who's using this seat / machine: a critter or a colleague (null if it's free). */
+  private whoIsOn(spot: Spot): string | null {
+    return this.npcs.critterOn(spot.id) ?? this.remotes?.usingSpot(spot) ?? null;
+  }
+
+  /**
+   * Tell everyone where you are — at most 10 times a second, and only when
+   * something changed (standing still costs nothing).
+   */
+  private syncMotion(dir: Motion['dir'], anim: string) {
+    const session = this.data0.session;
+    if (!session) return;
+    const m: Motion = { x: Math.round(this.player.x * 10) / 10, y: Math.round(this.player.y * 10) / 10, dir, anim };
+    const last = this.sent.m;
+    if (last && last.x === m.x && last.y === m.y && last.dir === m.dir && last.anim === m.anim) return;
+    if (this.time.now - this.sent.at < SYNC_MS) return;
+    this.sent = { m, at: this.time.now };
+    session.move(m);
   }
 
   /** The pantry counter: machine asks coffee or tea; apples/bread are instant; meal boxes only 9–11 (breakfast) & 12–14 (lunch). */
@@ -326,6 +390,7 @@ export class OfficeScene extends Phaser.Scene {
       for (const s of SPOTS) {
         if (!isInFrontOf(this.grid, here, s)) continue; // only when you're facing it, not standing behind
         if (this.npcs.critterOn(s.id)) continue; // a critter's on it (you get "pet Mochi" instead)
+        if (this.remotes?.usingSpot(s)) continue; // a colleague's using it
         const d = Math.hypot(s.pos.x - this.player.x, s.pos.y - this.player.y);
         if (d < bestD) {
           bestD = d;
@@ -370,6 +435,9 @@ export class OfficeScene extends Phaser.Scene {
     this.spotHint.setPosition(x, y);
   }
 }
+
+/** How often (ms) your position is sent to the server while you move. */
+const SYNC_MS = 100;
 
 const pick = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
 
