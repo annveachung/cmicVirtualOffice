@@ -10,9 +10,10 @@ import {
 import { drawTemplate, makeCanvas, shade, type Ctx } from './pixel';
 
 /**
- * Characters are drawn from ASCII templates (16 x 24 px per frame).
+ * Characters are drawn from ASCII templates (16 x 24 px per frame), chibi style:
+ * a big round head and a small body.
  *
- *   O outline   S skin   E eye   b blush   T top   t top shadow
+ *   O outline   S skin   E eye   W eye sparkle   m mouth   b blush   T top   t top shadow
  *   P pants     B shoes  H hair  h hair shadow   . transparent
  *
  * A frame = body template + head template + hair overlay, so 5 hair styles x
@@ -27,296 +28,240 @@ export const FEET_ROW = 22;
 type Facing = 'down' | 'up' | 'side';
 
 // ---------------------------------------------------------------- heads ----
+// Chibi proportions: a big round head (rows 2..14, ~60% of the character) with
+// big sparkly eyes set low on the face, rosy cheeks and a tiny mouth.
 const HEAD: Record<Facing, string[]> = {
   down: [
     '................',
     '................',
-    '................',
-    '.....OOOOOO.....',
-    '....OSSSSSSO....',
+    '....OOOOOOOO....',
     '...OSSSSSSSSO...',
+    '..OSSSSSSSSSSO..',
+    '.OSSSSSSSSSSSSO.',
+    '.OSSSSSSSSSSSSO.',
+    '.OSSSSSSSSSSSSO.',
+    '.OSSWESSSSWESSO.',
+    '.OSSEESSSSEESSO.',
+    '.OSbbSSSSSSbbSO.',
+    '..OSSSSmmSSSSO..',
     '...OSSSSSSSSO...',
-    '...OSSESSESSO...',
-    '...OSSESSESSO...',
-    '...ObSSSSSSbO...',
-    '....OSSSSSSO....',
-    '.....OOOOOO.....',
+    '....OOOOOOOO....',
   ],
   up: [
     '................',
     '................',
-    '................',
-    '.....OOOOOO.....',
-    '....OHHHHHHO....',
+    '....OOOOOOOO....',
     '...OHHHHHHHHO...',
-    '...OHHHHHHHHO...',
-    '...OHHHHHHHHO...',
-    '...OHHHHHHHHO...',
-    '...OhHHHHHHhO...',
-    '....OhhhhhhO....',
-    '.....OOOOOO.....',
+    '..OHHHHHHHHHHO..',
+      '.OHHHHHHHHHHHHO.',
+    '.OHHHHHHHHHHHHO.',
+    '.OHHHHHHHHHHHHO.',
+    '.OHHHHHHHHHHHHO.',
+    '.OhHHHHHHHHHHhO.',
+    '..OhHHHHHHHHhO..',
+    '...OhhhhhhhhO...',
+    '....OOOOOOOO....',
   ],
   side: [
     '................',
     '................',
-    '................',
-    '....OOOOOO......',
-    '...OSSSSSSO.....',
-    '..OSSSSSSSSO....',
-    '..OSSSSSSSSO....',
-    '..OSESSSSSSO....',
-    '..OSESSSSSSO....',
-    '..OSSbSSSSSO....',
-    '...OSSSSSSO.....',
-    '....OOOOOO......',
+    '....OOOOOOO.....',
+    '...OSSSSSSSO....',
+    '..OSSSSSSSSSO...',
+    '.OSSSSSSSSSSSO..',
+    '.OSSSSSSSSSSSO..',
+    '.OSSSSSSSSSSSO..',
+    '.OSWESSSSSSSSO..',
+    '.OSEESSSSSSSSO..',
+    '.ObbSSSSSSSSSO..',
+    '..OSmSSSSSSSO...',
+    '...OSSSSSSSO....',
+    '....OOOOOOO.....',
   ],
 };
 
 // ----------------------------------------------------------- hair overlays ----
 // Rows start at row 0 of the frame; '.' leaves the head underneath visible.
+const TOP_DOWN = [
+  '................',
+  '................',
+  '....OOOOOOOO....',
+  '...OHHHHHHHHO...',
+  '..OHHHHHHHHHHO..',
+  '.OHHHHHHHHHHHHO.',
+  '.OHHHHHHHHHHHHO.',
+  '.OHHHHhHHhHHHHO.',
+];
+const TOP_SIDE = [
+  '................',
+  '................',
+  '....OOOOOOO.....',
+  '...OHHHHHHHO....',
+  '..OHHHHHHHHHO...',
+  '.OHHHHHHHHHHHO..',
+  '.OHhHHHHHHHHHO..',
+  '.OH.....HHHHHO..',
+];
 const HAIR: Record<HairStyle, Record<Facing, string[]>> = {
   short: {
-    down: [
-      '................',
-      '................',
-      '................',
-      '.....OOOOOO.....',
-      '....OHHHHHHO....',
-      '...OHHHHHHHHO...',
-      '...OHHHhHHHHO...',
-      '...OH......HO...',
-    ],
+    down: [...TOP_DOWN, '.OHH........HHO.', '.OH..........HO.'],
     up: [],
-    side: [
-      '................',
-      '................',
-      '................',
-      '....OOOOOO......',
-      '...OHHHHHHO.....',
-      '..OHHHHHHHHO....',
-      '..OHhHHHHHHO....',
-      '..O....HHHHO....',
-      '..O.....HHHO....',
-      '.........HHO....',
-    ],
+    side: [...TOP_SIDE, '.O.......HHHHO..', '..........HHHO..', '...........HHO..'],
   },
   long: {
     down: [
-      '................',
-      '................',
-      '................',
-      '.....OOOOOO.....',
-      '....OHHHHHHO....',
-      '...OHHHHHHHHO...',
-      '..OHHHHhHHHHHO..',
-      '..OHH......HHO..',
-      '..OHH......HHO..',
-      '..OHH......HHO..',
-      '..OHH......HHO..',
-      '..OHHO....OHHO..',
-      '..OHhO....OhHO..',
-      '..OhhO....OhhO..',
-      '...OO......OO...',
+      ...TOP_DOWN,
+      'OHHH........HHHO',
+      'OHH..........HHO',
+      'OHH..........HHO',
+      'OHH..........HHO',
+      'OHh..........hHO',
+      'OHhO........OhHO',
+      'OhhO........OhhO',
+      'OhhO........OhhO',
+      '.OO..........OO.',
     ],
     up: [
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '....OHHHHHHO....',
-      '....OHHHHHHO....',
-      '....OhHHHHhO....',
-      '....OhhhhhhO....',
-      '.....OOOOOO.....',
+      ...Array<string>(7).fill('................'),
+      'OHHHHHHHHHHHHHHO',
+      'OHHHHHHHHHHHHHHO',
+      'OHHHHHHHHHHHHHHO',
+      'OHHHHHHHHHHHHHHO',
+      'OHHHHHHHHHHHHHHO',
+      'OHHHHHHHHHHHHHHO',
+      'OhHHHHHHHHHHHHhO',
+      'OhhhhhhhhhhhhhhO',
+      '.OOOOOOOOOOOOOO.',
     ],
     side: [
-      '................',
-      '................',
-      '................',
-      '....OOOOOO......',
-      '...OHHHHHHO.....',
-      '..OHHHHHHHHO....',
-      '..OHhHHHHHHO....',
-      '..O....HHHHO....',
-      '..O....HHHHO....',
-      '.......HHHHO....',
-      '.......HHHHO....',
-      '.......HHHHO....',
-      '......OhHHHO....',
-      '......OhhhhO....',
-      '.......OOOO.....',
+      ...TOP_SIDE,
+      '.O......HHHHHHO.',
+      '........HHHHHHO.',
+      '........HHHHHHO.',
+      '........HHHHHHO.',
+      '........HHHHHHO.',
+      '........hHHHHhO.',
+      '........OhhhhO..',
+      '.........OOOO...',
     ],
   },
   bun: {
     down: [
       '......OOOO......',
       '.....OHHHHO.....',
-      '.....OhHHhO.....',
-      '.....OOOOOO.....',
-      '....OHHHHHHO....',
-      '...OHHHHHHHHO...',
-      '...OHHHhHHHHO...',
-      '...OH......HO...',
+      '....OOhHHhOO....',
+      ...TOP_DOWN.slice(3),
+      '.OHH........HHO.',
+      '.OH..........HO.',
     ],
-    up: [
-      '......OOOO......',
-      '.....OHHHHO.....',
-      '.....OhHHhO.....',
-    ],
+    up: ['......OOOO......', '.....OHHHHO.....', '....OOhHHhOO....'],
     side: [
-      '........OOO.....',
-      '.......OHHHO....',
-      '.......OhHhO....',
-      '....OOOOOOO.....',
-      '...OHHHHHHO.....',
-      '..OHHHHHHHHO....',
-      '..OHhHHHHHHO....',
-      '..O....HHHHO....',
-      '..O.....HHHO....',
-      '.........HHO....',
+      '..........OOO...',
+      '.........OHHHO..',
+      '....OOOOOOhHhO..',
+      ...TOP_SIDE.slice(3),
+      '.O.......HHHHO..',
+      '..........HHHO..',
+      '...........HHO..',
     ],
   },
   spiky: {
     down: [
       '................',
-      '....O..OO..O....',
-      '...OHOOHHOOHO...',
-      '...OHHHHHHHHO...',
-      '...OHHHHHHHHO...',
-      '...OHHHHHHHHO...',
-      '...OHhHHHHhHO...',
-      '...OH......HO...',
+      '..O..O.OO.O..O..',
+      '..OOHOHHHHOHOO..',
+      '..OHHHHHHHHHHO..',
+      ...TOP_DOWN.slice(4),
+      '.OHH........HHO.',
     ],
-    up: [
-      '................',
-      '....O..OO..O....',
-      '...OHOOHHOOHO...',
-      '...OHHHHHHHHO...',
-    ],
+    up: ['................', '..O..O.OO.O..O..', '..OOHOHHHHOHOO..', '..OHHHHHHHHHHO..'],
     side: [
       '................',
-      '....O.O.O.......',
-      '...OHOHOHOO.....',
-      '...OHHHHHHO.....',
-      '...OHHHHHHO.....',
-      '..OHHHHHHHHO....',
-      '..OHhHHHHHHO....',
-      '..O....HHHHO....',
-      '..O.....HHHO....',
-      '.........HHO....',
+      '...O.O.O.O......',
+      '...OHOHOHOOO....',
+      '..OHHHHHHHHHO...',
+      ...TOP_SIDE.slice(4),
+      '.O.......HHHHO..',
+      '..........HHHO..',
     ],
   },
   bob: {
     down: [
-      '................',
-      '................',
-      '................',
-      '.....OOOOOO.....',
-      '....OHHHHHHO....',
-      '...OHHHHHHHHO...',
-      '..OHHHHHHHHHHO..',
-      '..OHH......HHO..',
-      '..OHH......HHO..',
-      '..OHh......hHO..',
-      '..OhhO....OhhO..',
-      '...OO......OO...',
+      ...TOP_DOWN,
+      'OHHH........HHHO',
+      'OHH..........HHO',
+      'OHH..........HHO',
+      'OHh..........hHO',
+      'OhhO........OhhO',
+      '.OO..........OO.',
     ],
     up: [
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '................',
-      '..OHHHHHHHHHHO..',
-      '..OhhhhhhhhhhO..',
-      '...OOOOOOOOOO...',
+      ...Array<string>(7).fill('................'),
+      'OHHHHHHHHHHHHHHO',
+      'OHHHHHHHHHHHHHHO',
+      'OHHHHHHHHHHHHHHO',
+      'OHHHHHHHHHHHHHHO',
+      'OhhhhhhhhhhhhhhO',
+      '.OOOOOOOOOOOOOO.',
     ],
     side: [
-      '................',
-      '................',
-      '................',
-      '....OOOOOO......',
-      '...OHHHHHHO.....',
-      '..OHHHHHHHHO....',
-      '..OHHHHHHHHHO...',
-      '..O....HHHHHO...',
-      '..O....HHHHHO...',
-      '.......HHHHHO...',
-      '.......hhhhhO...',
-      '........OOOO....',
+      ...TOP_SIDE,
+      '.O......HHHHHHO.',
+      '........HHHHHHO.',
+      '........HHHHHHO.',
+      '........hhhhhhO.',
+      '.........OOOOO..',
     ],
   },
 };
 
 // ---------------------------------------------------------------- bodies ----
-// Upper body rows 12..17, legs rows 18..21.
+// A short, stubby body: upper body rows 14..17, legs rows 18..21 (all drawn 1px lower).
 const BODY_FRONT_TOP = [
   '....OTTTTTTO....',
   '...OTTTTTTTTO...',
-  '...OTtTTTTtTO...',
-  '...OTtTTTTtTO...',
-  '...OStTTTTtSO...',
-  '...OOPPPPPPOO...',
+  '...OSTtTTtTSO...',
+  '....OPPPPPPO....',
 ];
 /** Arms raised: the torso without hands at the sides... */
 const BODY_FRONT_ARMS_UP = [
+  '....OTTTTTTO....',
   '...OTTTTTTTTO...',
-  '...OTTTTTTTTO...',
   '....OTTTTTTO....',
-  '....OTTTTTTO....',
-  '....OTTTTTTO....',
-  '...OOPPPPPPOO...',
+  '....OPPPPPPO....',
 ];
-/** ...plus the raised arms, drawn over the head (rows 7..12). */
+/** ...plus little raised arms beside the cheeks (rows 11..15). */
 const ARMS_UP_OVERLAY = [
-  '..O..........O..',
-  '.OSO........OSO.',
+  'OO............OO',
+  'OSO..........OSO',
+  'OTO..........OTO',
   '.OTO........OTO.',
-  '.OTO........OTO.',
-  '..OTO......OTO..',
-  '...OTTTTTTTTO...',
+  '..OTTTTTTTTTTO..',
 ];
-const DUMBBELLS_UP = '.DDD........DDD.'; // row 7, above the raised hands
+const DUMBBELLS_UP = 'DDD..........DDD'; // row 10, above the raised hands
 const DUMBBELLS_DOWN = '..DDD......DDD..'; // row 17, in the lowered hands
 
 const BODY_SIDE_TOP = [
   '.....OTTTTO.....',
   '....OTTTTTTO....',
-  '....OTTtTTTO....',
-  '....OTTtTTTO....',
   '....OTTSTTTO....',
-  '....OPPPPPPO....',
+  '.....OPPPPO.....',
 ];
 /**
- * Muscular build (used by Coach Rio): a tank top, broad shoulders, bulging
- * biceps on bare arms and a V-shaped torso. Same rows as the regular body.
+ * Muscular build (used by Coach Rio): a tank top, broad shoulders and bulging
+ * biceps on bare arms. Same rows as the regular body.
  */
 const BUFF_FRONT_TOP = [
-  '..OOSTTTTTTSOO..',
+  '..OOOTTTTTTOOO..',
   '.OSSOTTTTTTOSSO.',
-  '.OSsOTTTTTTOsSO.',
-  '.OSSOTtTTtTOSSO.',
-  '..OSOTTTTTTOSO..',
-  '..OSOOPPPPOOSO..',
+  '.OSsOTtTTtTOsSO.',
+  '..OOOPPPPPPOOO..',
 ];
 const BUFF_SIDE_TOP = [
-  '.....OTTTTO.....',
-  '...OOTTTTTTO....',
+  '....OOTTTTO.....',
   '...OSSOTTTTO....',
-  '...OSsOTTTTO....',
-  '....OSOTTTTO....',
-  '....OSPPPPPO....',
+  '...OSsOTTTO.....',
+  '....OOPPPPO.....',
 ];
 
 export type Build = 'regular' | 'buff';
@@ -324,23 +269,21 @@ export type Build = 'regular' | 'buff';
 /** Facing left with the arm thrown forward (punch / ping-pong swing). */
 const BODY_SIDE_PUNCH = [
   '.....OTTTTO.....',
-  '....OTTTTTTO....',
   'OOOOOTTTTTTO....',
   'OSSTTTTTTTTO....',
-  'OOOOOTTTTTTO....',
-  '....OPPPPPPO....',
+  'OOOOOPPPPPO.....',
 ];
 
 const LEGS_FRONT = {
-  stand: ['....OPPPPPPO....', '....OPPOOPPO....', '....OBBOOBBO....', '.....OO..OO.....'],
-  stepA: ['....OPPPPPPO....', '....OPPOOBBO....', '....OBBO.OOO....', '.....OO.........'],
-  sit: ['....OPPPPPPO....', '....OBBOOBBO....', '.....OO..OO.....', '................'],
-  pedalA: ['....OPPPPPPO....', '....OBBOOPPO....', '.....OO.OBBO....', '.........OO.....'],
+  stand: ['....OPPOOPPO....', '....OBBOOBBO....', '.....OO..OO.....', '................'],
+  stepA: ['....OPPOOBBO....', '....OBBO.OOO....', '.....OO.........', '................'],
+  sit: ['....OBBOOBBO....', '.....OO..OO.....', '................', '................'],
+  pedalA: ['....OBBOOPPO....', '.....OO.OBBO....', '.........OO.....', '................'],
 };
 const LEGS_SIDE = {
-  stand: ['.....OPPPPO.....', '.....OPPPPO.....', '.....OBBBBO.....', '......OOOO......'],
-  stepA: ['....OPPOOPPO....', '...OPPO..OPPO...', '...OBBO..OBBO...', '....OO....OO....'],
-  sit: ['....OPPPPPPO....', '...OBBPPPPPO....', '...OOOOOOOO.....', '................'],
+  stand: ['.....OPPPPO.....', '.....OBBBBO.....', '......OOOO......', '................'],
+  stepA: ['....OPPOOPPO....', '...OBBO..OBBO...', '....OO....OO....', '................'],
+  sit: ['...OBBPPPPPO....', '...OOOOOOOO.....', '................', '................'],
 };
 
 type Arms = 'side' | 'up' | 'punch';
@@ -398,11 +341,13 @@ function colorsFor(a: Appearance): Record<string, string> {
   const hair = HAIR_COLORS[a.hairColor];
   const outfit = OUTFITS[a.outfit];
   return {
-    O: '#33262a',
+    O: '#3d2b30',
     E: '#2a2028',
+    W: '#ffffff', // the sparkle in the eyes
+    m: '#c8686a', // tiny mouth
     S: skin,
     s: shade(skin, -0.15),
-    b: '#e59a8f',
+    b: '#f4a3a8', // rosy cheeks
     T: outfit.top,
     t: shade(outfit.top, -0.18),
     P: outfit.pants,
@@ -449,14 +394,15 @@ export function drawCharacterFrame(
           ? BUFF_FRONT_TOP
           : BODY_FRONT_TOP;
   const y0 = oy + sitDy;
-  drawTemplate(ctx, [...top, ...legRows(facing, spec.legs)], ox, y0 + 12, colors, mirror);
-  drawTemplate(ctx, HEAD[facing], ox, y0 + headDy, colors, mirror);
-  drawTemplate(ctx, HAIR[style][facing], ox, y0 + headDy, colors, mirror);
+  // Templates are drawn 1px lower than their row numbers, so the feet land on FEET_ROW.
+  drawTemplate(ctx, [...top, ...legRows(facing, spec.legs)], ox, y0 + 15, colors, mirror);
+  drawTemplate(ctx, HEAD[facing], ox, y0 + 1 + headDy, colors, mirror);
+  drawTemplate(ctx, HAIR[style][facing], ox, y0 + 1 + headDy, colors, mirror);
   if (arms === 'up') {
-    drawTemplate(ctx, ARMS_UP_OVERLAY, ox, y0 + 7, colors);
-    if (spec.dumbbells) drawTemplate(ctx, [DUMBBELLS_UP], ox, y0 + 7, colors);
+    drawTemplate(ctx, ARMS_UP_OVERLAY, ox, y0 + 12, colors);
+    if (spec.dumbbells) drawTemplate(ctx, [DUMBBELLS_UP], ox, y0 + 11, colors);
   } else if (spec.dumbbells && facing !== 'side') {
-    drawTemplate(ctx, [DUMBBELLS_DOWN], ox, y0 + 17, colors);
+    drawTemplate(ctx, [DUMBBELLS_DOWN], ox, y0 + 18, colors);
   }
 }
 
@@ -484,21 +430,22 @@ export const TEMPLATES_FOR_VALIDATION = { HEAD, HAIR, BODY_FRONT_TOP, BODY_SIDE_
 export function drawPotatoSuit(ctx: Ctx, ox: number, oy: number, palette: { potato: string; potatoDark: string; potatoLight: string; outline: string }) {
   const { potato, potatoDark, potatoLight, outline } = palette;
   const cx = ox + 8;
-  const cy = oy + 17;
-  // outline + body
-  for (let dy = -7; dy <= 6; dy++) {
-    const half = Math.round(7 * Math.sqrt(Math.max(0, 1 - (dy * dy) / 49)));
+  const cy = oy + 18; // the chibi body is short: the suit covers it and leaves the big head free
+  // outline + body (a squat potato, 8 rows tall)
+  for (let dy = -4; dy <= 3; dy++) {
+    const t = (dy + 0.5) / 4;
+    const half = Math.round(7 * Math.sqrt(Math.max(0, 1 - t * t)));
     ctx.fillStyle = outline;
     ctx.fillRect(cx - half - 1, cy + dy, half * 2 + 2, 1);
     ctx.fillStyle = potato;
     ctx.fillRect(cx - half, cy + dy, half * 2, 1);
   }
   ctx.fillStyle = potatoLight;
-  ctx.fillRect(cx - 4, cy - 4, 3, 3);
+  ctx.fillRect(cx - 4, cy - 2, 2, 2);
   ctx.fillStyle = potatoDark;
-  [[-3, 3], [3, -2], [4, 3], [-1, 0]].forEach(([dx, dy]) => ctx.fillRect(cx + dx, cy + dy, 1, 1));
+  [[-3, 2], [3, -2], [4, 1], [0, 0]].forEach(([dx, dy]) => ctx.fillRect(cx + dx, cy + dy, 1, 1));
   // stubby feet
   ctx.fillStyle = outline;
-  ctx.fillRect(cx - 4, cy + 6, 3, 1);
-  ctx.fillRect(cx + 1, cy + 6, 3, 1);
+  ctx.fillRect(cx - 4, cy + 4, 3, 1);
+  ctx.fillRect(cx + 1, cy + 4, 3, 1);
 }
