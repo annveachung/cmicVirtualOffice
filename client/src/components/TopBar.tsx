@@ -7,7 +7,8 @@ import { useSound } from '../hooks/useSound';
 
 interface Props {
   theme: Theme;
-  onlineCount: number;
+  /** Names of everyone in the office (you first). */
+  online: string[];
   status: StatusId;
   onStatusChange: (s: StatusId) => void;
   onToggleTheme: () => void;
@@ -15,7 +16,7 @@ interface Props {
   onLeave: () => void;
 }
 
-export function TopBar({ theme, onlineCount, status, onStatusChange, onToggleTheme, onToggleHelp, onLeave }: Props) {
+export function TopBar({ theme, online, status, onStatusChange, onToggleTheme, onToggleHelp, onLeave }: Props) {
   const { sfx, music, toggleSfx, toggleMusic } = useSound();
   return (
     <header className="topbar pixel-panel">
@@ -26,8 +27,8 @@ export function TopBar({ theme, onlineCount, status, onStatusChange, onToggleThe
       <Clock />
       <div className="topbar-actions">
         <StatusPicker status={status} onChange={onStatusChange} />
-        <span className="online-pill" title="Colleagues online">
-          <span className="dot" /> {onlineCount} online
+        <span className="online-pill" title={`In the office: ${online.join(', ')}`}>
+          <span className="dot" /> {online.length} online
         </span>
         <button
           className={`pixel-btn icon-btn${music ? '' : ' is-off'}`}

@@ -3,12 +3,14 @@ import type Phaser from 'phaser';
 import type { Appearance, Theme } from '@little-office/shared';
 import { bus } from './bus';
 import { createGame } from './createGame';
+import type { Session } from '../net/session';
 
 interface Props {
   name: string;
   appearance: Appearance;
   theme: Theme;
   deskId: number | null;
+  session: Session | null;
   onReady?: () => void;
 }
 
@@ -17,7 +19,7 @@ interface Props {
  * forwards prop changes as bus events — it never re-creates the game, so
  * switching theme keeps everyone exactly where they are.
  */
-export function GameCanvas({ name, appearance, theme, deskId, onReady }: Props) {
+export function GameCanvas({ name, appearance, theme, deskId, session, onReady }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const themeRef = useRef(theme);
   themeRef.current = theme;
@@ -30,7 +32,7 @@ export function GameCanvas({ name, appearance, theme, deskId, onReady }: Props) 
     // Wait for the pixel font so canvas text doesn't render in a fallback font.
     // If the font can't load, start anyway (with a fallback font) — never leave the user stuck.
     const start = () => {
-      if (!cancelled && !game) game = createGame(host, { name, appearance, deskId, theme: themeRef.current });
+      if (!cancelled && !game) game = createGame(host, { name, appearance, deskId, session, theme: themeRef.current });
     };
     document.fonts.load('12px "Silkscreen"').then(start, start);
     return () => {
@@ -40,7 +42,7 @@ export function GameCanvas({ name, appearance, theme, deskId, onReady }: Props) 
     };
     // The game is created once per identity; theme changes go through the bus below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, appearance, deskId]);
+  }, [name, appearance, deskId, session]);
 
   useEffect(() => {
     bus.emit('theme:set', theme);

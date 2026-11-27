@@ -438,6 +438,19 @@ kbd {
   padding: 12px 18px;
 }
 
+/* "Reconnecting…" / solo-mode notice, bottom centre, out of the way */
+.offline-note {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  font-size: 14px;
+  max-width: calc(100% - 32px);
+  text-align: center;
+  pointer-events: none;
+}
+
 @media (max-width: 720px) {
   .clock,
   .btn-label {

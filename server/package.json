@@ -1,0 +1,22 @@
+{
+  "name": "@little-office/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@little-office/shared": "*",
+    "socket.io": "4.8.4",
+    "tsx": "4.23.15"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.11",
+    "typescript": "5.9.3",
+    "vitest": "4.1.12"
+  }
+}

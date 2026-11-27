@@ -5,12 +5,17 @@
   "type": "module",
   "workspaces": [
     "shared",
-    "client"
+    "client",
+    "server"
   ],
   "scripts": {
-    "dev": "npm run dev -w client",
+    "dev": "concurrently -k -n server,client -c magenta,cyan \"npm run dev -w server\" \"npm run dev -w client\"",
     "build": "npm run build -w client",
-    "typecheck": "npm run typecheck -w shared && npm run typecheck -w client",
-    "test": "npm run test -w shared && npm run test -w client"
+    "start": "npm run start -w server",
+    "typecheck": "npm run typecheck -w shared && npm run typecheck -w client && npm run typecheck -w server",
+    "test": "npm run test -w shared && npm run test -w client && npm run test -w server"
+  },
+  "devDependencies": {
+    "concurrently": "10.0.7"
   }
 }

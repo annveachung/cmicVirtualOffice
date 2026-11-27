@@ -32,11 +32,17 @@ export class Character {
   private pose: CharacterPose = 'idle';
   x = 0;
   y = 0;
+  /**
+   * Local player only: called when something happens that everyone else should
+   * see too (speech, reactions, the potato suit), so the scene can send it to the
+   * server. Other people's characters leave this null, so nothing echoes back.
+   */
+  echo: { say(text: string): void; react(kind: Reaction): void; costume(on: boolean): void } | null = null;
 
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly appearance: Appearance,
-    name: string,
+    readonly name: string,
     opts: { isLocal: boolean; build?: Build },
   ) {
     this.build = opts.build ?? 'regular';
@@ -139,6 +145,7 @@ export class Character {
 
   /** Show a message in the speech bubble for a few seconds. */
   say(text: string, ms = 3500): void {
+    this.echo?.say(text);
     this.sayTimer?.remove();
     this.bubble.say(text);
     this.sayTimer = this.scene.time.delayedCall(ms, () => {
@@ -150,6 +157,7 @@ export class Character {
 
   /** Put the potato suit on / take it off. */
   setCostume(on: boolean): void {
+    if (on !== this.costume.visible) this.echo?.costume(on);
     this.costume.setVisible(on);
   }
 
@@ -159,6 +167,7 @@ export class Character {
 
   /** A little reaction icon (heart, clap, laugh) floats up from the head and fades. */
   react(kind: Reaction): void {
+    this.echo?.react(kind);
     const icon = this.scene.add
       .image(this.x + (Math.random() * 8 - 4), this.y - 26 * CHARACTER_SCALE, REACTION_KEYS[kind])
       .setDepth(DEPTH.nameplates + 2);
