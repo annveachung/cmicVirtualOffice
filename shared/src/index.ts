@@ -8,3 +8,4 @@ export * from './map/pathfinding.js';
 export * from './map/spots.js';
 export * from './status.js';
 export * from './map/npcs.js';
+export * from './protocol.js';
