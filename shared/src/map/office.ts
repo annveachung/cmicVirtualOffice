@@ -285,8 +285,7 @@ export const PLACEMENTS: Placement[] = [
   P('potatoPlush', 57, 18, { variant: 2 }),
 
   // ---- Gym ----
-  P('mirror', 49, 19),
-  P('mirror', 52, 19),
+  P('mirrorLong', 48, 19, { w: 7 }), // one clean mirror wall behind the machines (up to the weight rack)
   P('treadmill', 49, 20, { id: 'treadmill-1' }),
   P('treadmill', 51, 20, { id: 'treadmill-2' }),
   P('exerciseBike', 53, 20, { id: 'bike-1' }),
