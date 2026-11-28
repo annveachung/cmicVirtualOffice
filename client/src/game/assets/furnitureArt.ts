@@ -655,7 +655,16 @@ const P: Partial<Record<Placement['type'], Painter>> = {
     hline(ctx, 4, H - 10, 8, pal.outline);
   },
 
-  mirrorLong(ctx, { pal, W }) {
+  mirrorLong(ctx, { pal, W, v }) {
+    if (v === 1) {
+      // gym mirror wall: dark frame, glass tinted by the gym's green reflected in it (no off-white)
+      const glass = mix(pal.gym, pal.glass, 0.35);
+      box(ctx, 1, 1, W - 2, 14, pal.metalDark, pal.outline);
+      rect(ctx, 3, 3, W - 6, 9, glass);
+      for (let x = 10; x < W - 10; x += 28) for (let i = 0; i < 5; i++) px(ctx, x + i, 10 - i, shade(glass, 0.25));
+      hline(ctx, 3, 12, W - 6, shade(pal.metalDark, 0.2));
+      return;
+    }
     box(ctx, 1, 1, W - 2, 14, pal.metalLight, pal.outline);
     rect(ctx, 3, 3, W - 6, 9, pal.glassLight);
     for (let x = 10; x < W - 10; x += 28) for (let i = 0; i < 5; i++) px(ctx, x + i, 10 - i, pal.paper);
